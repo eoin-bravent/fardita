@@ -9,9 +9,8 @@ Reuses the proven helpers in ../extract_json.py but generalizes:
 """
 import os, re, sys, json
 import xml.etree.ElementTree as ET
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # _pgtest
-import parse_to_sql as P
-import extract_json as X                      # reuse flatten_*, collect_refs, components, href_to_citation
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import extract_json as X       # reuse norm/tok, flatten_*, collect_refs, components, href_to_citation
 
 # Level ladder.  Indices 0..3 come from the citation number; 4+ from the (a)(1)(i)… chain.
 PARA_LEVELS = ["paragraph", "subparagraph",
@@ -45,7 +44,7 @@ def build(path, far, cfg):
         return None, "no <concept> / parse error"
     title = c.find("./title")
     num_ph = title.find(".//ph[@props='autonumber']") if title is not None else None
-    sec_num = P.norm(num_ph.text) if num_ph is not None else far
+    sec_num = X.norm(num_ph.text) if num_ph is not None else far
     conbody = c.find(".//conbody")
     if conbody is None:
         return None, "no <conbody>"
@@ -70,7 +69,7 @@ def build(path, far, cfg):
         for li in ol.findall("./li"):
             p0 = li.find("./p")
             ph = p0.find("./ph[@props='autonumber']") if p0 is not None else None
-            label = P.tok(P.norm(ph.text)) if (ph is not None and P.norm(ph.text)) else ""
+            label = X.tok(X.norm(ph.text)) if (ph is not None and X.norm(ph.text)) else ""
             if not label:
                 for sub in li.findall("./ol"):
                     walk(sub, toks)

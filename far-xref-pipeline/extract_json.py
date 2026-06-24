@@ -11,16 +11,39 @@ v1 scope: only files named like a FAR citation (^\\d+\\.\\d+(-\\d+)?$) are proce
 parts, subparts, covers, matrices, etc. are skipped and reported. Tables and images
 are dropped from the grid but left as obvious inline placeholders in the text.
 """
-import os, re, sys, json, shutil
+import os, re, sys, json, shutil, glob
+import xml.etree.ElementTree as ET
 from collections import Counter
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import parse_to_sql as P                       # load_concept, norm, tok, DITA, all_files
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+DITA = os.path.join(HERE, "dita")               # .dita source files live here
 
 SUBSET = ["5.201", "5.202", "5.203", "5.205", "5.207", "12.603", "5.101", "6.302-2"]
 NUMERIC = re.compile(r"^\d+\.\d+(-\d+)?$")
 WB, WA = 90, 75                                 # context window: chars before link / after ref end
 MIN_TEXT = 40                                   # skip near-empty units
-ASSETS = os.path.join(P.DITA, "test_data", "assets")
+ASSETS = os.path.join(DITA, "test_data", "assets")
+
+# ---------- DITA loading + whitespace helpers ----------
+def norm(s):
+    """Collapse DITA whitespace to single spaces."""
+    return re.sub(r"\s+", " ", (s or "")).strip()
+
+def tok(label):
+    """'(a)' -> 'a', '(1)' -> '1', '(iii)' -> 'iii'."""
+    return re.sub(r"[^A-Za-z0-9]", "", label or "")
+
+def load_concept(far):
+    path = os.path.join(DITA, far + ".dita")
+    if not os.path.exists(path):
+        sys.stderr.write(f"  SKIP (missing): {far}.dita\n")
+        return None
+    raw = re.sub(r"<!DOCTYPE.*?>", "", open(path, encoding="utf-8").read(), flags=re.S)
+    return ET.fromstring(raw).find(".//concept")
+
+def all_files():
+    return sorted(os.path.splitext(os.path.basename(p))[0]
+                  for p in glob.glob(os.path.join(DITA, "*.dita")))
 
 # ---------- citation helpers ----------
 def components(section_num, paragraph=""):
@@ -45,15 +68,15 @@ def href_to_citation(href):
 # ---------- table / image placeholders ----------
 def table_marker(t, url):
     title = t.find(".//title")
-    cap = P.norm("".join(title.itertext())) if title is not None else ""
+    cap = norm("".join(title.itertext())) if title is not None else ""
     return f'[TABLE OMITTED{f": \"{cap}\"" if cap else ""} — see {url}]'
 
 def image_marker(im, url):
     href = im.get("href") or ""
     alt_el = im.find("alt")
-    alt = P.norm("".join(alt_el.itertext())) if alt_el is not None else ""
+    alt = norm("".join(alt_el.itertext())) if alt_el is not None else ""
     ref = href
-    src = os.path.join(P.DITA, href) if href else ""
+    src = os.path.join(DITA, href) if href else ""
     if src and os.path.isfile(src):                       # copy binary if present (Graphics/ is empty now)
         os.makedirs(ASSETS, exist_ok=True)
         try:
@@ -70,14 +93,14 @@ def flatten_p(p, url):
         parts.append(p.text)
     for ch in p:
         if ch.tag == "ph" and ch.get("props") == "autonumber":
-            label = P.norm(ch.text)
+            label = norm(ch.text)
         elif ch.tag == "image":
             parts.append(" " + image_marker(ch, url) + " ")
         else:
             parts.append("".join(ch.itertext()))
         if ch.tail:
             parts.append(ch.tail)
-    body = P.norm("".join(parts))
+    body = norm("".join(parts))
     return f"{label} {body}".strip() if label else body
 
 def flatten_block(el, url):
@@ -131,7 +154,7 @@ def render_scope(ps):
     return "".join(parts), xpos
 
 def _window(text, a, b):
-    return ("…" if a > 0 else "") + P.norm(text[a:b]) + ("…" if b < len(text) else "")
+    return ("…" if a > 0 else "") + norm(text[a:b]) + ("…" if b < len(text) else "")
 
 # ---------- cross references ----------
 def _group_refs(refs):
@@ -160,7 +183,7 @@ def collect_refs(ps, sec_num, url):
         endref = e + (q.end() if q else 0)
         a, b = max(0, s - WB), min(len(text), endref + WA)
         lit = f'<xref href="{href}">{text[s:e]}</xref>'                    # splice the raw markup back in
-        ctx = ("…" if a > 0 else "") + P.norm(text[a:s] + lit + text[e:b]) + ("…" if b < len(text) else "")
+        ctx = ("…" if a > 0 else "") + norm(text[a:s] + lit + text[e:b]) + ("…" if b < len(text) else "")
         if q:
             refs.append({"kind": "inferred", "target": base + q.group(1), "context": ctx})
         else:
@@ -182,12 +205,12 @@ def make_row(citation, typ, comp, url, ps, sec_num, text):
             "cross_references": collect_refs(ps, sec_num, url), "text": text}
 
 def build(far):
-    c = P.load_concept(far)
+    c = load_concept(far)
     if c is None:
         return []
     title_el = c.find("./title")
     num_ph = title_el.find(".//ph[@props='autonumber']") if title_el is not None else None
-    sec_num = P.norm(num_ph.text) if num_ph is not None else far
+    sec_num = norm(num_ph.text) if num_ph is not None else far
     conbody = c.find(".//conbody")
     if conbody is None:
         return []
@@ -198,7 +221,7 @@ def build(far):
         for li in ol.findall("./li"):
             p0 = li.find("./p")
             ph = p0.find("./ph[@props='autonumber']") if p0 is not None else None
-            label = P.tok(P.norm(ph.text)) if (ph is not None and P.norm(ph.text)) else ""
+            label = tok(norm(ph.text)) if (ph is not None and norm(ph.text)) else ""
             if not label:
                 continue
             paras.append(make_row(f"{sec_num}({label})", "paragraph", components(sec_num, label),
@@ -236,13 +259,13 @@ def main():
     if not args:
         print(__doc__); return
     if args[0] == "--all":
-        names = [n for n in P.all_files() if NUMERIC.match(n)]
-        out = out or os.path.join(P.DITA, "test_data", "far_full.json")
+        names = [n for n in all_files() if NUMERIC.match(n)]
+        out = out or os.path.join(DITA, "test_data", "far_full.json")
     elif args[0] == "--subset":
-        names, out = SUBSET, out or os.path.join(P.DITA, "test_data", "far_test_subset.json")
+        names, out = SUBSET, out or os.path.join(DITA, "test_data", "far_test_subset.json")
     else:
         names = args
-        out = out or os.path.join(P.DITA, "test_data", "far_selection.json")
+        out = out or os.path.join(DITA, "test_data", "far_selection.json")
 
     rows, skipped, failed = process(names)
     if os.path.dirname(out):
@@ -253,8 +276,8 @@ def main():
     print(f"  files: {len(names)}  ->  processed {len(names)-len(skipped)-len(failed)}"
           f"  skipped {len(skipped)}  failed {len(failed)}")
     print(f"  rows: {len(rows)}   by type: {dict(Counter(r['type'] for r in rows))}")
-    print(f"  cross_refs by kind: "
-          f"{dict(Counter(k for r in rows for k in (cr['kind'] for cr in r['cross_references'])))}")
+    print(f"  cross_refs by confidence: "
+          f"{dict(Counter(cr['confidence'] for r in rows for cr in r['cross_references']))}")
     if failed[:5]:
         print("  sample failures:", failed[:5])
 
