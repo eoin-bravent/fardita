@@ -1,0 +1,12 @@
+{
+  "regulation": "FAR",
+  "input_dir": "../dita",
+  "bottom_level": "paragraph",
+  "url_template": "https://www.acquisition.gov/far/{num}",
+  "output_dir": "out",
+  "gemini": {
+    "model": "gemini-2.5-pro",
+    "reasoning": true,
+    "thinking_budget": -1
+  }
+}

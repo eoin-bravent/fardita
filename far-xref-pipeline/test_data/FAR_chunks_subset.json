@@ -1,0 +1,1961 @@
+[
+  {
+    "citation": "FAR-5.101",
+    "regulation": "FAR",
+    "type": "section",
+    "part": "5",
+    "subpart": "1",
+    "section": "01",
+    "subsection": "",
+    "paragraph": "",
+    "url": "https://www.acquisition.gov/far/5.101",
+    "cross_references": [
+      {
+        "target": "5.201",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…For proposed contract actions expected to exceed $25,000, by synopsizing in the GPE (see <xref href=\"5.201.dita#FAR_5_201\">5.201</xref>). (2) For proposed contract actions expected to…"
+          }
+        ]
+      },
+      {
+        "target": "5.207(c)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…d notice of the solicitation or a copy of the solicitation satisfying the requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>(c). The notice must include a statement that all responsible sources may subm…"
+          },
+          {
+            "kind": "inferred",
+            "context": "…ice, the contracting officer may employ various methods of satisfying the requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>(c). For example, the contracting officer may meet the requirements of 5.207(c…"
+          },
+          {
+            "kind": "inferred",
+            "context": "…quirements of 5.207(c). For example, the contracting officer may meet the requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>(c) by stamping the solicitation, by a cover sheet to the solicitation, or by…"
+          }
+        ]
+      },
+      {
+        "target": "5.202(a)(1)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…icer need not comply with the display requirements of this section when the exemptions at <xref href=\"5.202.dita#FAR_5_202\">5.202</xref>(a)(1), (a)(4) through (a)(9), or (a)(11) apply, when oral solicitations are used…"
+          }
+        ]
+      },
+      {
+        "target": "5.101(a)(2)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…Preparing periodic handouts listing proposed contracts, and displaying them as in <xref href=\"#FAR_5_101\">5.101</xref>(a)(2). (2)…"
+          }
+        ]
+      },
+      {
+        "target": "5.205(d)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…only when it is anticipated that effective competition cannot be obtained otherwise (see <xref href=\"5.205.dita#FAR_5_205\">5.205</xref>(d)). (ii)…"
+          }
+        ]
+      },
+      {
+        "target": "5.502(a)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…n newspapers must be under proper written authority in accordance with 44 U.S.C.3702 (see <xref href=\"5.502.dita#FAR_5_502\">5.502</xref>(a))."
+          }
+        ]
+      }
+    ],
+    "text": "(a) As required by the Small Business Act (15 U.S.C. 637(e)) and the Office of Federal Procurement Policy Act (41 U.S.C. 1708), contracting officers must disseminate information on proposed contract actions as follows: (1) For proposed contract actions expected to exceed $25,000, by synopsizing in the GPE (see 5.201). (2) For proposed contract actions expected to exceed $20,000, but not expected to exceed $25,000, by displaying in a public place, or by any appropriate electronic means, an unclassified notice of the solicitation or a copy of the solicitation satisfying the requirements of 5.207(c). The notice must include a statement that all responsible sources may submit a response which, if timely received, must be considered by the agency. The information must be posted not later than the date the solicitation is issued, and must remain posted for at least 10 days or until after quotations have been opened, whichever is later. (i) If solicitations are posted instead of a notice, the contracting officer may employ various methods of satisfying the requirements of 5.207(c). For example, the contracting officer may meet the requirements of 5.207(c) by stamping the solicitation, by a cover sheet to the solicitation, or by placing a general statement in the display room. (ii) The contracting officer need not comply with the display requirements of this section when the exemptions at 5.202(a)(1), (a)(4) through (a)(9), or (a)(11) apply, when oral solicitations are used, or when providing access to a notice of proposed contract action and solicitation through the GPE and the notice permits the public to respond to the solicitation electronically. (iii) Contracting officers may use electronic posting of requirements in a place accessible by the general public at the Government installation to satisfy the public display requirement. Contracting offices using electronic systems for public posting that are not accessible outside the installation must periodically publicize the methods for accessing the information.\n(b) In addition, one or more of the following methods may be used: (1) Preparing periodic handouts listing proposed contracts, and displaying them as in 5.101(a)(2). (2) Assisting local trade associations in disseminating information to their members. (3) Making brief announcements of proposed contracts to newspapers, trade journals, magazines, or other mass communication media for publication without cost to the Government. (4) Placing paid advertisements in newspapers or other communications media, subject to the following limitations: (i) Contracting officers shall place paid advertisements of proposed contracts only when it is anticipated that effective competition cannot be obtained otherwise (see 5.205(d)). (ii) Contracting officers shall not place advertisements of proposed contracts in a newspaper published and printed in the District of Columbia unless the supplies or services will be furnished, or the labor performed, in the District of Columbia or adjoining counties in Maryland or Virginia (44 U.S.C. 3701). (iii) Advertisements published in newspapers must be under proper written authority in accordance with 44 U.S.C.3702 (see 5.502(a))."
+  },
+  {
+    "citation": "FAR-5.101(a)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "1",
+    "section": "01",
+    "subsection": "",
+    "paragraph": "a",
+    "url": "https://www.acquisition.gov/far/5.101",
+    "cross_references": [
+      {
+        "target": "5.201",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…For proposed contract actions expected to exceed $25,000, by synopsizing in the GPE (see <xref href=\"5.201.dita#FAR_5_201\">5.201</xref>). (2) For proposed contract actions expected to…"
+          }
+        ]
+      },
+      {
+        "target": "5.207(c)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…d notice of the solicitation or a copy of the solicitation satisfying the requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>(c). The notice must include a statement that all responsible sources may subm…"
+          },
+          {
+            "kind": "inferred",
+            "context": "…ice, the contracting officer may employ various methods of satisfying the requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>(c). For example, the contracting officer may meet the requirements of 5.207(c…"
+          },
+          {
+            "kind": "inferred",
+            "context": "…quirements of 5.207(c). For example, the contracting officer may meet the requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>(c) by stamping the solicitation, by a cover sheet to the solicitation, or by…"
+          }
+        ]
+      },
+      {
+        "target": "5.202(a)(1)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…icer need not comply with the display requirements of this section when the exemptions at <xref href=\"5.202.dita#FAR_5_202\">5.202</xref>(a)(1), (a)(4) through (a)(9), or (a)(11) apply, when oral solicitations are used…"
+          }
+        ]
+      }
+    ],
+    "text": "(a) As required by the Small Business Act (15 U.S.C. 637(e)) and the Office of Federal Procurement Policy Act (41 U.S.C. 1708), contracting officers must disseminate information on proposed contract actions as follows: (1) For proposed contract actions expected to exceed $25,000, by synopsizing in the GPE (see 5.201). (2) For proposed contract actions expected to exceed $20,000, but not expected to exceed $25,000, by displaying in a public place, or by any appropriate electronic means, an unclassified notice of the solicitation or a copy of the solicitation satisfying the requirements of 5.207(c). The notice must include a statement that all responsible sources may submit a response which, if timely received, must be considered by the agency. The information must be posted not later than the date the solicitation is issued, and must remain posted for at least 10 days or until after quotations have been opened, whichever is later. (i) If solicitations are posted instead of a notice, the contracting officer may employ various methods of satisfying the requirements of 5.207(c). For example, the contracting officer may meet the requirements of 5.207(c) by stamping the solicitation, by a cover sheet to the solicitation, or by placing a general statement in the display room. (ii) The contracting officer need not comply with the display requirements of this section when the exemptions at 5.202(a)(1), (a)(4) through (a)(9), or (a)(11) apply, when oral solicitations are used, or when providing access to a notice of proposed contract action and solicitation through the GPE and the notice permits the public to respond to the solicitation electronically. (iii) Contracting officers may use electronic posting of requirements in a place accessible by the general public at the Government installation to satisfy the public display requirement. Contracting offices using electronic systems for public posting that are not accessible outside the installation must periodically publicize the methods for accessing the information."
+  },
+  {
+    "citation": "FAR-5.101(b)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "1",
+    "section": "01",
+    "subsection": "",
+    "paragraph": "b",
+    "url": "https://www.acquisition.gov/far/5.101",
+    "cross_references": [
+      {
+        "target": "5.101(a)(2)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…Preparing periodic handouts listing proposed contracts, and displaying them as in <xref href=\"#FAR_5_101\">5.101</xref>(a)(2). (2)…"
+          }
+        ]
+      },
+      {
+        "target": "5.205(d)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…only when it is anticipated that effective competition cannot be obtained otherwise (see <xref href=\"5.205.dita#FAR_5_205\">5.205</xref>(d)). (ii)…"
+          }
+        ]
+      },
+      {
+        "target": "5.502(a)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…n newspapers must be under proper written authority in accordance with 44 U.S.C.3702 (see <xref href=\"5.502.dita#FAR_5_502\">5.502</xref>(a))."
+          }
+        ]
+      }
+    ],
+    "text": "(b) In addition, one or more of the following methods may be used: (1) Preparing periodic handouts listing proposed contracts, and displaying them as in 5.101(a)(2). (2) Assisting local trade associations in disseminating information to their members. (3) Making brief announcements of proposed contracts to newspapers, trade journals, magazines, or other mass communication media for publication without cost to the Government. (4) Placing paid advertisements in newspapers or other communications media, subject to the following limitations: (i) Contracting officers shall place paid advertisements of proposed contracts only when it is anticipated that effective competition cannot be obtained otherwise (see 5.205(d)). (ii) Contracting officers shall not place advertisements of proposed contracts in a newspaper published and printed in the District of Columbia unless the supplies or services will be furnished, or the labor performed, in the District of Columbia or adjoining counties in Maryland or Virginia (44 U.S.C. 3701). (iii) Advertisements published in newspapers must be under proper written authority in accordance with 44 U.S.C.3702 (see 5.502(a))."
+  },
+  {
+    "citation": "FAR-5.201",
+    "regulation": "FAR",
+    "type": "section",
+    "part": "5",
+    "subpart": "2",
+    "section": "01",
+    "subsection": "",
+    "paragraph": "",
+    "url": "https://www.acquisition.gov/far/5.201",
+    "cross_references": [
+      {
+        "target": "5.202",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…For acquisitions of supplies and services, other than those covered by the exceptions in <xref href=\"5.202.dita#FAR_5_202\">5.202</xref> and the special situations in 5.205, the contracting officer must transmit…"
+          }
+        ]
+      },
+      {
+        "target": "5.205",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…rvices, other than those covered by the exceptions in 5.202 and the special situations in <xref href=\"5.205.dita#FAR_5_205\">5.205</xref>, the contracting officer must transmit a notice to the GPE, for each propo…"
+          }
+        ]
+      },
+      {
+        "target": "5.101(a)(1)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ch proposed- (i) Contract action meeting the threshold in <xref href=\"5.101.dita#FAR_5_101\">5.101</xref>(a)(1); (ii) Modification to an existing contract…"
+          },
+          {
+            "kind": "inferred",
+            "context": "…n to an existing contract for additional supplies or services that meets the threshold in <xref href=\"5.101.dita#FAR_5_101\">5.101</xref>(a)(1); or (iii) Contract action in any amount wh…"
+          }
+        ]
+      },
+      {
+        "target": "5.201(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…1708), agencies must make notices of proposed contract actions available as specified in paragraph (b) of this section. (b) (1) For…"
+          }
+        ]
+      }
+    ],
+    "text": "(a) As required by the Small Business Act (15 U.S.C. 637(e)) and the Office of Federal Procurement Policy Act (41 U.S.C. 1708), agencies must make notices of proposed contract actions available as specified in paragraph (b) of this section.\n(b) (1) For acquisitions of supplies and services, other than those covered by the exceptions in 5.202 and the special situations in 5.205, the contracting officer must transmit a notice to the GPE, for each proposed- (i) Contract action meeting the threshold in 5.101(a)(1); (ii) Modification to an existing contract for additional supplies or services that meets the threshold in 5.101(a)(1); or (iii) Contract action in any amount when advantageous to the Government. (2) When transmitting notices using electronic commerce, contracting officers must ensure the notice is forwarded to the GPE.\n(c) The primary purposes of the notice are to improve small business access to acquisition information and enhance competition by identifying contracting and subcontracting opportunities.\n(d) The GPE may be accessed via the Internet at https://www.sam.gov."
+  },
+  {
+    "citation": "FAR-5.201(a)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "01",
+    "subsection": "",
+    "paragraph": "a",
+    "url": "https://www.acquisition.gov/far/5.201",
+    "cross_references": [
+      {
+        "target": "5.201(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…1708), agencies must make notices of proposed contract actions available as specified in paragraph (b) of this section."
+          }
+        ]
+      }
+    ],
+    "text": "(a) As required by the Small Business Act (15 U.S.C. 637(e)) and the Office of Federal Procurement Policy Act (41 U.S.C. 1708), agencies must make notices of proposed contract actions available as specified in paragraph (b) of this section."
+  },
+  {
+    "citation": "FAR-5.201(b)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "01",
+    "subsection": "",
+    "paragraph": "b",
+    "url": "https://www.acquisition.gov/far/5.201",
+    "cross_references": [
+      {
+        "target": "5.202",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…For acquisitions of supplies and services, other than those covered by the exceptions in <xref href=\"5.202.dita#FAR_5_202\">5.202</xref> and the special situations in 5.205, the contracting officer must transmit…"
+          }
+        ]
+      },
+      {
+        "target": "5.205",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…rvices, other than those covered by the exceptions in 5.202 and the special situations in <xref href=\"5.205.dita#FAR_5_205\">5.205</xref>, the contracting officer must transmit a notice to the GPE, for each propo…"
+          }
+        ]
+      },
+      {
+        "target": "5.101(a)(1)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ch proposed- (i) Contract action meeting the threshold in <xref href=\"5.101.dita#FAR_5_101\">5.101</xref>(a)(1); (ii) Modification to an existing contract…"
+          },
+          {
+            "kind": "inferred",
+            "context": "…n to an existing contract for additional supplies or services that meets the threshold in <xref href=\"5.101.dita#FAR_5_101\">5.101</xref>(a)(1); or (iii) Contract action in any amount wh…"
+          }
+        ]
+      }
+    ],
+    "text": "(b) (1) For acquisitions of supplies and services, other than those covered by the exceptions in 5.202 and the special situations in 5.205, the contracting officer must transmit a notice to the GPE, for each proposed- (i) Contract action meeting the threshold in 5.101(a)(1); (ii) Modification to an existing contract for additional supplies or services that meets the threshold in 5.101(a)(1); or (iii) Contract action in any amount when advantageous to the Government. (2) When transmitting notices using electronic commerce, contracting officers must ensure the notice is forwarded to the GPE."
+  },
+  {
+    "citation": "FAR-5.201(c)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "01",
+    "subsection": "",
+    "paragraph": "c",
+    "url": "https://www.acquisition.gov/far/5.201",
+    "cross_references": [],
+    "text": "(c) The primary purposes of the notice are to improve small business access to acquisition information and enhance competition by identifying contracting and subcontracting opportunities."
+  },
+  {
+    "citation": "FAR-5.201(d)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "01",
+    "subsection": "",
+    "paragraph": "d",
+    "url": "https://www.acquisition.gov/far/5.201",
+    "cross_references": [],
+    "text": "(d) The GPE may be accessed via the Internet at https://www.sam.gov."
+  },
+  {
+    "citation": "FAR-5.202",
+    "regulation": "FAR",
+    "type": "section",
+    "part": "5",
+    "subpart": "2",
+    "section": "02",
+    "subsection": "",
+    "paragraph": "",
+    "url": "https://www.acquisition.gov/far/5.202",
+    "cross_references": [
+      {
+        "target": "5.201",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "The contracting officer need not submit the notice required by <xref href=\"5.201.dita#FAR_5_201\">5.201</xref> when- (a) The contracting officer determines that-…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(2) The proposed contract action is made under the conditions described in <xref href=\"6.302-2.dita#FAR_6_302_2\">6.302-2</xref> (or, for purchases conducted using simplified acquisition procedures, if u…"
+          }
+        ]
+      },
+      {
+        "target": "5.203",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ment would be seriously injured if the agency complies with the time periods specified in <xref href=\"5.203.dita#FAR_5_203\">5.203</xref>; (3) The proposed contract action is one for whi…"
+          }
+        ]
+      },
+      {
+        "target": "5.205(f)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ministration (SBA) using the authority of section 8(a) of the Small Business Act (but see <xref href=\"5.205.dita#FAR_5_205\">5.205</xref>(f)), or from a specific source such as a workshop for the blind under the rul…"
+          }
+        ]
+      },
+      {
+        "target": "subpart 16.5",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(6) The proposed contract action is an order placed under subpart <xref href=\"Subpart_16.5.dita#FAR_Subpart_16_5\">16.5</xref>. When the order contains brand-name specifications, see especially 16.505(…"
+          }
+        ]
+      },
+      {
+        "target": "16.505(a)(4)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ced under subpart 16.5. When the order contains brand-name specifications, see especially <xref href=\"16.505.dita#FAR_16_505\">16.505</xref>(a)(4); (7) The proposed contract action results from a…"
+          }
+        ]
+      },
+      {
+        "target": "2.101",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…f an unsolicited research proposal that demonstrates a unique and innovative concept (see <xref href=\"2.101.dita#FAR_2_101\">2.101</xref>) and publication of any notice complying with 5.207 would improperly discl…"
+          }
+        ]
+      },
+      {
+        "target": "5.207",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…a unique and innovative concept (see 2.101) and publication of any notice complying with <xref href=\"5.207.dita#FAR_5_207\">5.207</xref> would improperly disclose the originality of thought or innovativeness of…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…ct that was previously synopsized in sufficient detail to comply with the requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref> with respect to the current proposed contract action;…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-1(a)(2)(i)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…unique capability of the source to perform the particular research services proposed (see <xref href=\"6.302-1.dita#FAR_6_302_1\">6.302-1</xref>(a)(2)(i)); (9) The proposed contract action is made for p…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-3",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(10) The proposed contract action is made under conditions described in <xref href=\"6.302-3.dita#FAR_6_302_3\">6.302-3</xref>, or 6.302-5 with regard to brand name commercial products for authorized r…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…(14) The proposed contract action is made under conditions described in <xref href=\"6.302-3.dita#FAR_6_302_3\">6.302-3</xref> with respect to the services of an expert to support the Federal Governmen…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-5",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(10) The proposed contract action is made under conditions described in 6.302-3, or <xref href=\"6.302-5.dita#FAR_6_302_5\">6.302-5</xref> with regard to brand name commercial products for authorized resale, or 6.…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-7",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…302-3, or 6.302-5 with regard to brand name commercial products for authorized resale, or <xref href=\"6.302-7.dita#FAR_6_302_7\">6.302-7</xref>, and advance notice is not appropriate or reasonable;…"
+          }
+        ]
+      },
+      {
+        "target": "subpart 25.4",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…World Trade Organization Government Procurement Agreement or a Free Trade Agreement (see <xref href=\"Subpart_25.4.dita#FAR_Subpart_25_4\">subpart 25.4</xref>); (13) The proposed contract action-…"
+          }
+        ]
+      }
+    ],
+    "text": "The contracting officer need not submit the notice required by 5.201 when-\n(a) The contracting officer determines that- (1) The synopsis cannot be worded to preclude disclosure of an agency’s needs and such disclosure would compromise the national security (e.g., would result in disclosure of classified information). The fact that a proposed solicitation or contract action contains classified information, or that access to classified matter may be necessary to submit a proposal or perform the contract does not, in itself, justify use of this exception to synopsis; (2) The proposed contract action is made under the conditions described in 6.302-2 (or, for purchases conducted using simplified acquisition procedures, if unusual and compelling urgency precludes competition to the maximum extent practicable) and the Government would be seriously injured if the agency complies with the time periods specified in 5.203; (3) The proposed contract action is one for which either the written direction of a foreign government reimbursing the agency for the cost of the acquisition of the supplies or services for such government, or the terms of an international agreement or treaty between the United States and a foreign government, or international organizations, has the effect of requiring that the acquisition shall be from specified sources; (4) The proposed contract action is expressly authorized or required by a statute to be made through another Government agency, including acquisitions from the Small Business Administration (SBA) using the authority of section 8(a) of the Small Business Act (but see 5.205(f)), or from a specific source such as a workshop for the blind under the rules of the Committee for Purchase from People Who Are Blind or Severely Disabled; (5) The proposed contract action is for utility services other than telecommunications services and only one source is available; (6) The proposed contract action is an order placed under subpart 16.5. When the order contains brand-name specifications, see especially 16.505(a)(4); (7) The proposed contract action results from acceptance of a proposal under the Small Business Innovation Development Act of1982 (Pub.L.97-219); (8) The proposed contract action results from the acceptance of an unsolicited research proposal that demonstrates a unique and innovative concept (see 2.101) and publication of any notice complying with 5.207 would improperly disclose the originality of thought or innovativeness of the proposed research, or would disclose proprietary information associated with the proposal. This exception does not apply if the proposed contract action results from an unsolicited research proposal and acceptance is based solely upon the unique capability of the source to perform the particular research services proposed (see 6.302-1(a)(2)(i)); (9) The proposed contract action is made for perishable subsistence supplies, and advance notice is not appropriate or reasonable; (10) The proposed contract action is made under conditions described in 6.302-3, or 6.302-5 with regard to brand name commercial products for authorized resale, or 6.302-7, and advance notice is not appropriate or reasonable; (11) The proposed contract action is made under the terms of an existing contract that was previously synopsized in sufficient detail to comply with the requirements of 5.207 with respect to the current proposed contract action; (12) The proposed contract action is by a Defense agency and the proposed contract action will be made and performed outside the United States and its outlying areas, and only local sources will be solicited. This exception does not apply to proposed contract actions covered by the World Trade Organization Government Procurement Agreement or a Free Trade Agreement (see subpart 25.4); (13) The proposed contract action- (i) Is for an amount not expected to exceed the simplified acquisition threshold; (ii) Will be made through a means that provides access to the notice of proposed contract action through the GPE; and (iii) Permits the public to respond to the solicitation electronically; or (14) The proposed contract action is made under conditions described in 6.302-3 with respect to the services of an expert to support the Federal Government in any current or anticipated litigation or dispute.\n(b) The head of the agency determines in writing, after consultation with the Administrator for Federal Procurement Policy and the Administrator of the Small Business Administration, that advance notice is not appropriate or reasonable."
+  },
+  {
+    "citation": "FAR-5.202(a)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "02",
+    "subsection": "",
+    "paragraph": "a",
+    "url": "https://www.acquisition.gov/far/5.202",
+    "cross_references": [
+      {
+        "target": "6.302-2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(2) The proposed contract action is made under the conditions described in <xref href=\"6.302-2.dita#FAR_6_302_2\">6.302-2</xref> (or, for purchases conducted using simplified acquisition procedures, if u…"
+          }
+        ]
+      },
+      {
+        "target": "5.203",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ment would be seriously injured if the agency complies with the time periods specified in <xref href=\"5.203.dita#FAR_5_203\">5.203</xref>; (3) The proposed contract action is one for whi…"
+          }
+        ]
+      },
+      {
+        "target": "5.205(f)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ministration (SBA) using the authority of section 8(a) of the Small Business Act (but see <xref href=\"5.205.dita#FAR_5_205\">5.205</xref>(f)), or from a specific source such as a workshop for the blind under the rul…"
+          }
+        ]
+      },
+      {
+        "target": "subpart 16.5",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(6) The proposed contract action is an order placed under subpart <xref href=\"Subpart_16.5.dita#FAR_Subpart_16_5\">16.5</xref>. When the order contains brand-name specifications, see especially 16.505(…"
+          }
+        ]
+      },
+      {
+        "target": "16.505(a)(4)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ced under subpart 16.5. When the order contains brand-name specifications, see especially <xref href=\"16.505.dita#FAR_16_505\">16.505</xref>(a)(4); (7) The proposed contract action results from a…"
+          }
+        ]
+      },
+      {
+        "target": "2.101",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…f an unsolicited research proposal that demonstrates a unique and innovative concept (see <xref href=\"2.101.dita#FAR_2_101\">2.101</xref>) and publication of any notice complying with 5.207 would improperly discl…"
+          }
+        ]
+      },
+      {
+        "target": "5.207",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…a unique and innovative concept (see 2.101) and publication of any notice complying with <xref href=\"5.207.dita#FAR_5_207\">5.207</xref> would improperly disclose the originality of thought or innovativeness of…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…ct that was previously synopsized in sufficient detail to comply with the requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref> with respect to the current proposed contract action;…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-1(a)(2)(i)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…unique capability of the source to perform the particular research services proposed (see <xref href=\"6.302-1.dita#FAR_6_302_1\">6.302-1</xref>(a)(2)(i)); (9) The proposed contract action is made for p…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-3",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(10) The proposed contract action is made under conditions described in <xref href=\"6.302-3.dita#FAR_6_302_3\">6.302-3</xref>, or 6.302-5 with regard to brand name commercial products for authorized r…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…(14) The proposed contract action is made under conditions described in <xref href=\"6.302-3.dita#FAR_6_302_3\">6.302-3</xref> with respect to the services of an expert to support the Federal Governmen…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-5",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(10) The proposed contract action is made under conditions described in 6.302-3, or <xref href=\"6.302-5.dita#FAR_6_302_5\">6.302-5</xref> with regard to brand name commercial products for authorized resale, or 6.…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-7",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…302-3, or 6.302-5 with regard to brand name commercial products for authorized resale, or <xref href=\"6.302-7.dita#FAR_6_302_7\">6.302-7</xref>, and advance notice is not appropriate or reasonable;…"
+          }
+        ]
+      },
+      {
+        "target": "subpart 25.4",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…World Trade Organization Government Procurement Agreement or a Free Trade Agreement (see <xref href=\"Subpart_25.4.dita#FAR_Subpart_25_4\">subpart 25.4</xref>); (13) The proposed contract action-…"
+          }
+        ]
+      }
+    ],
+    "text": "(a) The contracting officer determines that- (1) The synopsis cannot be worded to preclude disclosure of an agency’s needs and such disclosure would compromise the national security (e.g., would result in disclosure of classified information). The fact that a proposed solicitation or contract action contains classified information, or that access to classified matter may be necessary to submit a proposal or perform the contract does not, in itself, justify use of this exception to synopsis; (2) The proposed contract action is made under the conditions described in 6.302-2 (or, for purchases conducted using simplified acquisition procedures, if unusual and compelling urgency precludes competition to the maximum extent practicable) and the Government would be seriously injured if the agency complies with the time periods specified in 5.203; (3) The proposed contract action is one for which either the written direction of a foreign government reimbursing the agency for the cost of the acquisition of the supplies or services for such government, or the terms of an international agreement or treaty between the United States and a foreign government, or international organizations, has the effect of requiring that the acquisition shall be from specified sources; (4) The proposed contract action is expressly authorized or required by a statute to be made through another Government agency, including acquisitions from the Small Business Administration (SBA) using the authority of section 8(a) of the Small Business Act (but see 5.205(f)), or from a specific source such as a workshop for the blind under the rules of the Committee for Purchase from People Who Are Blind or Severely Disabled; (5) The proposed contract action is for utility services other than telecommunications services and only one source is available; (6) The proposed contract action is an order placed under subpart 16.5. When the order contains brand-name specifications, see especially 16.505(a)(4); (7) The proposed contract action results from acceptance of a proposal under the Small Business Innovation Development Act of1982 (Pub.L.97-219); (8) The proposed contract action results from the acceptance of an unsolicited research proposal that demonstrates a unique and innovative concept (see 2.101) and publication of any notice complying with 5.207 would improperly disclose the originality of thought or innovativeness of the proposed research, or would disclose proprietary information associated with the proposal. This exception does not apply if the proposed contract action results from an unsolicited research proposal and acceptance is based solely upon the unique capability of the source to perform the particular research services proposed (see 6.302-1(a)(2)(i)); (9) The proposed contract action is made for perishable subsistence supplies, and advance notice is not appropriate or reasonable; (10) The proposed contract action is made under conditions described in 6.302-3, or 6.302-5 with regard to brand name commercial products for authorized resale, or 6.302-7, and advance notice is not appropriate or reasonable; (11) The proposed contract action is made under the terms of an existing contract that was previously synopsized in sufficient detail to comply with the requirements of 5.207 with respect to the current proposed contract action; (12) The proposed contract action is by a Defense agency and the proposed contract action will be made and performed outside the United States and its outlying areas, and only local sources will be solicited. This exception does not apply to proposed contract actions covered by the World Trade Organization Government Procurement Agreement or a Free Trade Agreement (see subpart 25.4); (13) The proposed contract action- (i) Is for an amount not expected to exceed the simplified acquisition threshold; (ii) Will be made through a means that provides access to the notice of proposed contract action through the GPE; and (iii) Permits the public to respond to the solicitation electronically; or (14) The proposed contract action is made under conditions described in 6.302-3 with respect to the services of an expert to support the Federal Government in any current or anticipated litigation or dispute."
+  },
+  {
+    "citation": "FAR-5.202(b)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "02",
+    "subsection": "",
+    "paragraph": "b",
+    "url": "https://www.acquisition.gov/far/5.202",
+    "cross_references": [],
+    "text": "(b) The head of the agency determines in writing, after consultation with the Administrator for Federal Procurement Policy and the Administrator of the Small Business Administration, that advance notice is not appropriate or reasonable."
+  },
+  {
+    "citation": "FAR-5.203",
+    "regulation": "FAR",
+    "type": "section",
+    "part": "5",
+    "subpart": "2",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "",
+    "url": "https://www.acquisition.gov/far/5.203",
+    "cross_references": [
+      {
+        "target": "5.201",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "Whenever agencies are required to publicize notice of proposed contract actions under <xref href=\"5.201.dita#FAR_5_201\">5.201</xref>, they must proceed as follows: (a) An agency must tran…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…(a) An agency must transmit a notice of proposed contract action to the GPE (see <xref href=\"5.201.dita#FAR_5_201\">5.201</xref>). All publicizing and response times are calculated based on the date of p…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…e for receipt of bids or proposals from the date of publication of the notice required in <xref href=\"5.201.dita#FAR_5_201\">5.201</xref> for proposed contract actions categorized as research and development if t…"
+          }
+        ]
+      },
+      {
+        "target": "6.302",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…e Government intends to solicit and negotiate with only one source under the authority of <xref href=\"6.302.dita#FAR_6_302\">6.302</xref>, except that, for acquisitions of commercial products or commercial servic…"
+          }
+        ]
+      },
+      {
+        "target": "12.603",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…r (2) Use the combined synopsis and solicitation procedure (see <xref href=\"12.603.dita#FAR_12_603\">12.603</xref>). (b) The contracting officer must establish a solicit…"
+          }
+        ]
+      },
+      {
+        "target": "5.203(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…(c) Except for the acquisition of commercial products or commercial services (see <xref href=\"#FAR_5_203\">5.203</xref>(b)), agencies shall allow at least a 30-day response time for receipt of bids…"
+          }
+        ]
+      },
+      {
+        "target": "5.202(a)(2)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…compelling to justify proceeding with the proposed contract action under the authority of <xref href=\"5.202.dita#FAR_5_202\">5.202</xref>(a)(2). (h) In addition to other requirements set forth in th…"
+          }
+        ]
+      },
+      {
+        "target": "subpart 25.4",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…World Trade Organization Government Procurement Agreement or a Free Trade Agreement (see <xref href=\"Subpart_25.4.dita#FAR_Subpart_25_4\">subpart 25.4</xref>), the period of time between publication of the synopsis notice and receip…"
+          }
+        ]
+      },
+      {
+        "target": "5.203(a)-(d)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…esumption does not negate the mandatory waiting or response times specified in paragraphs (a) through (d) of this section. Upon learning that a particular notice has not in fact be…"
+          }
+        ]
+      }
+    ],
+    "text": "Whenever agencies are required to publicize notice of proposed contract actions under 5.201, they must proceed as follows:\n(a) An agency must transmit a notice of proposed contract action to the GPE (see 5.201). All publicizing and response times are calculated based on the date of publication. The publication date is the date the notice appears on the GPE. The notice must be published at least 15 days before issuance of a solicitation, or a proposed contract action the Government intends to solicit and negotiate with only one source under the authority of 6.302, except that, for acquisitions of commercial products or commercial services, the contracting officer may- (1) Establish a shorter period for issuance of the solicitation; or (2) Use the combined synopsis and solicitation procedure (see 12.603).\n(b) The contracting officer must establish a solicitation response time that will afford potential offerors a reasonable opportunity to respond to each proposed contract action, (including actions where the notice of proposed contract action and solicitation information is accessible through the GPE), in an amount estimated to be greater than $25,000, but not greater than the simplified acquisition threshold; or each contract action for the acquisition of commercial products or commercial services in an amount estimated to be greater than $25,000. The contracting officer should consider the circumstances of the individual acquisition, such as the complexity, commerciality, availability, and urgency, when establishing the solicitation response time.\n(c) Except for the acquisition of commercial products or commercial services (see 5.203(b)), agencies shall allow at least a 30-day response time for receipt of bids or proposals from the date of issuance of a solicitation, if the proposed contract action is expected to exceed the simplified acquisition threshold.\n(d) Agencies shall allow at least a 30 day response time from the date of publication of a proper notice of intent to contract for architect-engineer services or before issuance of an order under a basic ordering agreement or similar arrangement if the proposed contract action is expected to exceed the simplified acquisition threshold.\n(e) Agencies must allow at least a 45-day response time for receipt of bids or proposals from the date of publication of the notice required in 5.201 for proposed contract actions categorized as research and development if the proposed contract action is expected to exceed the simplified acquisition threshold.\n(f) Nothing in this subpart prohibits officers or employees of agencies from responding to requests for information.\n(g) Contracting officers may, unless they have evidence to the contrary, presume the notice was published oneday after transmission to the GPE. This presumption does not negate the mandatory waiting or response times specified in paragraphs (a) through (d) of this section. Upon learning that a particular notice has not in fact been published within the presumed timeframes, contracting officers should consider whether the date for receipt of offers can be extended or whether circumstances have become sufficiently compelling to justify proceeding with the proposed contract action under the authority of 5.202(a)(2).\n(h) In addition to other requirements set forth in this section, for acquisitions covered by the World Trade Organization Government Procurement Agreement or a Free Trade Agreement (see subpart 25.4), the period of time between publication of the synopsis notice and receipt of offers must be no less than 40 days. However, if the acquisition falls within a general category identified in an annual forecast, the availability of which is published, the contracting officer may reduce this time period to as few as 10 days."
+  },
+  {
+    "citation": "FAR-5.203(a)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "a",
+    "url": "https://www.acquisition.gov/far/5.203",
+    "cross_references": [
+      {
+        "target": "5.201",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(a) An agency must transmit a notice of proposed contract action to the GPE (see <xref href=\"5.201.dita#FAR_5_201\">5.201</xref>). All publicizing and response times are calculated based on the date of p…"
+          }
+        ]
+      },
+      {
+        "target": "6.302",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…e Government intends to solicit and negotiate with only one source under the authority of <xref href=\"6.302.dita#FAR_6_302\">6.302</xref>, except that, for acquisitions of commercial products or commercial servic…"
+          }
+        ]
+      },
+      {
+        "target": "12.603",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…r (2) Use the combined synopsis and solicitation procedure (see <xref href=\"12.603.dita#FAR_12_603\">12.603</xref>)."
+          }
+        ]
+      }
+    ],
+    "text": "(a) An agency must transmit a notice of proposed contract action to the GPE (see 5.201). All publicizing and response times are calculated based on the date of publication. The publication date is the date the notice appears on the GPE. The notice must be published at least 15 days before issuance of a solicitation, or a proposed contract action the Government intends to solicit and negotiate with only one source under the authority of 6.302, except that, for acquisitions of commercial products or commercial services, the contracting officer may- (1) Establish a shorter period for issuance of the solicitation; or (2) Use the combined synopsis and solicitation procedure (see 12.603)."
+  },
+  {
+    "citation": "FAR-5.203(b)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "b",
+    "url": "https://www.acquisition.gov/far/5.203",
+    "cross_references": [],
+    "text": "(b) The contracting officer must establish a solicitation response time that will afford potential offerors a reasonable opportunity to respond to each proposed contract action, (including actions where the notice of proposed contract action and solicitation information is accessible through the GPE), in an amount estimated to be greater than $25,000, but not greater than the simplified acquisition threshold; or each contract action for the acquisition of commercial products or commercial services in an amount estimated to be greater than $25,000. The contracting officer should consider the circumstances of the individual acquisition, such as the complexity, commerciality, availability, and urgency, when establishing the solicitation response time."
+  },
+  {
+    "citation": "FAR-5.203(c)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "c",
+    "url": "https://www.acquisition.gov/far/5.203",
+    "cross_references": [
+      {
+        "target": "5.203(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…(c) Except for the acquisition of commercial products or commercial services (see <xref href=\"#FAR_5_203\">5.203</xref>(b)), agencies shall allow at least a 30-day response time for receipt of bids…"
+          }
+        ]
+      }
+    ],
+    "text": "(c) Except for the acquisition of commercial products or commercial services (see 5.203(b)), agencies shall allow at least a 30-day response time for receipt of bids or proposals from the date of issuance of a solicitation, if the proposed contract action is expected to exceed the simplified acquisition threshold."
+  },
+  {
+    "citation": "FAR-5.203(d)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "d",
+    "url": "https://www.acquisition.gov/far/5.203",
+    "cross_references": [],
+    "text": "(d) Agencies shall allow at least a 30 day response time from the date of publication of a proper notice of intent to contract for architect-engineer services or before issuance of an order under a basic ordering agreement or similar arrangement if the proposed contract action is expected to exceed the simplified acquisition threshold."
+  },
+  {
+    "citation": "FAR-5.203(e)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "e",
+    "url": "https://www.acquisition.gov/far/5.203",
+    "cross_references": [
+      {
+        "target": "5.201",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…e for receipt of bids or proposals from the date of publication of the notice required in <xref href=\"5.201.dita#FAR_5_201\">5.201</xref> for proposed contract actions categorized as research and development if t…"
+          }
+        ]
+      }
+    ],
+    "text": "(e) Agencies must allow at least a 45-day response time for receipt of bids or proposals from the date of publication of the notice required in 5.201 for proposed contract actions categorized as research and development if the proposed contract action is expected to exceed the simplified acquisition threshold."
+  },
+  {
+    "citation": "FAR-5.203(f)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "f",
+    "url": "https://www.acquisition.gov/far/5.203",
+    "cross_references": [],
+    "text": "(f) Nothing in this subpart prohibits officers or employees of agencies from responding to requests for information."
+  },
+  {
+    "citation": "FAR-5.203(g)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "g",
+    "url": "https://www.acquisition.gov/far/5.203",
+    "cross_references": [
+      {
+        "target": "5.202(a)(2)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…compelling to justify proceeding with the proposed contract action under the authority of <xref href=\"5.202.dita#FAR_5_202\">5.202</xref>(a)(2)."
+          }
+        ]
+      },
+      {
+        "target": "5.203(a)-(d)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…esumption does not negate the mandatory waiting or response times specified in paragraphs (a) through (d) of this section. Upon learning that a particular notice has not in fact be…"
+          }
+        ]
+      }
+    ],
+    "text": "(g) Contracting officers may, unless they have evidence to the contrary, presume the notice was published oneday after transmission to the GPE. This presumption does not negate the mandatory waiting or response times specified in paragraphs (a) through (d) of this section. Upon learning that a particular notice has not in fact been published within the presumed timeframes, contracting officers should consider whether the date for receipt of offers can be extended or whether circumstances have become sufficiently compelling to justify proceeding with the proposed contract action under the authority of 5.202(a)(2)."
+  },
+  {
+    "citation": "FAR-5.203(h)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "h",
+    "url": "https://www.acquisition.gov/far/5.203",
+    "cross_references": [
+      {
+        "target": "subpart 25.4",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…World Trade Organization Government Procurement Agreement or a Free Trade Agreement (see <xref href=\"Subpart_25.4.dita#FAR_Subpart_25_4\">subpart 25.4</xref>), the period of time between publication of the synopsis notice and receip…"
+          }
+        ]
+      }
+    ],
+    "text": "(h) In addition to other requirements set forth in this section, for acquisitions covered by the World Trade Organization Government Procurement Agreement or a Free Trade Agreement (see subpart 25.4), the period of time between publication of the synopsis notice and receipt of offers must be no less than 40 days. However, if the acquisition falls within a general category identified in an annual forecast, the availability of which is published, the contracting officer may reduce this time period to as few as 10 days."
+  },
+  {
+    "citation": "FAR-5.205",
+    "regulation": "FAR",
+    "type": "section",
+    "part": "5",
+    "subpart": "2",
+    "section": "05",
+    "subsection": "",
+    "paragraph": "",
+    "url": "https://www.acquisition.gov/far/5.205",
+    "cross_references": [
+      {
+        "target": "5.201",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…mation for evaluation of their R&D capabilities. Contracting officers must synopsize (see <xref href=\"5.201.dita#FAR_5_201\">5.201</xref>) all subsequent solicitations for R&D contracts, including those resulting…"
+          }
+        ]
+      },
+      {
+        "target": "5.202",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…se resulting from a previously synopsized advance notice, unless one of the exceptions in <xref href=\"5.202.dita#FAR_5_202\">5.202</xref> applies. (b) Federally Funded Resear…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…s follows: (1) Except when exempted by <xref href=\"5.202.dita#FAR_5_202\">5.202</xref>, contracting officers must transmit to the GPE a synopsis of each proposed…"
+          }
+        ]
+      },
+      {
+        "target": "part 35",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ters. Before establishing a Federally Funded Research and Development Center (FFRDC) (see <xref href=\"Part_35.dita#FAR_Part_35\">part 35</xref>) or before changing its basic purpose and mission, the sponsor must transm…"
+          }
+        ]
+      },
+      {
+        "target": "5.101(a)(2)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…pected to exceed $20,000 but not exceed $25,000, the contracting officer must comply with <xref href=\"5.101.dita#FAR_5_101\">5.101</xref>(a)(2). When the proposed contract action is not required to be synopsized under…"
+          }
+        ]
+      },
+      {
+        "target": "5.101(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…contracting office. Other optional publicizing methods are authorized in accordance with <xref href=\"5.101.dita#FAR_5_101\">5.101</xref>(b). (e) Public-private competitions un…"
+          }
+        ]
+      },
+      {
+        "target": "subpart 19.8",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…being considered for competitive acquisition limited to eligible 8(a) participants under <xref href=\"Subpart_19.8.dita#FAR_Subpart_19_8\">subpart 19.8</xref>, the contracting officer must transmit a synopsis of the proposed contract…"
+          }
+        ]
+      },
+      {
+        "target": "19.804-2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…psis may be transmitted to the GPE concurrent with submission of the agency offering (see <xref href=\"19.804-2.dita#FAR_19_804_2\">19.804-2</xref>) to the Small Business Administration (SBA). The synopsis should also incl…"
+          }
+        ]
+      },
+      {
+        "target": "7.107-5(c)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ish a notification of consolidation or substantial bundling of contract requirements, see <xref href=\"7.107-5.dita#FAR_7_107_5\">7.107-5</xref>(c) and (d). (2)…"
+          }
+        ]
+      },
+      {
+        "target": "7.107-5(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ed requirement to the GPE before issuing the solicitation of any bundled requirement (see <xref href=\"7.107-5.dita#FAR_7_107_5\">7.107-5</xref>(b)). (h) Notice…"
+          }
+        ]
+      },
+      {
+        "target": "36.211",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…able adjustments for change orders under construction contracts (see <xref href=\"36.211.dita#FAR_36_211\">36.211</xref>)."
+          }
+        ]
+      },
+      {
+        "target": "5.205(d)(1)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ith 5.101(a)(2). When the proposed contract action is not required to be synopsized under paragraph (d)(1) of this section, the contracting officer must display a notice of the solicitation or a co…"
+          }
+        ]
+      }
+    ],
+    "text": "(a) Research and development (R&D) advance notices. Contracting officers may transmit to the GPE advance notices of their interest in potential R&D programs whenever market research does not produce a sufficient number of concerns to obtain adequate competition. Advance notices must not be used where security considerations prohibit such publication. Advance notices will enable potential sources to learn of R&D programs and provide these sources with an opportunity to submit information which will permit evaluation of their capabilities. Contracting officers must consider potential sources which respond to advance notices for a subsequent solicitation. Advanced notices must be entitled \"Research and Development Sources Sought\" and include the name and telephone number of the contracting officer or other contracting activity official from whom technical details of the project can be obtained. This will enable sources to submit information for evaluation of their R&D capabilities. Contracting officers must synopsize (see 5.201) all subsequent solicitations for R&D contracts, including those resulting from a previously synopsized advance notice, unless one of the exceptions in 5.202 applies.\n(b) Federally Funded Research and Development Centers. Before establishing a Federally Funded Research and Development Center (FFRDC) (see part 35) or before changing its basic purpose and mission, the sponsor must transmit at least three notices over a 90-day period to the GPE and the Federal Register, indicating the agency’s intention to sponsor an FFRDC or change the basic purpose and mission of an FFRDC. The notice must indicate the scope and nature of the effort to be performed and request comments. Notice is not required where the action is required by law.\n(c) Special notices. Contracting officers may transmit to the GPE special notices of procurement matters such as business fairs, long-range procurement estimates, prebid or preproposal conferences, meetings, and the availability of draft solicitations or draft specifications for review.\n(d) Architect-engineering services. Contracting officers must publish notices of intent to contract for architect-engineering services as follows: (1) Except when exempted by 5.202, contracting officers must transmit to the GPE a synopsis of each proposed contract action for which the total fee (including phases and options) is expected to exceed $25,000. (2) When the total fee is expected to exceed $20,000 but not exceed $25,000, the contracting officer must comply with 5.101(a)(2). When the proposed contract action is not required to be synopsized under paragraph (d)(1) of this section, the contracting officer must display a notice of the solicitation or a copy of the solicitation in a public place at the contracting office. Other optional publicizing methods are authorized in accordance with 5.101(b).\n(e) Public-private competitions under OMB Circular A-76. (1) The contracting officer shall make a formal public announcement for each streamlined or standard competition. The public announcement shall include, at a minimum, the agency, agency component, location, type of competition (streamlined or standard), activity being competed, incumbent service providers, number of Government personnel performing the activity, name of the Competitive Sourcing Official, name of the contracting officer, name of the Agency Tender Official, and projected end date of the competition. (2) The contracting officer shall announce the end of the streamlined or standard competition by making a formal public announcement of the performance decision. (See OMB Circular A-76.)\n(f) Section8(a) competitive acquisition. When a requirement is being considered for competitive acquisition limited to eligible 8(a) participants under subpart 19.8, the contracting officer must transmit a synopsis of the proposed contract action to the GPE. The synopsis may be transmitted to the GPE concurrent with submission of the agency offering (see 19.804-2) to the Small Business Administration (SBA). The synopsis should also include information- (1) Advising that the acquisition is being offered for competition limited to eligible 8(a) participants; (2) Specifying the North American Industry Classification System (NAICS) code; (3) Advising that eligibility to participate may be restricted to 8(a) participants in either the developmental stage or the developmental and transitional stages; and (4) Encouraging interested 8(a) participants to request a copy of the solicitation as expeditiously as possible since the solicitation will be issued without further notice upon SBA acceptance of the requirement for the section 8(a) program.\n(g) Notifications to the public regarding consolidation, bundling, or substantial bundling. (1) For the requirement to publish a notification of consolidation or substantial bundling of contract requirements, see 7.107-5(c) and (d). (2) The agency is encouraged to provide notification of the rationale for any bundled requirement to the GPE before issuing the solicitation of any bundled requirement (see 7.107-5(b)).\n(h) Notice regarding timely definitization of equitable adjustments for change orders under construction contracts. When the contracting officer anticipates award of a contract to a small business pursuant to a solicitation for construction, the contracting officer must transmit in the solicitation notice on the GPE information regarding definitization of equitable adjustments for change orders under construction contracts (see 36.211)."
+  },
+  {
+    "citation": "FAR-5.205(a)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "05",
+    "subsection": "",
+    "paragraph": "a",
+    "url": "https://www.acquisition.gov/far/5.205",
+    "cross_references": [
+      {
+        "target": "5.201",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…mation for evaluation of their R&D capabilities. Contracting officers must synopsize (see <xref href=\"5.201.dita#FAR_5_201\">5.201</xref>) all subsequent solicitations for R&D contracts, including those resulting…"
+          }
+        ]
+      },
+      {
+        "target": "5.202",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…se resulting from a previously synopsized advance notice, unless one of the exceptions in <xref href=\"5.202.dita#FAR_5_202\">5.202</xref> applies."
+          }
+        ]
+      }
+    ],
+    "text": "(a) Research and development (R&D) advance notices. Contracting officers may transmit to the GPE advance notices of their interest in potential R&D programs whenever market research does not produce a sufficient number of concerns to obtain adequate competition. Advance notices must not be used where security considerations prohibit such publication. Advance notices will enable potential sources to learn of R&D programs and provide these sources with an opportunity to submit information which will permit evaluation of their capabilities. Contracting officers must consider potential sources which respond to advance notices for a subsequent solicitation. Advanced notices must be entitled \"Research and Development Sources Sought\" and include the name and telephone number of the contracting officer or other contracting activity official from whom technical details of the project can be obtained. This will enable sources to submit information for evaluation of their R&D capabilities. Contracting officers must synopsize (see 5.201) all subsequent solicitations for R&D contracts, including those resulting from a previously synopsized advance notice, unless one of the exceptions in 5.202 applies."
+  },
+  {
+    "citation": "FAR-5.205(b)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "05",
+    "subsection": "",
+    "paragraph": "b",
+    "url": "https://www.acquisition.gov/far/5.205",
+    "cross_references": [
+      {
+        "target": "part 35",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ters. Before establishing a Federally Funded Research and Development Center (FFRDC) (see <xref href=\"Part_35.dita#FAR_Part_35\">part 35</xref>) or before changing its basic purpose and mission, the sponsor must transm…"
+          }
+        ]
+      }
+    ],
+    "text": "(b) Federally Funded Research and Development Centers. Before establishing a Federally Funded Research and Development Center (FFRDC) (see part 35) or before changing its basic purpose and mission, the sponsor must transmit at least three notices over a 90-day period to the GPE and the Federal Register, indicating the agency’s intention to sponsor an FFRDC or change the basic purpose and mission of an FFRDC. The notice must indicate the scope and nature of the effort to be performed and request comments. Notice is not required where the action is required by law."
+  },
+  {
+    "citation": "FAR-5.205(c)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "05",
+    "subsection": "",
+    "paragraph": "c",
+    "url": "https://www.acquisition.gov/far/5.205",
+    "cross_references": [],
+    "text": "(c) Special notices. Contracting officers may transmit to the GPE special notices of procurement matters such as business fairs, long-range procurement estimates, prebid or preproposal conferences, meetings, and the availability of draft solicitations or draft specifications for review."
+  },
+  {
+    "citation": "FAR-5.205(d)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "05",
+    "subsection": "",
+    "paragraph": "d",
+    "url": "https://www.acquisition.gov/far/5.205",
+    "cross_references": [
+      {
+        "target": "5.202",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…s follows: (1) Except when exempted by <xref href=\"5.202.dita#FAR_5_202\">5.202</xref>, contracting officers must transmit to the GPE a synopsis of each proposed…"
+          }
+        ]
+      },
+      {
+        "target": "5.101(a)(2)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…pected to exceed $20,000 but not exceed $25,000, the contracting officer must comply with <xref href=\"5.101.dita#FAR_5_101\">5.101</xref>(a)(2). When the proposed contract action is not required to be synopsized under…"
+          }
+        ]
+      },
+      {
+        "target": "5.101(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…contracting office. Other optional publicizing methods are authorized in accordance with <xref href=\"5.101.dita#FAR_5_101\">5.101</xref>(b)."
+          }
+        ]
+      },
+      {
+        "target": "5.205(d)(1)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ith 5.101(a)(2). When the proposed contract action is not required to be synopsized under paragraph (d)(1) of this section, the contracting officer must display a notice of the solicitation or a co…"
+          }
+        ]
+      }
+    ],
+    "text": "(d) Architect-engineering services. Contracting officers must publish notices of intent to contract for architect-engineering services as follows: (1) Except when exempted by 5.202, contracting officers must transmit to the GPE a synopsis of each proposed contract action for which the total fee (including phases and options) is expected to exceed $25,000. (2) When the total fee is expected to exceed $20,000 but not exceed $25,000, the contracting officer must comply with 5.101(a)(2). When the proposed contract action is not required to be synopsized under paragraph (d)(1) of this section, the contracting officer must display a notice of the solicitation or a copy of the solicitation in a public place at the contracting office. Other optional publicizing methods are authorized in accordance with 5.101(b)."
+  },
+  {
+    "citation": "FAR-5.205(e)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "05",
+    "subsection": "",
+    "paragraph": "e",
+    "url": "https://www.acquisition.gov/far/5.205",
+    "cross_references": [],
+    "text": "(e) Public-private competitions under OMB Circular A-76. (1) The contracting officer shall make a formal public announcement for each streamlined or standard competition. The public announcement shall include, at a minimum, the agency, agency component, location, type of competition (streamlined or standard), activity being competed, incumbent service providers, number of Government personnel performing the activity, name of the Competitive Sourcing Official, name of the contracting officer, name of the Agency Tender Official, and projected end date of the competition. (2) The contracting officer shall announce the end of the streamlined or standard competition by making a formal public announcement of the performance decision. (See OMB Circular A-76.)"
+  },
+  {
+    "citation": "FAR-5.205(f)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "05",
+    "subsection": "",
+    "paragraph": "f",
+    "url": "https://www.acquisition.gov/far/5.205",
+    "cross_references": [
+      {
+        "target": "subpart 19.8",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…being considered for competitive acquisition limited to eligible 8(a) participants under <xref href=\"Subpart_19.8.dita#FAR_Subpart_19_8\">subpart 19.8</xref>, the contracting officer must transmit a synopsis of the proposed contract…"
+          }
+        ]
+      },
+      {
+        "target": "19.804-2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…psis may be transmitted to the GPE concurrent with submission of the agency offering (see <xref href=\"19.804-2.dita#FAR_19_804_2\">19.804-2</xref>) to the Small Business Administration (SBA). The synopsis should also incl…"
+          }
+        ]
+      }
+    ],
+    "text": "(f) Section8(a) competitive acquisition. When a requirement is being considered for competitive acquisition limited to eligible 8(a) participants under subpart 19.8, the contracting officer must transmit a synopsis of the proposed contract action to the GPE. The synopsis may be transmitted to the GPE concurrent with submission of the agency offering (see 19.804-2) to the Small Business Administration (SBA). The synopsis should also include information- (1) Advising that the acquisition is being offered for competition limited to eligible 8(a) participants; (2) Specifying the North American Industry Classification System (NAICS) code; (3) Advising that eligibility to participate may be restricted to 8(a) participants in either the developmental stage or the developmental and transitional stages; and (4) Encouraging interested 8(a) participants to request a copy of the solicitation as expeditiously as possible since the solicitation will be issued without further notice upon SBA acceptance of the requirement for the section 8(a) program."
+  },
+  {
+    "citation": "FAR-5.205(g)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "05",
+    "subsection": "",
+    "paragraph": "g",
+    "url": "https://www.acquisition.gov/far/5.205",
+    "cross_references": [
+      {
+        "target": "7.107-5(c)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ish a notification of consolidation or substantial bundling of contract requirements, see <xref href=\"7.107-5.dita#FAR_7_107_5\">7.107-5</xref>(c) and (d). (2)…"
+          }
+        ]
+      },
+      {
+        "target": "7.107-5(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ed requirement to the GPE before issuing the solicitation of any bundled requirement (see <xref href=\"7.107-5.dita#FAR_7_107_5\">7.107-5</xref>(b))."
+          }
+        ]
+      }
+    ],
+    "text": "(g) Notifications to the public regarding consolidation, bundling, or substantial bundling. (1) For the requirement to publish a notification of consolidation or substantial bundling of contract requirements, see 7.107-5(c) and (d). (2) The agency is encouraged to provide notification of the rationale for any bundled requirement to the GPE before issuing the solicitation of any bundled requirement (see 7.107-5(b))."
+  },
+  {
+    "citation": "FAR-5.205(h)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "05",
+    "subsection": "",
+    "paragraph": "h",
+    "url": "https://www.acquisition.gov/far/5.205",
+    "cross_references": [
+      {
+        "target": "36.211",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…able adjustments for change orders under construction contracts (see <xref href=\"36.211.dita#FAR_36_211\">36.211</xref>)."
+          }
+        ]
+      }
+    ],
+    "text": "(h) Notice regarding timely definitization of equitable adjustments for change orders under construction contracts. When the contracting officer anticipates award of a contract to a small business pursuant to a solicitation for construction, the contracting officer must transmit in the solicitation notice on the GPE information regarding definitization of equitable adjustments for change orders under construction contracts (see 36.211)."
+  },
+  {
+    "citation": "FAR-5.207",
+    "regulation": "FAR",
+    "type": "section",
+    "part": "5",
+    "subpart": "2",
+    "section": "07",
+    "subsection": "",
+    "paragraph": "",
+    "url": "https://www.acquisition.gov/far/5.207",
+    "cross_references": [
+      {
+        "target": "subpart 9.2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…rom which additional information about the qualification requirement may be obtained (see <xref href=\"Subpart_9.2.dita#FAR_Subpart_9_2\">subpart 9.2</xref>). (3) Manufacturer, including part number, drawi…"
+          }
+        ]
+      },
+      {
+        "target": "part 23",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…es required, if for design, construction, renovation, repair, or deconstruction (see part <xref href=\"Part_23.dita#FAR_Part_23\">23</xref> and 36.104). (12) For a pr…"
+          }
+        ]
+      },
+      {
+        "target": "36.104",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ired, if for design, construction, renovation, repair, or deconstruction (see part 23 and <xref href=\"36.104.dita#FAR_36_104\">36.104</xref>). (12) For a proposed cont…"
+          }
+        ]
+      },
+      {
+        "target": "52.225-3",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(i) If the solicitation will include the FAR clause at <xref href=\"52.225-3.dita#FAR_52_225_3\">52.225-3</xref>, Buy American-Free Trade Agreements-Israeli Trade Act, or an equivalent ag…"
+          }
+        ]
+      },
+      {
+        "target": "52.225-5",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…\" (ii) If the solicitation will include the FAR clause at <xref href=\"52.225-5.dita#FAR_52_225_5\">52.225-5</xref>, Trade Agreements, or an equivalent agency clause, insert the following no…"
+          }
+        ]
+      },
+      {
+        "target": "52.225-11",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(iii) If the solicitation will include the FAR clause at <xref href=\"52.225-11.dita#FAR_52_225_11\">52.225-11</xref>, Buy American-Construction Materials under Trade Agreements, 52.225-23, Re…"
+          }
+        ]
+      },
+      {
+        "target": "52.225-23",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…the FAR clause at 52.225-11, Buy American-Construction Materials under Trade Agreements, <xref href=\"52.225-23.dita#FAR_52_225_23\">52.225-23</xref>, Required Use of American Iron, Steel, and Manufactured Goods-Buy American…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-1",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(i) Except when using the sole source authority at <xref href=\"6.302-1.dita#FAR_6_302_1\">6.302-1</xref>, insert a statement that all responsible sources may submit a bid, proposa…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…the agency. (ii) When using the sole source authority at <xref href=\"6.302-1.dita#FAR_6_302_1\">6.302-1</xref>, insert a statement that all responsible sources may submit a capability s…"
+          }
+        ]
+      },
+      {
+        "target": "subpart 26.2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…gram set-aside, or when the proposed acquisition provides for a local area set-aside (see <xref href=\"Subpart_26.2.dita#FAR_Subpart_26_2\">subpart 26.2</xref>), the contracting officer shall identify the type of set-aside in the syno…"
+          }
+        ]
+      }
+    ],
+    "text": "(a) Content. Each synopsis transmitted to the GPE must address the following data elements, as applicable: (1) Action Code. (2) Date. (3) Year. (4) Contracting Office ZIP Code. (5) Product or Service Code. (6) Contracting Office Address. (7) Subject. (8) Proposed Solicitation Number. (9) Closing Response Date. (10) Contact Point or Contracting Officer. (11) Contract Award and Solicitation Number. (12) Contract Award Dollar Amount. (13) Line Item Number. (14) Contract Award Date. (15) Contractor. (16) Description. (17) Place of Contract Performance. (18) Set-aside Status.\n(b) Transmittal. Transmissions to the GPE must be in accordance with the interface description available via the Internet at https://www.sam.gov.\n(c) General format for \"Description.\" Prepare a clear and concise description of the supplies or services that is not unnecessarily restrictive of competition and will allow a prospective offeror to make an informed business judgment as to whether a copy of the solicitation should be requested including the following, as appropriate: (1) National Stock Number (NSN) if assigned. (2) Specification and whether an offeror, its product, or service must meet a qualification requirement in order to be eligible for award, and identification of the office from which additional information about the qualification requirement may be obtained (see subpart 9.2). (3) Manufacturer, including part number, drawing number, etc. (4) Size, dimensions, or other form, fit or functional description. (5) Predominant material of manufacture. (6) Quantity, including any options for additional quantities. (7) Unit of issue. (8) Destination information. (9) Delivery schedule. (10) Duration of the contract period. (11) Sustainable acquisition requirements, such as a description of high-performance sustainable building practices required, if for design, construction, renovation, repair, or deconstruction (see part 23 and 36.104). (12) For a proposed contract action in an amount estimated to be greater than $25,000 but not greater than the simplified acquisition threshold, enter- (i) A description of the procedures to be used in awarding the contract (e.g., request for oral or written quotation or solicitation); and (ii) The anticipated award date. (13) For Architect-Engineer projects and other projects for which the product or service codes are insufficient, provide brief details with respect to: location, scope of services required, cost range and limitations, type of contract, estimated starting and completion dates, and any significant evaluation factors. (14) (i) If the solicitation will include the FAR clause at 52.225-3, Buy American-Free Trade Agreements-Israeli Trade Act, or an equivalent agency clause, insert the following notice in the synopsis: \"One or more of the items under this acquisition is subject to Free Trade Agreements.\" (ii) If the solicitation will include the FAR clause at 52.225-5, Trade Agreements, or an equivalent agency clause, insert the following notice in the synopsis: \"One or more of the items under this acquisition is subject to the World Trade Organization Government Procurement Agreement and Free Trade Agreements.\" (iii) If the solicitation will include the FAR clause at 52.225-11, Buy American-Construction Materials under Trade Agreements, 52.225-23, Required Use of American Iron, Steel, and Manufactured Goods-Buy American Statute-Construction Materials under Trade Agreements, or an equivalent agency clause, insert the following notice in the synopsis: \"One or more of the items under this acquisition is subject to the World Trade Organization Government Procurement Agreement and Free Trade Agreements.\" (15) In the case of noncompetitive contract actions (including those that do not exceed the simplified acquisition threshold), identify the intended source and insert a statement of the reason justifying the lack of competition. (16) (i) Except when using the sole source authority at 6.302-1, insert a statement that all responsible sources may submit a bid, proposal, or quotation which shall be considered by the agency. (ii) When using the sole source authority at 6.302-1, insert a statement that all responsible sources may submit a capability statement, proposal, or quotation, which shall be considered by the agency. (17) If solicitations synopsized through the GPE will not be made available through the GPE, provide information on how to obtain the solicitation. (18) If the solicitation will be made available to interested parties through electronic data interchange, provide any information necessary to obtain and respond to the solicitation electronically. (19) If the technical data required to respond to the solicitation will not be furnished as part of such solicitation, identify the source in the Government, such as https://www.sam.gov, from which the technical data may be obtained.\n(d) Set-asides. When the proposed acquisition provides for a total or partial small business program set-aside, or when the proposed acquisition provides for a local area set-aside (see subpart 26.2), the contracting officer shall identify the type of set-aside in the synopsis and in the solicitation.\n(e) Codes to be used in Synopses to identify services or supplies. Contracting officers must use one of the classification codes identified at https://www.sam.gov to identify services or supplies in synopses.\n(f) Notice of solicitation cancellation. Contracting officers may publish notices of solicitation cancellations (or indefinite suspensions) of proposed contract actions in the GPE."
+  },
+  {
+    "citation": "FAR-5.207(a)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "07",
+    "subsection": "",
+    "paragraph": "a",
+    "url": "https://www.acquisition.gov/far/5.207",
+    "cross_references": [],
+    "text": "(a) Content. Each synopsis transmitted to the GPE must address the following data elements, as applicable: (1) Action Code. (2) Date. (3) Year. (4) Contracting Office ZIP Code. (5) Product or Service Code. (6) Contracting Office Address. (7) Subject. (8) Proposed Solicitation Number. (9) Closing Response Date. (10) Contact Point or Contracting Officer. (11) Contract Award and Solicitation Number. (12) Contract Award Dollar Amount. (13) Line Item Number. (14) Contract Award Date. (15) Contractor. (16) Description. (17) Place of Contract Performance. (18) Set-aside Status."
+  },
+  {
+    "citation": "FAR-5.207(b)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "07",
+    "subsection": "",
+    "paragraph": "b",
+    "url": "https://www.acquisition.gov/far/5.207",
+    "cross_references": [],
+    "text": "(b) Transmittal. Transmissions to the GPE must be in accordance with the interface description available via the Internet at https://www.sam.gov."
+  },
+  {
+    "citation": "FAR-5.207(c)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "07",
+    "subsection": "",
+    "paragraph": "c",
+    "url": "https://www.acquisition.gov/far/5.207",
+    "cross_references": [
+      {
+        "target": "subpart 9.2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…rom which additional information about the qualification requirement may be obtained (see <xref href=\"Subpart_9.2.dita#FAR_Subpart_9_2\">subpart 9.2</xref>). (3) Manufacturer, including part number, drawi…"
+          }
+        ]
+      },
+      {
+        "target": "part 23",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…es required, if for design, construction, renovation, repair, or deconstruction (see part <xref href=\"Part_23.dita#FAR_Part_23\">23</xref> and 36.104). (12) For a pr…"
+          }
+        ]
+      },
+      {
+        "target": "36.104",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ired, if for design, construction, renovation, repair, or deconstruction (see part 23 and <xref href=\"36.104.dita#FAR_36_104\">36.104</xref>). (12) For a proposed cont…"
+          }
+        ]
+      },
+      {
+        "target": "52.225-3",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(i) If the solicitation will include the FAR clause at <xref href=\"52.225-3.dita#FAR_52_225_3\">52.225-3</xref>, Buy American-Free Trade Agreements-Israeli Trade Act, or an equivalent ag…"
+          }
+        ]
+      },
+      {
+        "target": "52.225-5",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…\" (ii) If the solicitation will include the FAR clause at <xref href=\"52.225-5.dita#FAR_52_225_5\">52.225-5</xref>, Trade Agreements, or an equivalent agency clause, insert the following no…"
+          }
+        ]
+      },
+      {
+        "target": "52.225-11",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(iii) If the solicitation will include the FAR clause at <xref href=\"52.225-11.dita#FAR_52_225_11\">52.225-11</xref>, Buy American-Construction Materials under Trade Agreements, 52.225-23, Re…"
+          }
+        ]
+      },
+      {
+        "target": "52.225-23",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…the FAR clause at 52.225-11, Buy American-Construction Materials under Trade Agreements, <xref href=\"52.225-23.dita#FAR_52_225_23\">52.225-23</xref>, Required Use of American Iron, Steel, and Manufactured Goods-Buy American…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-1",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(i) Except when using the sole source authority at <xref href=\"6.302-1.dita#FAR_6_302_1\">6.302-1</xref>, insert a statement that all responsible sources may submit a bid, proposa…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…the agency. (ii) When using the sole source authority at <xref href=\"6.302-1.dita#FAR_6_302_1\">6.302-1</xref>, insert a statement that all responsible sources may submit a capability s…"
+          }
+        ]
+      }
+    ],
+    "text": "(c) General format for \"Description.\" Prepare a clear and concise description of the supplies or services that is not unnecessarily restrictive of competition and will allow a prospective offeror to make an informed business judgment as to whether a copy of the solicitation should be requested including the following, as appropriate: (1) National Stock Number (NSN) if assigned. (2) Specification and whether an offeror, its product, or service must meet a qualification requirement in order to be eligible for award, and identification of the office from which additional information about the qualification requirement may be obtained (see subpart 9.2). (3) Manufacturer, including part number, drawing number, etc. (4) Size, dimensions, or other form, fit or functional description. (5) Predominant material of manufacture. (6) Quantity, including any options for additional quantities. (7) Unit of issue. (8) Destination information. (9) Delivery schedule. (10) Duration of the contract period. (11) Sustainable acquisition requirements, such as a description of high-performance sustainable building practices required, if for design, construction, renovation, repair, or deconstruction (see part 23 and 36.104). (12) For a proposed contract action in an amount estimated to be greater than $25,000 but not greater than the simplified acquisition threshold, enter- (i) A description of the procedures to be used in awarding the contract (e.g., request for oral or written quotation or solicitation); and (ii) The anticipated award date. (13) For Architect-Engineer projects and other projects for which the product or service codes are insufficient, provide brief details with respect to: location, scope of services required, cost range and limitations, type of contract, estimated starting and completion dates, and any significant evaluation factors. (14) (i) If the solicitation will include the FAR clause at 52.225-3, Buy American-Free Trade Agreements-Israeli Trade Act, or an equivalent agency clause, insert the following notice in the synopsis: \"One or more of the items under this acquisition is subject to Free Trade Agreements.\" (ii) If the solicitation will include the FAR clause at 52.225-5, Trade Agreements, or an equivalent agency clause, insert the following notice in the synopsis: \"One or more of the items under this acquisition is subject to the World Trade Organization Government Procurement Agreement and Free Trade Agreements.\" (iii) If the solicitation will include the FAR clause at 52.225-11, Buy American-Construction Materials under Trade Agreements, 52.225-23, Required Use of American Iron, Steel, and Manufactured Goods-Buy American Statute-Construction Materials under Trade Agreements, or an equivalent agency clause, insert the following notice in the synopsis: \"One or more of the items under this acquisition is subject to the World Trade Organization Government Procurement Agreement and Free Trade Agreements.\" (15) In the case of noncompetitive contract actions (including those that do not exceed the simplified acquisition threshold), identify the intended source and insert a statement of the reason justifying the lack of competition. (16) (i) Except when using the sole source authority at 6.302-1, insert a statement that all responsible sources may submit a bid, proposal, or quotation which shall be considered by the agency. (ii) When using the sole source authority at 6.302-1, insert a statement that all responsible sources may submit a capability statement, proposal, or quotation, which shall be considered by the agency. (17) If solicitations synopsized through the GPE will not be made available through the GPE, provide information on how to obtain the solicitation. (18) If the solicitation will be made available to interested parties through electronic data interchange, provide any information necessary to obtain and respond to the solicitation electronically. (19) If the technical data required to respond to the solicitation will not be furnished as part of such solicitation, identify the source in the Government, such as https://www.sam.gov, from which the technical data may be obtained."
+  },
+  {
+    "citation": "FAR-5.207(d)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "07",
+    "subsection": "",
+    "paragraph": "d",
+    "url": "https://www.acquisition.gov/far/5.207",
+    "cross_references": [
+      {
+        "target": "subpart 26.2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…gram set-aside, or when the proposed acquisition provides for a local area set-aside (see <xref href=\"Subpart_26.2.dita#FAR_Subpart_26_2\">subpart 26.2</xref>), the contracting officer shall identify the type of set-aside in the syno…"
+          }
+        ]
+      }
+    ],
+    "text": "(d) Set-asides. When the proposed acquisition provides for a total or partial small business program set-aside, or when the proposed acquisition provides for a local area set-aside (see subpart 26.2), the contracting officer shall identify the type of set-aside in the synopsis and in the solicitation."
+  },
+  {
+    "citation": "FAR-5.207(e)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "07",
+    "subsection": "",
+    "paragraph": "e",
+    "url": "https://www.acquisition.gov/far/5.207",
+    "cross_references": [],
+    "text": "(e) Codes to be used in Synopses to identify services or supplies. Contracting officers must use one of the classification codes identified at https://www.sam.gov to identify services or supplies in synopses."
+  },
+  {
+    "citation": "FAR-5.207(f)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "5",
+    "subpart": "2",
+    "section": "07",
+    "subsection": "",
+    "paragraph": "f",
+    "url": "https://www.acquisition.gov/far/5.207",
+    "cross_references": [],
+    "text": "(f) Notice of solicitation cancellation. Contracting officers may publish notices of solicitation cancellations (or indefinite suspensions) of proposed contract actions in the GPE."
+  },
+  {
+    "citation": "FAR-6.302-2",
+    "regulation": "FAR",
+    "type": "subsection",
+    "part": "6",
+    "subpart": "3",
+    "section": "02",
+    "subsection": "2",
+    "paragraph": "",
+    "url": "https://www.acquisition.gov/far/6.302-2",
+    "cross_references": [
+      {
+        "target": "6.303",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…his authority shall be supported by the written justifications and approvals described in <xref href=\"6.303.dita#FAR_6_303\">6.303</xref> and 6.304. These justifications may be made and approved after contract aw…"
+          }
+        ]
+      },
+      {
+        "target": "6.304",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ity shall be supported by the written justifications and approvals described in 6.303 and <xref href=\"6.304.dita#FAR_6_304\">6.304</xref>. These justifications may be made and approved after contract award when p…"
+          },
+          {
+            "kind": "explicit",
+            "context": "…ation of exceptional circumstances is in addition to the approval of the justification in <xref href=\"6.304.dita#FAR_6_304\">6.304</xref>. (5)…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-2(d)(1)(ii)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ot apply to the exercise of options previously addressed in the determination required at paragraph (d)(1)(ii) of this section. (ii)…"
+          }
+        ]
+      }
+    ],
+    "text": "(a) Authority. (1) Citations: 10 U.S.C. 3204(a)(2) or 41 U.S.C. 3304(a)(2). (2) When the agency’s need for the supplies or services is of such an unusual and compelling urgency that the Government would be seriously injured unless the agency is permitted to limit the number of sources from which it solicits bids or proposals, full and open competition need not be provided for.\n(b) Application. This authority applies in those situations where- (1) An unusual and compelling urgency precludes full and open competition; and (2) Delay in award of a contract would result in serious injury, financial or other, to the Government.\n(c) Limitations. (1) Contracts awarded using this authority shall be supported by the written justifications and approvals described in 6.303 and 6.304. These justifications may be made and approved after contract award when preparation and approval prior to award would unreasonably delay the acquisition. (2) This statutory authority requires that agencies shall request offers from as many potential sources as is practicable under the circumstances.\n(d) Period of Performance. (1) The total period of performance of a contract awarded or modified using this authority- (i) May not exceed the time necessary- (A) To meet the unusual and compelling requirements of the work to be performed under the contract; and (B) For the agency to enter into another contract for the required goods and services through the use of competitive procedures; and (ii) May not exceed one year, including all options, unless the head of the agency determines that exceptional circumstances apply. This determination must be documented in the contract file. (2) (i) Any subsequent modification using this authority, which will extend the period of performance beyond one year under this same authority, requires a separate determination. This determination is only required if the cumulative period of performance using this authority exceeds one year. This requirement does not apply to the exercise of options previously addressed in the determination required at paragraph (d)(1)(ii) of this section. (ii) The determination shall be approved at the same level as the level to which the agency head authority in paragraph (d)(1)(ii)of this section is delegated. (3) The requirements in paragraphs (d)(1) and (2) of this section shall apply to any contract in an amount greater than the simplified acquisition threshold. (4) The determination of exceptional circumstances is in addition to the approval of the justification in 6.304. (5) The determination may be made after contract award when making the determination prior to award would unreasonably delay the acquisition."
+  },
+  {
+    "citation": "FAR-6.302-2(a)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "6",
+    "subpart": "3",
+    "section": "02",
+    "subsection": "2",
+    "paragraph": "a",
+    "url": "https://www.acquisition.gov/far/6.302-2",
+    "cross_references": [],
+    "text": "(a) Authority. (1) Citations: 10 U.S.C. 3204(a)(2) or 41 U.S.C. 3304(a)(2). (2) When the agency’s need for the supplies or services is of such an unusual and compelling urgency that the Government would be seriously injured unless the agency is permitted to limit the number of sources from which it solicits bids or proposals, full and open competition need not be provided for."
+  },
+  {
+    "citation": "FAR-6.302-2(b)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "6",
+    "subpart": "3",
+    "section": "02",
+    "subsection": "2",
+    "paragraph": "b",
+    "url": "https://www.acquisition.gov/far/6.302-2",
+    "cross_references": [],
+    "text": "(b) Application. This authority applies in those situations where- (1) An unusual and compelling urgency precludes full and open competition; and (2) Delay in award of a contract would result in serious injury, financial or other, to the Government."
+  },
+  {
+    "citation": "FAR-6.302-2(c)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "6",
+    "subpart": "3",
+    "section": "02",
+    "subsection": "2",
+    "paragraph": "c",
+    "url": "https://www.acquisition.gov/far/6.302-2",
+    "cross_references": [
+      {
+        "target": "6.303",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…his authority shall be supported by the written justifications and approvals described in <xref href=\"6.303.dita#FAR_6_303\">6.303</xref> and 6.304. These justifications may be made and approved after contract aw…"
+          }
+        ]
+      },
+      {
+        "target": "6.304",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ity shall be supported by the written justifications and approvals described in 6.303 and <xref href=\"6.304.dita#FAR_6_304\">6.304</xref>. These justifications may be made and approved after contract award when p…"
+          }
+        ]
+      }
+    ],
+    "text": "(c) Limitations. (1) Contracts awarded using this authority shall be supported by the written justifications and approvals described in 6.303 and 6.304. These justifications may be made and approved after contract award when preparation and approval prior to award would unreasonably delay the acquisition. (2) This statutory authority requires that agencies shall request offers from as many potential sources as is practicable under the circumstances."
+  },
+  {
+    "citation": "FAR-6.302-2(d)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "6",
+    "subpart": "3",
+    "section": "02",
+    "subsection": "2",
+    "paragraph": "d",
+    "url": "https://www.acquisition.gov/far/6.302-2",
+    "cross_references": [
+      {
+        "target": "6.304",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ation of exceptional circumstances is in addition to the approval of the justification in <xref href=\"6.304.dita#FAR_6_304\">6.304</xref>. (5)…"
+          }
+        ]
+      },
+      {
+        "target": "6.302-2(d)(1)(ii)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…ot apply to the exercise of options previously addressed in the determination required at paragraph (d)(1)(ii) of this section. (ii)…"
+          }
+        ]
+      }
+    ],
+    "text": "(d) Period of Performance. (1) The total period of performance of a contract awarded or modified using this authority- (i) May not exceed the time necessary- (A) To meet the unusual and compelling requirements of the work to be performed under the contract; and (B) For the agency to enter into another contract for the required goods and services through the use of competitive procedures; and (ii) May not exceed one year, including all options, unless the head of the agency determines that exceptional circumstances apply. This determination must be documented in the contract file. (2) (i) Any subsequent modification using this authority, which will extend the period of performance beyond one year under this same authority, requires a separate determination. This determination is only required if the cumulative period of performance using this authority exceeds one year. This requirement does not apply to the exercise of options previously addressed in the determination required at paragraph (d)(1)(ii) of this section. (ii) The determination shall be approved at the same level as the level to which the agency head authority in paragraph (d)(1)(ii)of this section is delegated. (3) The requirements in paragraphs (d)(1) and (2) of this section shall apply to any contract in an amount greater than the simplified acquisition threshold. (4) The determination of exceptional circumstances is in addition to the approval of the justification in 6.304. (5) The determination may be made after contract award when making the determination prior to award would unreasonably delay the acquisition."
+  },
+  {
+    "citation": "FAR-12.603",
+    "regulation": "FAR",
+    "type": "section",
+    "part": "12",
+    "subpart": "6",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "",
+    "url": "https://www.acquisition.gov/far/12.603",
+    "cross_references": [
+      {
+        "target": "5.203",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…mercial products or commercial services. This procedure combines the synopsis required by <xref href=\"5.203.dita#FAR_5_203\">5.203</xref> and the issuance of the solicitation into a single document.…"
+          }
+        ]
+      },
+      {
+        "target": "5.207",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…racting officer shall- (1) Prepare the synopsis as described at <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>. (2) In the Description, include the following a…"
+          }
+        ]
+      },
+      {
+        "target": "subpart 12.6",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…cial services prepared in accordance with the format in <xref href=\"Subpart_12.6.dita#FAR_Subpart_12_6\">subpart 12.6</xref>, as supplemented with additional information included in this notice. This…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-1",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…e and FOB point. (viii) A statement that the provision at <xref href=\"52.212-1.dita#FAR_52_212_1\">52.212-1</xref>, Instructions to Offerors-Commercial Products and Commercial Services, app…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(ix) A statement regarding the applicability of the provision at <xref href=\"52.212-2.dita#FAR_52_212_2\">52.212-2</xref>, Evaluation-Commercial Products and Commercial Services, if used, and the…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-3",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(x) A statement advising offerors to include a completed copy of the provision at <xref href=\"52.212-3.dita#FAR_52_212_3\">52.212-3</xref>, Offeror Representations and Certifications-Commercial Products and Commer…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-4",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ices, with its offer. (xi) A statement that the clause at <xref href=\"52.212-4.dita#FAR_52_212_4\">52.212-4</xref>, Contract Terms and Conditions-Commercial Products and Commercial Services…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-5",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…denda to the clause. (xii) A statement that the clause at <xref href=\"52.212-5.dita#FAR_52_212_5\">52.212-5</xref>, Contract Terms and Conditions Required To Implement Statutes or Executive…"
+          }
+        ]
+      },
+      {
+        "target": "5.203(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…and solicitation, contracting officers must establish a response time in accordance with <xref href=\"5.203.dita#FAR_5_203\">5.203</xref>(b) (but see 5.203(h)). (4) Publicize amendments to…"
+          }
+        ]
+      },
+      {
+        "target": "5.203(h)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…contracting officers must establish a response time in accordance with 5.203(b) (but see <xref href=\"5.203.dita#FAR_5_203\">5.203</xref>(h)). (4) Publicize amendments to solicitations in t…"
+          }
+        ]
+      }
+    ],
+    "text": "(a) When a written solicitation will be issued, the contracting officer may use the following procedure to reduce the time required to solicit and award contracts for the acquisition of commercial products or commercial services. This procedure combines the synopsis required by 5.203 and the issuance of the solicitation into a single document.\n(b) When using the combined synopsis/solicitation procedure, the SF1449 is not used for issuing the solicitation.\n(c) To use these procedures, the contracting officer shall- (1) Prepare the synopsis as described at 5.207. (2) In the Description, include the following additional information: (i) The following statement: This is a combined synopsis/solicitation for commercial products or commercial services prepared in accordance with the format in subpart 12.6, as supplemented with additional information included in this notice. This announcement constitutes the only solicitation; proposals are being requested and a written solicitation will not be issued. (ii) The solicitation number and a statement that the solicitation is issued as an invitation to bid (IFB), request for quotation (RFQ) or request for proposal (RFP). (iii) A statement that the solicitation document and incorporated provisions and clauses are those in effect through Federal Acquisition Circular _____. (iv) A notice regarding any set-aside and the associated NAICS code and small business size standard. (v) A list of line item number(s) and items, quantities, and units of measure (including option(s), if applicable). (vi) Description of requirements for the items to be acquired. (vii) Date(s) and place(s) of delivery and acceptance and FOB point. (viii) A statement that the provision at 52.212-1, Instructions to Offerors-Commercial Products and Commercial Services, applies to this acquisition and a statement regarding any addenda to the provision. (ix) A statement regarding the applicability of the provision at 52.212-2, Evaluation-Commercial Products and Commercial Services, if used, and the specific evaluation criteria to be included in paragraph (a) of that provision. If this provision is not used, describe the evaluation procedures to be used. (x) A statement advising offerors to include a completed copy of the provision at 52.212-3, Offeror Representations and Certifications-Commercial Products and Commercial Services, with its offer. (xi) A statement that the clause at 52.212-4, Contract Terms and Conditions-Commercial Products and Commercial Services, applies to this acquisition and a statement regarding any addenda to the clause. (xii) A statement that the clause at 52.212-5, Contract Terms and Conditions Required To Implement Statutes or Executive Orders-Commercial Products and Commercial Services, applies to this acquisition and a statement regarding which, if any, of the additional FAR clauses cited in the clause are applicable to the acquisition. (xiii) A statement regarding any additional contract requirement(s) or terms and conditions (such as contract financing arrangements or warranty requirements) determined by the contracting officer to be necessary for this acquisition and consistent with customary commercial practices. (xiv) A statement regarding the Defense Priorities and Allocations System (DPAS) and assigned rating, if applicable. (xv) The date, time and place offers are due. (xvi) The name and telephone number of the individual to contact for information regarding the solicitation. (3) Allow response time for receipt of offers as follows: (i) Because the synopsis and solicitation are contained in a single document, it is not necessary to publicize a separate synopsis 15 days before the issuance of the solicitation. (ii) When using the combined synopsis and solicitation, contracting officers must establish a response time in accordance with 5.203(b) (but see 5.203(h)). (4) Publicize amendments to solicitations in the same manner as the initial synopsis and solicitation."
+  },
+  {
+    "citation": "FAR-12.603(a)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "12",
+    "subpart": "6",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "a",
+    "url": "https://www.acquisition.gov/far/12.603",
+    "cross_references": [
+      {
+        "target": "5.203",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…mercial products or commercial services. This procedure combines the synopsis required by <xref href=\"5.203.dita#FAR_5_203\">5.203</xref> and the issuance of the solicitation into a single document."
+          }
+        ]
+      }
+    ],
+    "text": "(a) When a written solicitation will be issued, the contracting officer may use the following procedure to reduce the time required to solicit and award contracts for the acquisition of commercial products or commercial services. This procedure combines the synopsis required by 5.203 and the issuance of the solicitation into a single document."
+  },
+  {
+    "citation": "FAR-12.603(b)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "12",
+    "subpart": "6",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "b",
+    "url": "https://www.acquisition.gov/far/12.603",
+    "cross_references": [],
+    "text": "(b) When using the combined synopsis/solicitation procedure, the SF1449 is not used for issuing the solicitation."
+  },
+  {
+    "citation": "FAR-12.603(c)",
+    "regulation": "FAR",
+    "type": "paragraph",
+    "part": "12",
+    "subpart": "6",
+    "section": "03",
+    "subsection": "",
+    "paragraph": "c",
+    "url": "https://www.acquisition.gov/far/12.603",
+    "cross_references": [
+      {
+        "target": "5.207",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…racting officer shall- (1) Prepare the synopsis as described at <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>. (2) In the Description, include the following a…"
+          }
+        ]
+      },
+      {
+        "target": "subpart 12.6",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…cial services prepared in accordance with the format in <xref href=\"Subpart_12.6.dita#FAR_Subpart_12_6\">subpart 12.6</xref>, as supplemented with additional information included in this notice. This…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-1",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…e and FOB point. (viii) A statement that the provision at <xref href=\"52.212-1.dita#FAR_52_212_1\">52.212-1</xref>, Instructions to Offerors-Commercial Products and Commercial Services, app…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-2",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(ix) A statement regarding the applicability of the provision at <xref href=\"52.212-2.dita#FAR_52_212_2\">52.212-2</xref>, Evaluation-Commercial Products and Commercial Services, if used, and the…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-3",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…(x) A statement advising offerors to include a completed copy of the provision at <xref href=\"52.212-3.dita#FAR_52_212_3\">52.212-3</xref>, Offeror Representations and Certifications-Commercial Products and Commer…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-4",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…ices, with its offer. (xi) A statement that the clause at <xref href=\"52.212-4.dita#FAR_52_212_4\">52.212-4</xref>, Contract Terms and Conditions-Commercial Products and Commercial Services…"
+          }
+        ]
+      },
+      {
+        "target": "52.212-5",
+        "confidence": "explicit",
+        "mentions": [
+          {
+            "kind": "explicit",
+            "context": "…denda to the clause. (xii) A statement that the clause at <xref href=\"52.212-5.dita#FAR_52_212_5\">52.212-5</xref>, Contract Terms and Conditions Required To Implement Statutes or Executive…"
+          }
+        ]
+      },
+      {
+        "target": "5.203(b)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…and solicitation, contracting officers must establish a response time in accordance with <xref href=\"5.203.dita#FAR_5_203\">5.203</xref>(b) (but see 5.203(h)). (4) Publicize amendments to…"
+          }
+        ]
+      },
+      {
+        "target": "5.203(h)",
+        "confidence": "inferred",
+        "mentions": [
+          {
+            "kind": "inferred",
+            "context": "…contracting officers must establish a response time in accordance with 5.203(b) (but see <xref href=\"5.203.dita#FAR_5_203\">5.203</xref>(h)). (4) Publicize amendments to solicitations in t…"
+          }
+        ]
+      }
+    ],
+    "text": "(c) To use these procedures, the contracting officer shall- (1) Prepare the synopsis as described at 5.207. (2) In the Description, include the following additional information: (i) The following statement: This is a combined synopsis/solicitation for commercial products or commercial services prepared in accordance with the format in subpart 12.6, as supplemented with additional information included in this notice. This announcement constitutes the only solicitation; proposals are being requested and a written solicitation will not be issued. (ii) The solicitation number and a statement that the solicitation is issued as an invitation to bid (IFB), request for quotation (RFQ) or request for proposal (RFP). (iii) A statement that the solicitation document and incorporated provisions and clauses are those in effect through Federal Acquisition Circular _____. (iv) A notice regarding any set-aside and the associated NAICS code and small business size standard. (v) A list of line item number(s) and items, quantities, and units of measure (including option(s), if applicable). (vi) Description of requirements for the items to be acquired. (vii) Date(s) and place(s) of delivery and acceptance and FOB point. (viii) A statement that the provision at 52.212-1, Instructions to Offerors-Commercial Products and Commercial Services, applies to this acquisition and a statement regarding any addenda to the provision. (ix) A statement regarding the applicability of the provision at 52.212-2, Evaluation-Commercial Products and Commercial Services, if used, and the specific evaluation criteria to be included in paragraph (a) of that provision. If this provision is not used, describe the evaluation procedures to be used. (x) A statement advising offerors to include a completed copy of the provision at 52.212-3, Offeror Representations and Certifications-Commercial Products and Commercial Services, with its offer. (xi) A statement that the clause at 52.212-4, Contract Terms and Conditions-Commercial Products and Commercial Services, applies to this acquisition and a statement regarding any addenda to the clause. (xii) A statement that the clause at 52.212-5, Contract Terms and Conditions Required To Implement Statutes or Executive Orders-Commercial Products and Commercial Services, applies to this acquisition and a statement regarding which, if any, of the additional FAR clauses cited in the clause are applicable to the acquisition. (xiii) A statement regarding any additional contract requirement(s) or terms and conditions (such as contract financing arrangements or warranty requirements) determined by the contracting officer to be necessary for this acquisition and consistent with customary commercial practices. (xiv) A statement regarding the Defense Priorities and Allocations System (DPAS) and assigned rating, if applicable. (xv) The date, time and place offers are due. (xvi) The name and telephone number of the individual to contact for information regarding the solicitation. (3) Allow response time for receipt of offers as follows: (i) Because the synopsis and solicitation are contained in a single document, it is not necessary to publicize a separate synopsis 15 days before the issuance of the solicitation. (ii) When using the combined synopsis and solicitation, contracting officers must establish a response time in accordance with 5.203(b) (but see 5.203(h)). (4) Publicize amendments to solicitations in the same manner as the initial synopsis and solicitation."
+  }
+]

@@ -1,0 +1,14 @@
+# --- secrets (never commit) ---
+.env
+**/.env
+
+# --- pipeline scratch output (regenerated every run) ---
+pipeline/out/
+
+# --- python ---
+__pycache__/
+*.pyc
+
+# --- OS cruft ---
+.DS_Store
+Thumbs.db
