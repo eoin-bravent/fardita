@@ -56,12 +56,12 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
 <div id="banner"></div>
 <div class="filt">
  <b style="font-size:12px">Show:</b>
- <label><input type=checkbox class=f value=llm_only checked onchange=flt()> LLM-only</label>
- <label><input type=checkbox class=f value=parser_inferred checked onchange=flt()> Parser-only (inferred)</label>
- <label><input type=checkbox class=f value=added checked onchange=flt()> Added</label>
- <label><input type=checkbox class=f value=corroborated onchange=flt()> Corroborated</label>
- <label><input type=checkbox class=f value=parser_explicit onchange=flt()> Parser-only (explicit)</label>
- &nbsp;|&nbsp; <label><input type=checkbox id=hideDone onchange=flt()> hide decided</label>
+ <label title="The LLM found this; the parser did not — usually an untagged prose reference."><input type=checkbox class=f value=llm_only checked onchange=flt()> LLM only (parser missed)</label>
+ <label title="The parser inferred this from prose / a range and the LLM did not corroborate it."><input type=checkbox class=f value=parser_inferred checked onchange=flt()> Parser guess (LLM disagrees)</label>
+ <label title="A reference you added by hand that neither tool found."><input type=checkbox class=f value=added checked onchange=flt()> Manually added</label>
+ <label title="Both the parser and the LLM found this (auto-accepted)."><input type=checkbox class=f value=corroborated onchange=flt()> Both agree</label>
+ <label title="The parser found a real <xref> link the LLM did not echo (kept automatically)."><input type=checkbox class=f value=parser_explicit onchange=flt()> Tagged link (LLM missed)</label>
+ &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=flt()> hide reviewed</label>
 </div>
 <div id="list"></div>
 <script>
@@ -113,6 +113,37 @@ function expandCitations(raw, base){
   return out;
 }
 
+// ---- plain-English labels + tooltips for the status buckets ----
+const LABELS={corroborated:'Both agree', llm_only:'LLM only (parser missed)',
+  parser_inferred:'Parser guess (LLM disagrees)', parser_explicit:'Tagged link (LLM missed)', added:'Manually added'};
+const TIPS={corroborated:'Both the parser and the LLM found this reference (auto-accepted).',
+  llm_only:'The LLM found this; the deterministic parser did not — usually an untagged prose reference.',
+  parser_inferred:'The parser inferred this from prose / an expanded range (not a tagged link) and the LLM did not corroborate it.',
+  parser_explicit:'The parser found a real <xref> hyperlink but the LLM did not echo it (kept automatically).',
+  added:'A reference you added by hand that neither tool found.'};
+const lbl=s=>LABELS[s]||s;
+
+// ---- natural FAR citation order (mirrors reconcile.cit_sort_key), for grouping + added rows ----
+const LADDER=['alpha','digit','roman','alpha','digit','roman'];
+function citCells(t){
+  const m=(t||'').match(/^(\d+)\.(\d+)(?:-(\d+))?(.*)$/);
+  if(!m){const nums=(t||'').match(/\d+/g)||[]; return [[1,0]].concat(nums.map(n=>[0,+n])).concat([[2,(t||'').toLowerCase()]]);}
+  const cells=[[0,+m[1]],[0,+m[2]],[0,+(m[3]||0)]];
+  (m[4].match(/\(([A-Za-z0-9]+)\)/g)||[]).map(x=>x.slice(1,-1)).forEach((tk,i)=>{
+    const typ=LADDER[i]||'alpha';
+    if(typ==='digit') cells.push(/^\d+$/.test(tk)?[0,+tk]:[2,tk.toLowerCase()]);
+    else if(typ==='roman'){const v=rti(tk); cells.push(v!=null?[0,v]:[2,tk.toLowerCase()]);}
+    else cells.push([1,tk.toLowerCase()]);
+  });
+  return cells;
+}
+function citCmp(a,b){
+  const A=citCells(a),B=citCells(b),n=Math.min(A.length,B.length);
+  for(let i=0;i<n;i++){ if(A[i][0]!==B[i][0])return A[i][0]-B[i][0];
+    if(A[i][1]<B[i][1])return -1; if(A[i][1]>B[i][1])return 1; }
+  return A.length-B.length;
+}
+
 function defChoice(it){
   if(it.status==='corroborated'||it.status==='parser_explicit'||it.status==='added') return 'accept';
   return (it.judge&&it.judge.choice)||null;
@@ -123,7 +154,7 @@ function pickJudge(i){const j=Q[i].judge; if(!j)return; const r=q(`input[name=c$
 function rowHtml(it,i){
   const p=it.parser,l=it.llm,j=it.judge;
   return `<div class=hd><span class=tgt>${esc(it.target)}</span>
-     <span><span class="badge b-${it.status}">${it.status}</span><span class=val>${esc(it.validation||'')}</span></span></div>
+     <span><span class="badge b-${it.status}" title="${esc(TIPS[it.status]||'')}">${esc(lbl(it.status))}</span><span class=val>${esc(it.validation||'')}</span></span></div>
    <div class=cols>
      <div class=col><h4>Parser</h4>${p?`<div class=ev><b>${esc(p.kind)}</b><br>${xrefHtml(p.evidence)}</div>`:'<div class=none>(parser did not find this)</div>'}</div>
      <div class=col><h4>LLM</h4>${l?`<div class=ev>${llmHtml(l.evidence)}</div>`:'<div class=none>(LLM did not find this)</div>'}</div>
@@ -141,12 +172,13 @@ function render(){
  const g=new Map();
  Q.forEach((it,i)=>{ if(!g.has(it.unit)) g.set(it.unit,[]); g.get(it.unit).push(i); });
  g.forEach((idx,unit)=>{
+   idx.sort((i,j)=>citCmp(Q[i].target, Q[j].target));   // natural FAR order within the unit
    const sec=document.createElement('div'); sec.className='unit';
    const counts={}; idx.forEach(i=>{const s=Q[i].status; counts[s]=(counts[s]||0)+1;});
    const url=unitUrl(unit);
    sec.innerHTML=`<div class=uh><span>${esc(unit)}</span> ·
      <a class=far href="${esc(url)}" target=_blank rel=noopener>acquisition.gov ↗</a>
-     <span class=ucount>${Object.keys(counts).sort().map(k=>k+' '+counts[k]).join(' · ')}</span></div>`;
+     <span class=ucount>${Object.keys(counts).sort().map(k=>lbl(k)+' '+counts[k]).join(' · ')}</span></div>`;
    idx.forEach(i=>{const d=document.createElement('div'); d.className='item'; d.dataset.bucket=Q[i].status; d.dataset.i=i; d.innerHTML=rowHtml(Q[i],i); sec.appendChild(d);});
    const add=document.createElement('div'); add.className='addbox';
    add.innerHTML=`<input type=text class=addin placeholder="add reference(s) to ${esc(unit)} — comma list or range, e.g. 5.202(a)(2), 5.203(a)-(c)"><button class=addbtn>+ Add</button>`;
@@ -174,7 +206,7 @@ function flt(){
    const vis=on.includes(st) && !(hide&&picked);
    d.style.display=vis?'':'none'; d.classList.toggle('done',!!picked); if(vis)shown++;
  });
- document.getElementById('meta').textContent=`${Q.length} refs · flagged decided ${rDone}/${rTot} · ${shown} shown`;
+ document.getElementById('meta').textContent=`${Q.length} refs · flagged reviewed ${rDone}/${rTot} · ${shown} shown`;
 }
 function collect(){
  const out=[];
@@ -219,6 +251,8 @@ function banner(){
    `${S.units} units (cache hits ${S.cache_hits})`,
    `corrob ${sc.corroborated||0} · parser-exp ${sc.parser_explicit||0} · parser-inf ${sc.parser_inferred||0} · llm-only ${sc.llm_only||0}`];
  if(tk.calls) parts.push(`tokens ${fmt(tk.total)} total · in ${fmt(tk.prompt)} · think ${fmt(tk.thinking)} · out ${fmt(tk.output)} · ${tk.calls} calls`);
+ const co=S.cost;
+ if(co && (co.rates_per_1m.input||co.rates_per_1m.output) && tk.calls) parts.push(`est ${co.currency} ${co.total.toFixed(2)}`);
  if(tm.total!=null) parts.push(`${tm.total}s`);
  el.textContent='▸ '+parts.join('   ·   ');
 }

@@ -29,6 +29,9 @@ DEFAULTS = {
                "thinking_budget": -1, "judge": False},
     # Vertex AI (used only when provider == "vertex"). Auth via GOOGLE_APPLICATION_CREDENTIALS.
     "vertex": {"project": "", "location": ""},
+    # Token pricing for the cost estimate — public Gemini 2.5 Pro rates (≤200k ctx). Thinking tokens
+    # bill at the output rate. Edit here or in pipeline.config.json; set 0 to hide the dollar figure.
+    "pricing": {"input_per_1m": 1.25, "output_per_1m": 10.0, "currency": "USD"},
 }
 
 def _audit_backend(cfg):
@@ -56,9 +59,10 @@ def load_config(args):
     path = getattr(args, "config", None) or os.path.join(HERE, "pipeline.config.json")
     if os.path.exists(path):
         user = json.load(open(path, encoding="utf-8"))
-        cfg.update({k: v for k, v in user.items() if k not in ("gemini", "vertex")})
+        cfg.update({k: v for k, v in user.items() if k not in ("gemini", "vertex", "pricing")})
         cfg["gemini"].update(user.get("gemini", {}))
         cfg["vertex"].update(user.get("vertex", {}))
+        cfg["pricing"].update(user.get("pricing", {}))
     # env / .env overlay
     for ev, k in {"PIPELINE_REGULATION": "regulation", "PIPELINE_INPUT_DIR": "input_dir",
                   "PIPELINE_BOTTOM_LEVEL": "bottom_level", "PIPELINE_OUTPUT_DIR": "output_dir"}.items():
@@ -122,12 +126,21 @@ def _corpus_address_map(cfg, out, reg):
     json.dump({"n_files": n_files, "map": sorted(m)}, open(p, "w", encoding="utf-8"))
     return m
 
+def _cost(tokens, pricing):
+    inr, outr = pricing.get("input_per_1m", 0) or 0, pricing.get("output_per_1m", 0) or 0
+    c = lambda d: round(d["prompt"] / 1e6 * inr + (d["thinking"] + d["output"]) / 1e6 * outr, 4)
+    tot = tokens["total"]
+    return {"currency": pricing.get("currency", "USD"), "rates_per_1m": {"input": inr, "output": outr},
+            "audit": c(tokens["audit"]), "judge": c(tokens["judge"]), "total": c(tot),
+            "in_cost": round(tot["prompt"] / 1e6 * inr, 4),
+            "out_cost": round((tot["thinking"] + tot["output"]) / 1e6 * outr, 4)}
+
 def _run_summary(cfg, stats, timing, tokens, n_units, mock):
     return {"provider": cfg["provider"], "model": cfg["gemini"]["model"],
             "concurrency": cfg["concurrency"], "units": n_units,
             "cache_hits": 0 if mock else max(0, n_units - tokens["audit"]["calls"]),
             "status_counts": stats, "timing_sec": {k: round(v, 1) for k, v in timing.items()},
-            "tokens": tokens}
+            "tokens": tokens, "cost": _cost(tokens, cfg["pricing"])}
 
 def _print_summary(s):
     print("  timing(s): " + "  ".join(f"{k}={v}" for k, v in s["timing_sec"].items()))
@@ -143,6 +156,11 @@ def _print_summary(s):
     print(f"  tokens TOTAL: {tk['total']['total']:,}  (cache hits this run: {s['cache_hits']})")
     if tk["total"]["reported"] < tk["total"]["calls"]:
         print(f"  note: {tk['total']['calls'] - tk['total']['reported']} call(s) returned no usage data")
+    co = s.get("cost", {})
+    if tk["total"]["calls"] and (co.get("rates_per_1m", {}).get("input") or co.get("rates_per_1m", {}).get("output")):
+        r = co["rates_per_1m"]
+        print(f"  est. cost: {co['currency']} {co['total']:.4f}  (in {co['in_cost']:.4f} + out {co['out_cost']:.4f}"
+              f"; rates {r['input']}/{r['output']} per 1M — set in pipeline.config.json 'pricing')")
 
 def cmd_run(cfg, args):
     out = cfg["output_dir"]; reg = cfg["regulation"]

@@ -31,6 +31,39 @@ def section_root(c):
     m = re.match(r"(\d+\.\d+(?:-\d+)?)", c or "")    # leading citation number
     return m.group(1) if m else (c or "")
 
+# FAR paren ladder by depth (verified across the corpus): (a)(1)(i)(A)(1)(i)…
+_LADDER = ["alpha", "digit", "roman", "alpha", "digit", "roman"]
+_ROMAN = {"i": 1, "v": 5, "x": 10, "l": 50, "c": 100, "d": 500, "m": 1000}
+
+def _roman_int(s):
+    s = s.lower()
+    if not s or any(c not in _ROMAN for c in s):
+        return None
+    total, prev = 0, 0
+    for c in reversed(s):
+        v = _ROMAN[c]
+        total += -v if v < prev else v
+        prev = max(prev, v)
+    return total
+
+def cit_sort_key(target):
+    """Natural FAR order: 5.202(a)(1) < 5.202(a)(4) < 5.202(a)(11) < 5.202(b); romans by value."""
+    m = re.match(r"(\d+)\.(\d+)(?:-(\d+))?(.*)$", target or "")
+    if not m:                                          # subpart/part/other -> after numeric, by its numbers
+        nums = [int(x) for x in re.findall(r"\d+", target or "")]
+        return (1, nums or [0], target or "")
+    key = [int(m.group(1)), int(m.group(2)), int(m.group(3) or 0)]
+    for i, tk in enumerate(re.findall(r"\(([A-Za-z0-9]+)\)", m.group(4))):
+        typ = _LADDER[i] if i < len(_LADDER) else "alpha"
+        if typ == "digit":
+            key.append((0, int(tk)) if tk.isdigit() else (2, tk.lower()))
+        elif typ == "roman":
+            v = _roman_int(tk)
+            key.append((0, v) if v is not None else (2, tk.lower()))
+        else:
+            key.append((1, tk.lower()))
+    return (0, key)
+
 def cr_context(cr):
     """Representative evidence string from a cross_reference (first mention)."""
     ms = cr.get("mentions")
@@ -82,7 +115,7 @@ def reconcile(rows, llm_by_cit, addr_map):
             t, status = validate(raw, addr_map)
             if t and t != self_cit and t not in llm_map:
                 llm_map[t] = {"evidence": ref.get("evidence", ""), "validation": status}
-        for t in sorted(set(parser_map) | set(llm_map)):
+        for t in sorted(set(parser_map) | set(llm_map), key=cit_sort_key):
             p, l = parser_map.get(t), llm_map.get(t)
             if p and l:
                 status = "corroborated"

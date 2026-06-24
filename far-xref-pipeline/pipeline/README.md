@@ -70,6 +70,8 @@ citation); every textual occurrence is kept as a mention:
 | `gemini.reasoning` | thinking on/off (on recommended for ambiguous refs) | `true` |
 | `gemini.thinking_budget` | token budget (`-1` = dynamic) | `-1` |
 | `gemini.judge` | optional 2nd LLM pass that pre-fills review recommendations | `false` |
+| `concurrency` | parallel LLM calls per run (1 = sequential) | `8` |
+| `pricing.input_per_1m` / `pricing.output_per_1m` | $ per 1M tokens for the cost estimate (0 disables) | `1.25` / `10.0` |
 
 Chunking goes from the file's own unit (section/subsection) **down to** `bottom_level`; parents
 keep full text (overlap). Decomposition fields run `part … <bottom_level>`, bare, empty below
@@ -124,6 +126,10 @@ the chunk's level. Below `subparagraph` we use `subunit-depth-N` rather than inv
   only if its gateway populates the `usage` field; Vertex always does (incl. gemini-2.5 thinking tokens).
 - **Timing**: per-stage (chunk / audit / judge / reconcile) + total wall-clock, in the console, the
   banner, and `token_usage.json`.
+- **Cost estimate**: tokens × the `pricing` rates (in console / banner / `token_usage.json`). Rates live
+  in `pipeline.config.json` → `pricing` (`input_per_1m`, `output_per_1m`, `currency`) — defaulted to the
+  **public Gemini 2.5 Pro** rate ($1.25/$10 per 1M; thinking billed at the output rate). Set them to
+  your contract rate, or `0` to hide the dollar figure. (A real 8-unit audit+judge run ≈ $0.38.)
 
 ## LLM backends (USAi.gov · Vertex AI)
 Two interchangeable backends behind the same interface — pick per run; everything downstream
@@ -170,8 +176,11 @@ are dropped.
 Self-contained, no server. Shows the **full master list** — one row per atomic target with its status
 badge, three evidence columns (**Parser** with inline `<xref>` highlighted, **LLM** with the `« »`
 span highlighted, **Judge** recommendation + rationale), and a link to the unit on **acquisition.gov**.
-Rows are **grouped by unit**, with a top **banner** summarizing the run (provider/model, status
-counts, tokens, timing, cache hits). **Every row is editable** with a uniform choice: **Accept /
+Rows are **grouped by unit** and shown in **natural FAR order** (`(a)(1) < (a)(4) < (a)(11)`; romans
+by value), with a top **banner** summarizing the run (provider/model, status counts, tokens, timing,
+cost, cache hits). Status labels are plain-English — **Both agree** (corroborated), **LLM only (parser
+missed)**, **Parser guess (LLM disagrees)**, **Tagged link (LLM missed)**, **Manually added** — with a
+hover tooltip on each spelling out what it means. **Every row is editable** with a uniform choice: **Accept /
 Reject / Manual**. When a judge ran, its recommended option is tagged **`judge ✓`** (click it to
 re-select). Each unit also has an **"Add reference(s)"** box for refs neither tool found. Both the
 Manual and Add boxes accept **comma lists *and* ranges**, expanded client-side into atomic citations
