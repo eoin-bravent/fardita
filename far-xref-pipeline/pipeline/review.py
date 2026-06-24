@@ -74,7 +74,7 @@ function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':
 function fmt(n){return (n||0).toLocaleString();}
 function xrefHtml(s){return esc(s).replace(/&lt;xref href=&quot;([^&]*?)&quot;&gt;(.*?)&lt;\/xref&gt;/g,
    '<mark>&lt;xref href=&quot;$1&quot;&gt;$2&lt;/xref&gt;</mark>');}
-function llmHtml(s){return esc(s).replace(/«(.*?)»/g,'<mark>«$1»</mark>');}
+function llmHtml(s){return esc(s).replace(/«(.*?)»/g,'<mark>$1</mark>');}  // strip « » delimiters, keep the highlight
 function unitBase(u){return (u||'').replace(/^[A-Za-z]+-/,'');}
 function unitUrl(u){const it=Q.find(x=>x.unit===u);return it?it.url:'';}
 
