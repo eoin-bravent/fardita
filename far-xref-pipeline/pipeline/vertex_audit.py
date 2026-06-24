@@ -26,7 +26,7 @@ import os, time, hashlib
 # Reuse everything provider-agnostic from the USAi backend (prompts, schemas, helpers).
 from gemini_audit import (
     PROMPT_VERSION, AUDIT_SYSTEM, AUDIT_SCHEMA, JUDGE_SYSTEM, JUDGE_SCHEMA,
-    _schema_instruction, _extract_json, _cached,
+    _schema_instruction, _extract_json, _cached, _judge_user_text,
 )
 
 PROVIDER = "vertex"
@@ -120,18 +120,11 @@ def audit(units, cfg, cache_dir, progress=True):
 
 
 def judge(unit_cit, raw_dita, discrepancies, cfg, cache_dir):
-    """discrepancies: [{n, parser, llm, bucket}]. Returns {n: {choice, value, rationale}}."""
+    """discrepancies: [{n, target, source, evidence}]. Returns {n: {choice, value, rationale}}."""
     if not discrepancies:
         return {}
     cache_dir = _vertex_cache(cache_dir)
-    lines = [f"Unit {unit_cit}. Discrepancies to resolve:"]
-    for d in discrepancies:
-        p = d.get("parser")
-        ps = p["target"] if p else "none"
-        pe = p.get("evidence", "")[:220] if p else ""
-        lines.append(f"  [{d['n']}] ({d['bucket']}) parser={ps} | parser_evidence: {pe} | "
-                     f"llm={d['llm']['target']} | llm_evidence: {d['llm'].get('evidence', '')[:220]}")
-    user = raw_dita + "\n\n" + "\n".join(lines)
+    user = raw_dita + "\n\n" + _judge_user_text(unit_cit, discrepancies)
     h = hashlib.sha1(
         f"{PROVIDER}|{cfg['gemini']['model']}|{PROMPT_VERSION}|judge|{user}".encode()
     ).hexdigest()[:16]

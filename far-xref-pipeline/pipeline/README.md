@@ -46,8 +46,11 @@ citation); every textual occurrence is kept as a mention:
   qualifier, prose, or a range). `confidence` (per reference) = `explicit` if any mention is explicit,
   else `inferred`.
 - `context` shows the source sentence with the raw `<xref>` markup inline, windowed past the reference.
-- **Ranges are kept literal** as one reference — `target: "5.203(a)-(d)"`, `kind: inferred` — *not*
-  expanded into members (expanding a span into individual edges is a later graph-stage decision).
+- **Ranges are expanded into atomic members** — `5.203(a) through (d)` becomes four references
+  `5.203(a)`, `5.203(b)`, `5.203(c)`, `5.203(d)` (no `(a)-(d)` spans anywhere). All members share the
+  range's `context`. The enumerator handles letters / digits / romans / numeric subsection dashes and
+  every separator (`-`, `–`, `to`, `through`, repeated citation); a genuinely ambiguous range (e.g.
+  `(i)-(v)`, letter vs. roman) is left for the LLM + human rather than guessed.
 - External U.S.C./URL references are excluded.
 
 ## Configuration — `pipeline.config.json`
@@ -83,18 +86,20 @@ the chunk's level. Below `subparagraph` we use `subunit-depth-N` rather than inv
 - **What each call sends:** the system prompt + the **entire raw `.dita` file** of that unit (not the
   flattened text), so the model sees the real `<xref href=…>` markup. Inspect the exact bytes with
   `python pipeline.py run --dump-payload <citation>`.
-- **What the model returns:** one `target` per reference (ranges as one normalized span like
-  `5.203(a)-(d)`, *not* expanded) with the quoted `evidence`. The prompt is attachment-aware — a
+- **What the model returns:** one `target` per reference — **ranges are expanded into one reference
+  per member** (`5.203(a) through (d)` → four targets, *not* a span). `evidence` is the **complete
+  source sentence(s) quoted verbatim**, with the citation that triggers the reference wrapped in
+  `« »` guillemets (so the review page highlights it). The prompt is attachment-aware — a
   parenthetical after a link *usually* narrows it but **not always** (e.g. `'the authority of 5.202
   and (a)(2) of this section'` → `5.202` **and** this section's `(a)(2)`). Its **highest-value job is
   prose references with no `<xref>` tag** (e.g. `'as required by 5.207'`) — the deterministic parser
   already catches every tagged link, so the prompt tells the model those untagged refs are exactly
   what it misses and to scan for them.
 - **Optional LLM judge (`gemini.judge` / `--judge`):** a second pass, once per `.dita` file, that
-  sees **only that file** — its raw source + that file's parser-vs-LLM discrepancies, *with both the
-  parser's and the LLM's evidence* — and recommends a resolution + one-line rationale for each. It
-  **pre-fills** the review page's Judge column (you bulk-accept or override) — it never finalizes, so
-  the human gate stays. Off by default; moderate extra tokens.
+  sees **only that file** — its raw source + that file's **disagreements** (parser-inferred and
+  llm-only atomic targets, with the finder's evidence) — and recommends `accept` / `reject` / `manual`
+  + a one-line rationale for each. It **pre-fills** the review page's selection (you bulk-accept or
+  override) — it never finalizes, so the human gate stays. Off by default; moderate extra tokens.
 - Calls Gemini's REST `generateContent` directly (urllib). Temperature 0, structured JSON
   output, `thinkingConfig` for reasoning. Responses are **cached** per unit by
   (model, prompt version, text hash) in `out/llm_cache/`, so re-runs are cheap and prior human
@@ -128,22 +133,30 @@ never clobber each other's cached audits.
 To keep both backends' full outputs side by side, give each its own `--output-dir`
 (e.g. `--output-dir out_vertex`); otherwise a run overwrites the previous run's output files.
 
-## Reconcile policy (locked)
-- **corroborated** (LLM target == parser target) → auto-accept, not queued.
-- **det-only** (parser found via `<xref>`, LLM didn't) → kept; markup is authoritative.
-- **llm-new** (LLM found, parser missed) → **always** human review.
-- **conflict** (same area, different resolved target — e.g. LLM `5.202` vs parser `5.202(a)(2)`)
-  → human review.
-The LLM never overrides; it only corroborates or raises a flag. Every LLM target is validated
+## Reconcile policy — atomic master list
+Because every reference is atomic, reconciliation is a symmetric set comparison per unit. Each atomic
+target lands in a **master list (ledger)** tagged by who found it:
+- **corroborated** (parser AND LLM) → auto-accept.
+- **parser_explicit** (parser via `<xref>`, LLM didn't) → auto-accept; markup is authoritative.
+- **parser_inferred** (parser via prose/range, LLM didn't) → **review** (lower-confidence guess).
+- **llm_only** (LLM found, parser missed) → **review** (the high-value catch).
+
+`needs_review = parser_inferred | llm_only` — only these go to the human queue and the LLM judge
+(corroborated/explicit are shown read-by-default but stay editable). A former "conflict" (LLM `5.202`
+vs parser `5.202(a)(2)`) is simply two atomic rows: `llm_only 5.202` + `parser_* 5.202(a)(2)`.
+Every LLM target is validated
 against the FAR address map (grammar + existence); non-citations (U.S.C., URLs, hallucinations)
 are dropped.
 
 ## Review page (`out/<REG>_review.html`)
-Self-contained, no server. Per flagged item it shows three columns — **Parser** suggestion + evidence,
-**LLM** suggestion + evidence, and (when `judge` is on) the **Judge** recommendation + rationale — a
-link to the unit on **acquisition.gov** (new tab), and a choice: **Use parser / Use LLM / Manual**
-(comma-separated citations) / **Reject**. If the judge ran, its recommendation is **pre-selected** (you
-bulk-accept or change it). Click **Export decisions** to download `decisions.json`.
+Self-contained, no server. Shows the **full master list** — one row per atomic target with its status
+badge, three evidence columns (**Parser** with inline `<xref>` highlighted, **LLM** with the `« »`
+span highlighted, **Judge** recommendation + rationale), and a link to the unit on **acquisition.gov**.
+**Every row is editable** with a uniform choice: **Accept / Reject / Manual** (comma-separated
+citations). Defaults: corroborated & parser-explicit → *Accept*; disagreements → the judge's pick (or
+unset). **Status filters** at the top toggle which rows show — by default only the disagreements
+(LLM-only + parser-inferred); tick **Corroborated** / **Parser-only (explicit)** to inspect agreements,
+or **hide decided** to focus. Click **Export decisions** to download `decisions.json`.
 
 **Reviewing over multiple sittings:**
 - Your selections **auto-save** to the browser (`localStorage`), so reloading the page restores them.
@@ -160,8 +173,7 @@ bulk-accept or change it). Click **Export decisions** to download `decisions.jso
 |------|------|
 | `<REG>_chunks.json` | the chunks (pristine, parser-only) |
 | `<REG>_manifest.json` | every file **seen**, **processed**, and **skipped** (with reasons) — the parser and LLM use this same set |
-| `<REG>_queue.json` | flagged items for review (the `conflict` + `llm-new` buckets) |
-| `<REG>_confirmed.json` | per-unit refs the LLM corroborated — consumed by `apply` for provenance |
+| `<REG>_ledger.json` | the per-unit master list: every atomic target tagged `status` (corroborated / parser_explicit / parser_inferred / llm_only), with parser/llm/judge evidence — drives the review page and `apply` |
 | `<REG>_review.html` | the review page |
 | `<REG>_verified.json` | after `apply`: chunks + human-approved refs, every ref tagged `provenance{producer, status}` (producer `parser`/`parser+gemini`/`gemini+human`/`human`; status `parser_only`/`corroborated`/`human_approved`) |
 | `llm_cache/` | cached raw LLM audit + judge responses |
@@ -170,6 +182,6 @@ The reviewer's **`decisions.json`** is downloaded from the review page (not writ
 and fed back via `apply --decisions`.
 
 ## Status
-Chunker, reconcile, review page (incl. the Judge column + auto-save/import), and apply are built and
-tested end-to-end with `--mock-llm`. The Gemini audit and judge calls are wired but need
-`GEMINI_API_KEY` to run live.
+Chunker, range expansion, reconcile (atomic master list), review page (status filters + editable rows
++ auto-save/import), and apply are built and tested end-to-end with `--mock-llm`. The LLM audit and
+judge calls are wired for both backends but need credentials (USAi key, or Vertex ADC) to run live.

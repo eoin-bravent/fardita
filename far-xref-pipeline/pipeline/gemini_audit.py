@@ -14,7 +14,7 @@ into the prompt and parse the returned JSON ourselves (see _extract_json).
 """
 import os, json, time, re, hashlib, urllib.request, urllib.error
 
-PROMPT_VERSION = "v5"
+PROMPT_VERSION = "v6"
 # USAi is OpenAI-compatible; base_url is agency-specific (https://<agency>.usai.gov).
 ENDPOINT_PATH = "/api/v1/chat/completions"
 
@@ -35,11 +35,18 @@ AUDIT_SYSTEM = (
     "XML-tag scanning already catches every <xref>, so references with NO tag are exactly what it "
     "misses -- they are the most valuable for you to surface. Scan the prose carefully for them.\n"
     "4. Ranges, in any phrasing -- '(a) through (f)', '1 to 3', '(a)-(d)', '52.219-3 through "
-    "52.219-5'. Report a range as ONE reference using a normalized span target like '5.203(a)-(d)' "
-    "(do NOT expand it into individual members).\n"
+    "52.219-5'. EXPAND every range into its individual members and return ONE reference per member "
+    "(do NOT emit a span like '5.203(a)-(d)'). E.g. '5.203(a) through (d)' -> four references: "
+    "5.203(a), 5.203(b), 5.203(c), 5.203(d). Give each member the SAME `evidence` (the range "
+    "sentence). Only expand when the members are unambiguous; if you cannot tell the sequence, "
+    "report the endpoints you are sure of.\n"
     "Exclude external statutes (U.S.C., or CFR titles other than this regulation), URLs, and DITA "
     "plumbing. For each reference return one `target` citation in standard form (e.g. 5.202, "
-    "5.202(a)(2), 6.302-2, subpart 9.4, 5.203(a)-(d)) and the exact quoted source text as `evidence`."
+    "5.202(a)(2), 6.302-2, subpart 9.4) and, as `evidence`, the COMPLETE sentence(s) containing the "
+    "reference, quoted VERBATIM from the source, with the exact citation text that triggers this "
+    "reference wrapped in « » guillemets -- e.g. 'The contracting officer shall, as required by "
+    "«5.207», publicize the action.' Quote enough surrounding text to judge the reference; do not "
+    "paraphrase or shorten."
 )
 AUDIT_SCHEMA = {
     "type": "array",
@@ -50,23 +57,33 @@ AUDIT_SCHEMA = {
 
 # ---------- judge ----------
 JUDGE_SYSTEM = (
-    "You reconcile cross-reference extractions for {regulation} unit {citation}. You are given the "
-    "raw DITA XML and a numbered list of DISCREPANCIES, each with the deterministic parser's "
-    "suggestion + its evidence quote (may be 'none') and an independent LLM's suggestion + evidence. "
-    "Weigh both evidence quotes against the source. For EACH discrepancy, "
-    "recommend the correct resolution by reading the source: choose 'parser', 'llm', 'manual' (and "
-    "put the correct citation(s) in `value`), or 'reject' (not a real reference to this "
-    "regulation). Give a one-sentence `rationale`. Return one object per discrepancy with its `n`."
+    "You reconcile cross-reference disagreements for {regulation} unit {citation}. You are given the "
+    "raw DITA XML and a numbered list of DISAGREEMENTS — each is a SINGLE atomic citation that EITHER "
+    "the deterministic parser found (from prose/an expanded range, not a tagged link) OR an "
+    "independent LLM found, but not both. For EACH, read the source and decide whether it is a real, "
+    "correct cross-reference FROM this unit TO that target within {regulation}: choose 'accept' (the "
+    "citation is correct as written), 'manual' (a real reference but the citation is wrong — put the "
+    "correct citation(s) in `value`), or 'reject' (not a real reference to this regulation — external, "
+    "mis-parsed, or hallucinated). Give a one-sentence `rationale`. Return one object per disagreement "
+    "with its `n`."
 )
 JUDGE_SCHEMA = {
     "type": "array",
     "items": {"type": "object",
               "properties": {"n": {"type": "integer"},
-                             "choice": {"type": "string", "enum": ["parser", "llm", "manual", "reject"]},
+                             "choice": {"type": "string", "enum": ["accept", "manual", "reject"]},
                              "value": {"type": "array", "items": {"type": "string"}},
                              "rationale": {"type": "string"}},
               "required": ["n", "choice", "rationale"]},
 }
+
+def _judge_user_text(unit_cit, discrepancies):
+    """Render the disagreement list for the judge. discrepancies: [{n, target, source, evidence}]."""
+    lines = [f"Unit {unit_cit}. Disagreements to resolve:"]
+    for d in discrepancies:
+        lines.append(f"  [{d['n']}] (found by {d['source']}) target={d['target']} | "
+                     f"evidence: {d.get('evidence', '')[:300]}")
+    return "\n".join(lines)
 
 # ---------- REST (USAi.gov, OpenAI-compatible) ----------
 def _schema_instruction(schema):
@@ -149,17 +166,10 @@ def audit(units, cfg, cache_dir, progress=True):
     return out
 
 def judge(unit_cit, raw_dita, discrepancies, cfg, cache_dir):
-    """discrepancies: [{n, parser, llm, bucket}]. Returns {n: {choice, value, rationale}}."""
+    """discrepancies: [{n, target, source, evidence}]. Returns {n: {choice, value, rationale}}."""
     if not discrepancies:
         return {}
-    lines = [f"Unit {unit_cit}. Discrepancies to resolve:"]
-    for d in discrepancies:
-        p = d.get("parser")
-        ps = p["target"] if p else "none"
-        pe = p.get("evidence", "")[:220] if p else ""
-        lines.append(f"  [{d['n']}] ({d['bucket']}) parser={ps} | parser_evidence: {pe} | "
-                     f"llm={d['llm']['target']} | llm_evidence: {d['llm'].get('evidence', '')[:220]}")
-    user = raw_dita + "\n\n" + "\n".join(lines)
+    user = raw_dita + "\n\n" + _judge_user_text(unit_cit, discrepancies)
     h = hashlib.sha1(f"{cfg['gemini']['model']}|{PROMPT_VERSION}|judge|{user}".encode()).hexdigest()[:16]
     sys_t = JUDGE_SYSTEM.format(regulation=cfg["regulation"], citation=unit_cit)
     recs = _cached(cache_dir, "judge_" + unit_cit.replace("/", "_"), h,

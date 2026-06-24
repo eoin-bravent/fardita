@@ -156,6 +156,92 @@ def render_scope(ps):
 def _window(text, a, b):
     return ("…" if a > 0 else "") + norm(text[a:b]) + ("…" if b < len(text) else "")
 
+# ---------- range expansion (no spans: every range -> its explicit members) ----------
+_ROMAN_VAL = {"i": 1, "v": 5, "x": 10, "l": 50, "c": 100, "d": 500, "m": 1000}
+_ROMAN_SEQ = [(1000, "m"), (900, "cm"), (500, "d"), (400, "cd"), (100, "c"), (90, "xc"),
+              (50, "l"), (40, "xl"), (10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i")]
+_SEP = r"(?:through|thru|to|–|—|-)"               # range separators: words, en/em dash, hyphen
+_PAREN = r"(?:\([A-Za-z0-9]+\))"
+# (a)-(c) / (a) to (c) / 7.101(a) - 7.101(c) / (a)(1) through (a)(6)
+RANGE_PAREN = re.compile(r"(?P<lb>\d+\.\d+(?:-\d+)?)?\s*(?P<lt>" + _PAREN + r"+)\s*" + _SEP +
+                         r"\s*(?P<rb>\d+\.\d+(?:-\d+)?)?\s*(?P<rt>" + _PAREN + r"+)", re.I)
+# 6.302-1 through 6.302-5 / 52.219-3 to 52.219-5 / 6.302-1 through -5
+RANGE_DASH = re.compile(r"(?P<base>\d+\.\d+)-(?P<s>\d+)\s*(?:through|thru|to|–|—|\s-\s)\s*"
+                        r"(?:(?P=base)-)?(?P<e>\d+)(?!\.\d)", re.I)
+
+def _roman_to_int(s):
+    s = s.lower()
+    if not s or any(c not in _ROMAN_VAL for c in s):
+        return None
+    total, prev = 0, 0
+    for c in reversed(s):
+        v = _ROMAN_VAL[c]
+        total += -v if v < prev else v
+        prev = max(prev, v)
+    return total
+
+def _int_to_roman(n):
+    out = ""
+    for v, sym in _ROMAN_SEQ:
+        while n >= v:
+            out += sym; n -= v
+    return out
+
+def _enumerate_tokens(start, end):
+    """'a'..'f' / '1'..'6' / 'ii'..'vi' -> explicit member tokens (case preserved).
+    Returns None when the axis is unsafe/ambiguous (decision 1a) so the range is skipped."""
+    if not start or not end:
+        return None
+    if start.isdigit() and end.isdigit():                           # numeric
+        a, b = int(start), int(end)
+        return [str(n) for n in range(a, b + 1)] if 0 <= b - a <= 40 else None
+    if (start.upper() == start) != (end.upper() == end):            # mixed case -> not one axis
+        return None
+    upper, lo, hi = start.upper() == start, start.lower(), end.lower()
+    is_roman = lambda t: all(c in _ROMAN_VAL for c in t)
+    if is_roman(lo) and is_roman(hi) and (len(lo) > 1 or len(hi) > 1):   # roman (one multi-char endpoint)
+        a, b = _roman_to_int(lo), _roman_to_int(hi)
+        if a is None or b is None or not 0 < b - a <= 40:
+            return None
+        toks = [_int_to_roman(n) for n in range(a, b + 1)]
+        return [t.upper() for t in toks] if upper else toks
+    if len(lo) == 1 and len(hi) == 1 and lo.isalpha() and hi.isalpha():  # single letters
+        if is_roman(lo) and is_roman(hi):
+            return None                                             # (i)-(v), (v)-(x): letter vs roman — skip
+        a, b = ord(lo), ord(hi)
+        if not 0 <= b - a <= 25:
+            return None
+        toks = [chr(n) for n in range(a, b + 1)]
+        return [t.upper() for t in toks] if upper else toks
+    return None
+
+def _range_refs(text, sec_num):
+    """Find every range in `text` and emit one inferred ref per member (no spans).
+    All members of a range share the range's surrounding context."""
+    out = []
+    for m in RANGE_PAREN.finditer(text):
+        lt = re.findall(r"\(([A-Za-z0-9]+)\)", m.group("lt"))
+        rt = re.findall(r"\(([A-Za-z0-9]+)\)", m.group("rt"))
+        fixed = lt[:-1]
+        if rt[:-1] and rt[:-1] != fixed:             # cross-prefix range, e.g. (a)(1)-(b)(3) — unsafe
+            continue
+        members = _enumerate_tokens(lt[-1], rt[-1])
+        if not members:
+            continue
+        base = m.group("lb") or m.group("rb") or sec_num
+        prefix = base + "".join(f"({t})" for t in fixed)
+        ctx = _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))
+        for tok in members:
+            out.append({"kind": "inferred", "target": f"{prefix}({tok})", "context": ctx})
+    for m in RANGE_DASH.finditer(text):
+        a, b = int(m.group("s")), int(m.group("e"))
+        if not 0 < b - a <= 40:
+            continue
+        ctx = _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))
+        for n in range(a, b + 1):
+            out.append({"kind": "inferred", "target": f"{m.group('base')}-{n}", "context": ctx})
+    return out
+
 # ---------- cross references ----------
 def _group_refs(refs):
     """Group per-occurrence refs by single `target` -> {target, confidence, mentions:[{kind,context}]}.
@@ -188,9 +274,7 @@ def collect_refs(ps, sec_num, url):
             refs.append({"kind": "inferred", "target": base + q.group(1), "context": ctx})
         else:
             refs.append({"kind": "explicit", "target": base, "context": ctx})
-    for m in re.finditer(r"\(([a-z])\)\s+through\s+\(([a-z])\)", text):     # range -> one literal-span ref
-        refs.append({"kind": "inferred", "target": f"{sec_num}({m.group(1)})-({m.group(2)})",
-                     "context": _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))})
+    refs.extend(_range_refs(text, sec_num))                                # ranges -> explicit members
     for m in re.finditer(r"paragraphs?\s+(\([a-z0-9]+\)(?:\([a-z0-9]+\))*)\s+of this section", text):
         refs.append({"kind": "inferred", "target": sec_num + m.group(1),
                      "context": _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))})

@@ -146,68 +146,91 @@ def cmd_run(cfg, args):
         llm = gemini_audit.audit(units, cfg, os.path.join(out, "llm_cache"))
 
     addr = reconcile.build_address_map(rows)
-    queue, stats, confirmed = reconcile.reconcile(rows, llm, addr)
+    ledger, stats = reconcile.reconcile(rows, llm, addr)
 
-    # optional LLM judge: pre-fill each discrepancy with a recommendation + rationale
-    if cfg["gemini"].get("judge") and queue and not args.mock_llm:
-        gemini_audit = _audit_backend(cfg)
-        from collections import defaultdict
-        raw_by_cit = dict(units)
-        by_unit = defaultdict(list)
-        for i, it in enumerate(queue):
-            by_unit[it["unit"]].append(i)
-        print(f"judging {len(by_unit)} units with discrepancies…")
-        for ucit, idxs in by_unit.items():
-            discr = [{"n": i, "parser": queue[i]["parser"], "llm": queue[i]["llm"],
-                      "bucket": queue[i]["bucket"]} for i in idxs]
-            recs = gemini_audit.judge(ucit, raw_by_cit.get(ucit, ""), discr, cfg,
-                                      os.path.join(out, "llm_cache"))
-            for i in idxs:
-                if i in recs:
-                    queue[i]["judge"] = {"choice": recs[i].get("choice"),
-                                         "value": recs[i].get("value", []),
-                                         "rationale": recs[i].get("rationale", "")}
+    # optional LLM judge: pre-fill a recommendation for each disagreement (needs_review only)
+    if cfg["gemini"].get("judge") and not args.mock_llm:
+        review_idx = [i for i, it in enumerate(ledger) if it["needs_review"]]
+        if review_idx:
+            gemini_audit = _audit_backend(cfg)
+            from collections import defaultdict
+            raw_by_cit = dict(units)
+            by_unit = defaultdict(list)
+            for i in review_idx:
+                by_unit[ledger[i]["unit"]].append(i)
+            print(f"judging {len(by_unit)} units with disagreements…")
+            for ucit, idxs in by_unit.items():
+                discr = [{"n": i, "target": ledger[i]["target"],
+                          "source": "parser" if ledger[i]["status"] == "parser_inferred" else "llm",
+                          "evidence": (ledger[i]["parser"] or ledger[i]["llm"] or {}).get("evidence", "")}
+                         for i in idxs]
+                recs = gemini_audit.judge(ucit, raw_by_cit.get(ucit, ""), discr, cfg,
+                                          os.path.join(out, "llm_cache"))
+                for i in idxs:
+                    if i in recs:
+                        ledger[i]["judge"] = {"choice": recs[i].get("choice"),
+                                              "value": recs[i].get("value", []),
+                                              "rationale": recs[i].get("rationale", "")}
 
-    json.dump(queue, open(os.path.join(out, f"{reg}_queue.json"), "w", encoding="utf-8"),
+    json.dump(ledger, open(os.path.join(out, f"{reg}_ledger.json"), "w", encoding="utf-8"),
               indent=2, ensure_ascii=False)
-    json.dump(confirmed, open(os.path.join(out, f"{reg}_confirmed.json"), "w", encoding="utf-8"),
-              ensure_ascii=False)
-    review.write_review(queue, os.path.join(out, f"{reg}_review.html"),
+    review.write_review(ledger, os.path.join(out, f"{reg}_review.html"),
                         f"{reg} cross-reference review")
+    n_review = sum(1 for it in ledger if it["needs_review"])
     print(f"  reconcile: {stats}")
-    print(f"  review page: {os.path.join(out, f'{reg}_review.html')}  ({len(queue)} items to review)")
+    print(f"  review page: {os.path.join(out, f'{reg}_review.html')}  "
+          f"({len(ledger)} refs, {n_review} need review)")
 
 def cmd_apply(cfg, args):
     out = cfg["output_dir"]; reg = cfg["regulation"]
     rows = json.load(open(os.path.join(out, f"{reg}_chunks.json"), encoding="utf-8"))
-    cpath = os.path.join(out, f"{reg}_confirmed.json")
-    confirmed = json.load(open(cpath, encoding="utf-8")) if os.path.exists(cpath) else {}
-    # merge one or more decisions files; later files win per (unit, llm_target)
+    lpath = os.path.join(out, f"{reg}_ledger.json")
+    ledger = json.load(open(lpath, encoding="utf-8")) if os.path.exists(lpath) else []
+    confirmed = {}                                        # {unit: {corroborated targets}} for provenance
+    for it in ledger:
+        if it["status"] == "corroborated":
+            confirmed.setdefault(it["unit"], set()).add(reconcile.norm_cit(it["target"]))
+
+    # merge one or more decisions files; later files win per (unit, target)
     merged = {}
     for p in (args.decisions or []):
         for d in json.load(open(p, encoding="utf-8")):
-            merged[(d["unit"], d.get("llm_target", str(d.get("value"))))] = d
+            merged[(d["unit"], reconcile.norm_cit(d.get("target", "")))] = d
     decisions = list(merged.values())
+    # reject removes a target; manual replaces it with corrected citation(s) -> both drop the original
+    replaced = {(d["unit"], reconcile.norm_cit(d["target"]))
+                for d in decisions if d["choice"] in ("reject", "manual")}
 
-    # 1) annotate every existing (parser) ref with provenance
+    # 1) annotate existing (parser) refs with provenance; drop any the human rejected/replaced
+    removed = 0
     for r in rows:
-        conf = set(confirmed.get(r["citation"], []))
+        conf = confirmed.get(r["citation"], set())
+        kept = []
         for cr in r["cross_references"]:
-            corrob = reconcile.norm_cit(cr["target"]) in conf
+            t = reconcile.norm_cit(cr["target"])
+            if (r["citation"], t) in replaced:
+                removed += 1
+                continue
+            corrob = t in conf
             cr["provenance"] = {"producer": "parser+gemini" if corrob else "parser",
                                 "status": "corroborated" if corrob else "parser_only"}
+            kept.append(cr)
+        r["cross_references"] = kept
 
-    # 2) append human-approved additions to their unit row
+    # 2) append human-approved additions (accepted llm-only + manual corrections) to their unit row
     by_cit = {r["citation"]: r for r in rows}
     added = 0
     for d in decisions:
-        if d["choice"] == "reject" or not d.get("value"):
-            continue
+        if d["choice"] == "manual":
+            tgts, producer = d.get("value", []), "human"
+        elif d["choice"] == "accept" and d.get("status") == "llm_only":
+            tgts, producer = [d["target"]], "gemini+human"
+        else:
+            continue                                      # reject -> nothing; accept of parser/corrob -> already kept
         u = by_cit.get(d["unit"])
         if not u:
             continue
-        producer = {"llm": "gemini+human", "manual": "human", "parser": "parser+human"}[d["choice"]]
-        for tgt in d["value"]:
+        for tgt in tgts:
             if any(reconcile.norm_cit(c["target"]) == reconcile.norm_cit(tgt)
                    for c in u["cross_references"]):
                 continue                                  # already present
@@ -219,7 +242,7 @@ def cmd_apply(cfg, args):
 
     path = os.path.join(out, f"{reg}_verified.json")
     json.dump(rows, open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
-    print(f"wrote {path}  (+{added} human-approved refs, {len(decisions)} decisions)")
+    print(f"wrote {path}  (+{added} approved, -{removed} rejected/replaced, {len(decisions)} decisions)")
 
 def add_overrides(p):
     """Config-overriding flags shared by both subcommands (highest precedence)."""
