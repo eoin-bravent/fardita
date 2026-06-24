@@ -9,10 +9,10 @@
 Config: pipeline.config.json (regulation, input_dir, bottom_level, gemini model/reasoning, …).
 Secret: GEMINI_API_KEY in the environment (never written to config or logs).
 """
-import os, sys, json, argparse
+import os, sys, json, time, glob, argparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import chunker, reconcile, review
+import chunker, reconcile, review, gemini_audit
 
 DITA_DEFAULT = os.path.abspath(os.path.join(HERE, "..", ".."))
 DEFAULTS = {
@@ -23,6 +23,7 @@ DEFAULTS = {
     "output_dir": os.path.join(HERE, "out"),
     # LLM backend: "usai" (default, stdlib REST) or "vertex" (Google Vertex AI via google-genai).
     "provider": "usai",
+    "concurrency": 8,                                     # parallel LLM calls per run (1 = sequential)
     # USAi.gov (OpenAI-compatible). base_url is agency-specific (https://<agency>.usai.gov).
     "gemini": {"model": "gemini-2.5-pro", "base_url": "", "reasoning": True,
                "thinking_budget": -1, "judge": False},
@@ -65,6 +66,8 @@ def load_config(args):
             cfg[k] = os.environ[ev]
     if os.environ.get("LLM_PROVIDER"):
         cfg["provider"] = os.environ["LLM_PROVIDER"]
+    if os.environ.get("LLM_CONCURRENCY"):
+        cfg["concurrency"] = int(os.environ["LLM_CONCURRENCY"])
     if os.environ.get("GEMINI_MODEL"):
         cfg["gemini"]["model"] = os.environ["GEMINI_MODEL"]
     for ev, k in {"VERTEX_PROJECT": "project", "GOOGLE_CLOUD_PROJECT": "project",
@@ -80,7 +83,7 @@ def load_config(args):
     if os.environ.get("GEMINI_JUDGE"):
         cfg["gemini"]["judge"] = os.environ["GEMINI_JUDGE"].lower() in ("1", "true", "yes", "on")
     # CLI overlay (highest precedence)
-    for attr in ("regulation", "input_dir", "bottom_level", "output_dir", "provider"):
+    for attr in ("regulation", "input_dir", "bottom_level", "output_dir", "provider", "concurrency"):
         if getattr(args, attr, None) is not None:
             cfg[attr] = getattr(args, attr)
     if getattr(args, "model", None):
@@ -103,13 +106,52 @@ def load_config(args):
     os.makedirs(cfg["output_dir"], exist_ok=True)
     return cfg
 
+def _corpus_address_map(cfg, out, reg):
+    """Address map over the WHOLE corpus so --files subset runs still validate cross-file targets.
+    Cached to out/<REG>_addrmap.json, keyed by .dita file count."""
+    n_files = len(glob.glob(os.path.join(cfg["input_dir"], "*.dita")))
+    p = os.path.join(out, f"{reg}_addrmap.json")
+    if os.path.exists(p):
+        c = json.load(open(p, encoding="utf-8"))
+        if c.get("n_files") == n_files:
+            return set(c["map"])
+    full = dict(cfg); full.pop("files", None)             # chunk the whole folder, not just --files
+    print(f"  building corpus address map ({n_files} files)…")
+    crows, _, _ = chunker.run_chunker(full)
+    m = reconcile.build_address_map(crows)
+    json.dump({"n_files": n_files, "map": sorted(m)}, open(p, "w", encoding="utf-8"))
+    return m
+
+def _run_summary(cfg, stats, timing, tokens, n_units, mock):
+    return {"provider": cfg["provider"], "model": cfg["gemini"]["model"],
+            "concurrency": cfg["concurrency"], "units": n_units,
+            "cache_hits": 0 if mock else max(0, n_units - tokens["audit"]["calls"]),
+            "status_counts": stats, "timing_sec": {k: round(v, 1) for k, v in timing.items()},
+            "tokens": tokens}
+
+def _print_summary(s):
+    print("  timing(s): " + "  ".join(f"{k}={v}" for k, v in s["timing_sec"].items()))
+    tk = s["tokens"]
+    if not tk["total"]["calls"]:
+        print("  tokens: none recorded (mock-llm or fully cached)")
+        return
+    for st in ("audit", "judge"):
+        d = tk[st]
+        if d["calls"]:
+            print(f"  tokens {st}: {d['calls']} calls  prompt {d['prompt']:,}  thinking {d['thinking']:,}"
+                  f"  output {d['output']:,}  total {d['total']:,}")
+    print(f"  tokens TOTAL: {tk['total']['total']:,}  (cache hits this run: {s['cache_hits']})")
+    if tk["total"]["reported"] < tk["total"]["calls"]:
+        print(f"  note: {tk['total']['calls'] - tk['total']['reported']} call(s) returned no usage data")
+
 def cmd_run(cfg, args):
     out = cfg["output_dir"]; reg = cfg["regulation"]
+    t, t0 = {}, time.perf_counter()
     print("chunking…")
     rows, manifest, sources = chunker.run_chunker(cfg)
+    t["chunk"] = time.perf_counter() - t0
 
     if getattr(args, "dump_payload", None):
-        import gemini_audit
         cit = args.dump_payload
         key = next((c for c in sources if c == cit or c == f"{reg}-{cit}"), None)
         if not key:
@@ -137,47 +179,61 @@ def cmd_run(cfg, args):
              for r in rows if r["type"] in ("section", "subsection") and r["citation"] in sources]
     if args.limit:
         units = units[:args.limit]
+    gemini_audit.TRACKER.reset()
+    t1 = time.perf_counter()
     if args.mock_llm:
-        llm = json.load(open(args.mock_llm, encoding="utf-8"))
+        llm, backend = json.load(open(args.mock_llm, encoding="utf-8")), None
     else:
-        gemini_audit = _audit_backend(cfg)
+        backend = _audit_backend(cfg)
         print(f"auditing {len(units)} units with {cfg['gemini']['model']} via {cfg['provider']} "
-              f"(reasoning={cfg['gemini']['reasoning']})…")
-        llm = gemini_audit.audit(units, cfg, os.path.join(out, "llm_cache"))
+              f"(reasoning={cfg['gemini']['reasoning']}, concurrency={cfg['concurrency']})…")
+        llm = backend.audit(units, cfg, os.path.join(out, "llm_cache"))
+    t["audit"] = time.perf_counter() - t1
 
-    addr = reconcile.build_address_map(rows)
+    addr = (_corpus_address_map(cfg, out, reg) if cfg.get("files")
+            else reconcile.build_address_map(rows))
+    t2 = time.perf_counter()
     ledger, stats = reconcile.reconcile(rows, llm, addr)
+    t["reconcile"] = time.perf_counter() - t2
 
-    # optional LLM judge: pre-fill a recommendation for each disagreement (needs_review only)
-    if cfg["gemini"].get("judge") and not args.mock_llm:
+    # optional LLM judge (concurrent): recommend accept/reject/manual per disagreement
+    t["judge"] = 0.0
+    if cfg["gemini"].get("judge") and backend is not None:
         review_idx = [i for i, it in enumerate(ledger) if it["needs_review"]]
         if review_idx:
-            gemini_audit = _audit_backend(cfg)
             from collections import defaultdict
             raw_by_cit = dict(units)
             by_unit = defaultdict(list)
             for i in review_idx:
                 by_unit[ledger[i]["unit"]].append(i)
-            print(f"judging {len(by_unit)} units with disagreements…")
-            for ucit, idxs in by_unit.items():
-                discr = [{"n": i, "target": ledger[i]["target"],
-                          "source": "parser" if ledger[i]["status"] == "parser_inferred" else "llm",
-                          "evidence": (ledger[i]["parser"] or ledger[i]["llm"] or {}).get("evidence", "")}
-                         for i in idxs]
-                recs = gemini_audit.judge(ucit, raw_by_cit.get(ucit, ""), discr, cfg,
-                                          os.path.join(out, "llm_cache"))
-                for i in idxs:
-                    if i in recs:
-                        ledger[i]["judge"] = {"choice": recs[i].get("choice"),
-                                              "value": recs[i].get("value", []),
-                                              "rationale": recs[i].get("rationale", "")}
+            jobs = [(ucit, raw_by_cit.get(ucit, ""),
+                     [{"n": i, "target": ledger[i]["target"],
+                       "source": "parser" if ledger[i]["status"] == "parser_inferred" else "llm",
+                       "evidence": (ledger[i]["parser"] or ledger[i]["llm"] or {}).get("evidence", "")}
+                      for i in idxs])
+                    for ucit, idxs in by_unit.items()]
+            print(f"judging {len(jobs)} units with disagreements (concurrency={cfg['concurrency']})…")
+            t3 = time.perf_counter()
+            recs_by_unit = backend.judge_all(jobs, cfg, os.path.join(out, "llm_cache"))
+            t["judge"] = time.perf_counter() - t3
+            for i in review_idx:
+                recs = recs_by_unit.get(ledger[i]["unit"], {})
+                if i in recs:
+                    ledger[i]["judge"] = {"choice": recs[i].get("choice"),
+                                          "value": recs[i].get("value", []),
+                                          "rationale": recs[i].get("rationale", "")}
 
+    t["total"] = time.perf_counter() - t0
+    summary = _run_summary(cfg, stats, t, gemini_audit.TRACKER.summary(), len(units), bool(args.mock_llm))
     json.dump(ledger, open(os.path.join(out, f"{reg}_ledger.json"), "w", encoding="utf-8"),
               indent=2, ensure_ascii=False)
+    json.dump(summary, open(os.path.join(out, f"{reg}_token_usage.json"), "w", encoding="utf-8"),
+              indent=2, ensure_ascii=False)
     review.write_review(ledger, os.path.join(out, f"{reg}_review.html"),
-                        f"{reg} cross-reference review")
+                        f"{reg} cross-reference review", summary)
     n_review = sum(1 for it in ledger if it["needs_review"])
     print(f"  reconcile: {stats}")
+    _print_summary(summary)
     print(f"  review page: {os.path.join(out, f'{reg}_review.html')}  "
           f"({len(ledger)} refs, {n_review} need review)")
 
@@ -225,6 +281,8 @@ def cmd_apply(cfg, args):
             tgts, producer = d.get("value", []), "human"
         elif d["choice"] == "accept" and d.get("status") == "llm_only":
             tgts, producer = [d["target"]], "gemini+human"
+        elif d["choice"] == "accept" and d.get("status") == "added":
+            tgts, producer = [d["target"]], "human"       # reference the human added (neither tool found it)
         else:
             continue                                      # reject -> nothing; accept of parser/corrob -> already kept
         u = by_cit.get(d["unit"])
@@ -250,6 +308,7 @@ def add_overrides(p):
     p.add_argument("--regulation"); p.add_argument("--input-dir", dest="input_dir")
     p.add_argument("--bottom-level", dest="bottom_level"); p.add_argument("--output-dir", dest="output_dir")
     p.add_argument("--provider", choices=["usai", "vertex"], help="LLM backend (default usai)")
+    p.add_argument("--concurrency", type=int, help="parallel LLM calls per run (default 8; 1 = sequential)")
     p.add_argument("--model")
     p.add_argument("--reasoning", dest="reasoning", action="store_true", default=None)
     p.add_argument("--no-reasoning", dest="reasoning", action="store_false")

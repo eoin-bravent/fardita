@@ -228,7 +228,10 @@ def _range_refs(text, sec_num):
         members = _enumerate_tokens(lt[-1], rt[-1])
         if not members:
             continue
-        base = m.group("lb") or m.group("rb") or sec_num
+        base = m.group("lb") or m.group("rb")
+        if not base:                                  # no base glued to the range -> carry the nearest
+            left = re.findall(r"\d+\.\d+(?:-\d+)?", text[max(0, m.start() - 120):m.start()])
+            base = left[-1] if left else sec_num      # most recent citation in the list, else this section
         prefix = base + "".join(f"({t})" for t in fixed)
         ctx = _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))
         for tok in members:

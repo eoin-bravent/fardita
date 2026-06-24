@@ -68,10 +68,11 @@ def reconcile(rows, llm_by_cit, addr_map):
     units = [r for r in rows if r["type"] in ("section", "subsection")]
     for u in units:
         cit = u["citation"]
+        self_cit = norm_cit(strip_agency(cit))             # exact self-reference (e.g. 5.101 -> 5.101 / "this section")
         parser_map = {}                                    # norm target -> {kind, evidence}
         for cr in u["cross_references"]:
             t = norm_cit(cr["target"])
-            if t and t not in parser_map:
+            if t and t != self_cit and t not in parser_map:
                 parser_map[t] = {"kind": cr.get("confidence", "inferred"), "evidence": cr_context(cr)}
         llm_map = {}                                       # norm target -> {evidence, validation}
         for ref in llm_by_cit.get(cit, []):
@@ -79,7 +80,7 @@ def reconcile(rows, llm_by_cit, addr_map):
             if not raw:
                 continue
             t, status = validate(raw, addr_map)
-            if t and t not in llm_map:
+            if t and t != self_cit and t not in llm_map:
                 llm_map[t] = {"evidence": ref.get("evidence", ""), "validation": status}
         for t in sorted(set(parser_map) | set(llm_map)):
             p, l = parser_map.get(t), llm_map.get(t)

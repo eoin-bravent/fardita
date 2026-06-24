@@ -22,11 +22,16 @@ python pipeline.py run --mock-llm refs.json         # drive reconcile/review fro
 python pipeline.py run --limit 50                   # audit only the first 50 units (cheap smoke test)
 python pipeline.py run --dump-payload 5.203         # print the exact prompt + raw .dita for one unit
 python pipeline.py run --judge                      # also run the LLM judge to pre-fill review recs
+python pipeline.py run --concurrency 16              # parallel LLM calls (default 8; 1 = sequential)
 python pipeline.py apply --decisions decisions.json
 ```
 - **`--no-llm`** is the parser-only switch — it stops after `chunks` + `manifest` (no API key, no
   review page). **`--files`** picks specific files; otherwise the whole `input_dir` folder is scanned.
   **`--judge`/`--no-judge`** toggles the optional reconciliation pass.
+- **`--concurrency N`** runs N audit/judge calls in parallel (the audit is the slow stage — a full
+  corpus is many hours sequential, ~N× faster threaded). Tune down if you hit provider rate limits
+  (429s back off automatically). Subset (`--files`) runs build a **whole-corpus address map** (cached
+  to `out/<REG>_addrmap.json`) so cross-file targets still validate.
 
 ## Row identity
 Each row's `citation` is prefixed with the regulation — `FAR-5.101`, `FAR-6.302-2(a)` — and carries
@@ -91,21 +96,34 @@ the chunk's level. Below `subparagraph` we use `subunit-depth-N` rather than inv
   source sentence(s) quoted verbatim**, with the citation that triggers the reference wrapped in
   `« »` guillemets (so the review page highlights it). The prompt is attachment-aware — a
   parenthetical after a link *usually* narrows it but **not always** (e.g. `'the authority of 5.202
-  and (a)(2) of this section'` → `5.202` **and** this section's `(a)(2)`). Its **highest-value job is
-  prose references with no `<xref>` tag** (e.g. `'as required by 5.207'`) — the deterministic parser
-  already catches every tagged link, so the prompt tells the model those untagged refs are exactly
-  what it misses and to scan for them.
+  and (a)(2) of this section'` → `5.202` **and** this section's `(a)(2)`). It also carries a citation
+  across a **paragraph list** (`5.202(a)(1), (a)(4) through (a)(9)` → all under 5.202, not this
+  section) and **excludes self-references** (a unit citing itself / "this section"). Its
+  **highest-value job is prose references with no `<xref>` tag** (e.g. `'as required by 5.207'`) — the
+  deterministic parser already catches every tagged link, so the prompt tells the model those untagged
+  refs are exactly what it misses and to scan for them.
+- **Self-references are also dropped in code** (`reconcile`), so a unit→itself edge never reaches the
+  ledger regardless of what the model returns; a *different* paragraph of the same section is kept.
 - **Optional LLM judge (`gemini.judge` / `--judge`):** a second pass, once per `.dita` file, that
   sees **only that file** — its raw source + that file's **disagreements** (parser-inferred and
   llm-only atomic targets, with the finder's evidence) — and recommends `accept` / `reject` / `manual`
   + a one-line rationale for each. It **pre-fills** the review page's selection (you bulk-accept or
   override) — it never finalizes, so the human gate stays. Off by default; moderate extra tokens.
-- Calls Gemini's REST `generateContent` directly (urllib). Temperature 0, structured JSON
-  output, `thinkingConfig` for reasoning. Responses are **cached** per unit by
-  (model, prompt version, text hash) in `out/llm_cache/`, so re-runs are cheap and prior human
-  decisions are never lost.
-- **Rate limits matter**: ~2,964 units = one call each. On a low-RPM tier this is hours; on a
-  paid/government tier, minutes. Backoff on 429/5xx is built in.
+- Temperature 0, structured JSON output, reasoning/thinking on. Responses are **cached** per unit by
+  (provider, model, prompt version, text hash) in `out/llm_cache/`, so re-runs are cheap and prior
+  human decisions are never lost.
+- **Rate limits matter**: ~2,964 units = one call each. `--concurrency` parallelizes them; backoff on
+  429/5xx is built in. Tune concurrency to your tier.
+
+## Performance & token usage
+- **Concurrency**: audit + judge calls run in a thread pool (`--concurrency` / `concurrency` config /
+  `LLM_CONCURRENCY`, default 8). Cache hits cost nothing, so reruns of unchanged units are free.
+- **Token usage** is captured per call (prompt / output / **thinking** / total, by stage) — counting
+  only real API calls, not cache hits — and surfaced three ways: the **console** summary, a banner on
+  the **review page**, and `out/<REG>_token_usage.json` (with a per-unit breakdown). USAi reports usage
+  only if its gateway populates the `usage` field; Vertex always does (incl. gemini-2.5 thinking tokens).
+- **Timing**: per-stage (chunk / audit / judge / reconcile) + total wall-clock, in the console, the
+  banner, and `token_usage.json`.
 
 ## LLM backends (USAi.gov · Vertex AI)
 Two interchangeable backends behind the same interface — pick per run; everything downstream
@@ -152,11 +170,14 @@ are dropped.
 Self-contained, no server. Shows the **full master list** — one row per atomic target with its status
 badge, three evidence columns (**Parser** with inline `<xref>` highlighted, **LLM** with the `« »`
 span highlighted, **Judge** recommendation + rationale), and a link to the unit on **acquisition.gov**.
-**Every row is editable** with a uniform choice: **Accept / Reject / Manual** (comma-separated
-citations). Defaults: corroborated & parser-explicit → *Accept*; disagreements → the judge's pick (or
-unset). **Status filters** at the top toggle which rows show — by default only the disagreements
-(LLM-only + parser-inferred); tick **Corroborated** / **Parser-only (explicit)** to inspect agreements,
-or **hide decided** to focus. Click **Export decisions** to download `decisions.json`.
+Rows are **grouped by unit**, with a top **banner** summarizing the run (provider/model, status
+counts, tokens, timing, cache hits). **Every row is editable** with a uniform choice: **Accept /
+Reject / Manual**. When a judge ran, its recommended option is tagged **`judge ✓`** (click it to
+re-select). Each unit also has an **"Add reference(s)"** box for refs neither tool found. Both the
+Manual and Add boxes accept **comma lists *and* ranges**, expanded client-side into atomic citations
+(`5.203(a)-(c)` → three) — same rules as the parser. **Status filters** toggle which rows show (by
+default the disagreements + added; tick **Corroborated** / **Parser-only (explicit)** to inspect
+agreements; **hide decided** to focus). Click **Export decisions** to download `decisions.json`.
 
 **Reviewing over multiple sittings:**
 - Your selections **auto-save** to the browser (`localStorage`), so reloading the page restores them.
@@ -174,6 +195,8 @@ or **hide decided** to focus. Click **Export decisions** to download `decisions.
 | `<REG>_chunks.json` | the chunks (pristine, parser-only) |
 | `<REG>_manifest.json` | every file **seen**, **processed**, and **skipped** (with reasons) — the parser and LLM use this same set |
 | `<REG>_ledger.json` | the per-unit master list: every atomic target tagged `status` (corroborated / parser_explicit / parser_inferred / llm_only), with parser/llm/judge evidence — drives the review page and `apply` |
+| `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |
+| `<REG>_addrmap.json` | cached whole-corpus address map (so `--files` subset runs validate cross-file targets) |
 | `<REG>_review.html` | the review page |
 | `<REG>_verified.json` | after `apply`: chunks + human-approved refs, every ref tagged `provenance{producer, status}` (producer `parser`/`parser+gemini`/`gemini+human`/`human`; status `parser_only`/`corroborated`/`human_approved`) |
 | `llm_cache/` | cached raw LLM audit + judge responses |

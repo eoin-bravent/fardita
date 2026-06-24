@@ -2,13 +2,13 @@
 """Parallel LLM backend: Google Vertex AI (Gemini) via the google-genai SDK.
 
 Drop-in alternative to `gemini_audit.py` (the USAi.gov stdlib backend). Exposes the SAME
-public interface — `audit(units, cfg, cache_dir)` and `judge(...)` — so `pipeline.py` can
-swap to it with `LLM_PROVIDER=vertex` (or `"provider": "vertex"` in the config) and nothing
-downstream (reconcile / review / apply) changes.
+public interface — `audit(units, cfg, cache_dir)` and `judge_all(jobs, cfg, cache_dir)` — so
+`pipeline.py` can swap to it with `LLM_PROVIDER=vertex` (or `"provider": "vertex"` in the
+config) and nothing downstream (reconcile / review / apply) changes.
 
-Single source of truth: the prompts, JSON schemas, the in-prompt schema instruction, the
-JSON extractor and the cache helper are all IMPORTED from `gemini_audit` — only the
-transport (`_call`) and the per-unit cache key differ.
+Single source of truth: the prompts, schemas, the threaded orchestration (`run_audit` /
+`run_judge`), caching, and the token tracker all live in `gemini_audit` — this module only
+supplies the Vertex transport (`_call`) + auth and a separate cache dir.
 
 Auth: Application Default Credentials, exactly like the Java sample GSA provided — set
 `GOOGLE_APPLICATION_CREDENTIALS` to the path of the service-account JSON key. Project /
@@ -21,13 +21,10 @@ responses (same model id, same prompt → same filename, but a different provide
 Requires `google-genai` (see requirements-vertex.txt). The USAi backend stays stdlib-only;
 this dependency is needed only when you actually select the Vertex backend.
 """
-import os, time, hashlib
+import os, time
 
-# Reuse everything provider-agnostic from the USAi backend (prompts, schemas, helpers).
-from gemini_audit import (
-    PROMPT_VERSION, AUDIT_SYSTEM, AUDIT_SCHEMA, JUDGE_SYSTEM, JUDGE_SCHEMA,
-    _schema_instruction, _extract_json, _cached, _judge_user_text,
-)
+# Reuse the shared threaded orchestration + helpers from the USAi backend; only the transport differs.
+from gemini_audit import run_audit, run_judge, _schema_instruction, _extract_json
 
 PROVIDER = "vertex"
 # GSA sample defaults (VertexAiServiceAccountClient.java) — overridable via config/env.
@@ -70,8 +67,17 @@ def _is_transient(e):
     return any(t in s for t in ("RESOURCE_EXHAUSTED", "UNAVAILABLE", "DEADLINE", "503", "429"))
 
 
+def _usage_from_vertex(resp):
+    """Pull token usage (incl. gemini-2.5 thinking tokens) from a Vertex response."""
+    m = getattr(resp, "usage_metadata", None)
+    if not m:
+        return {"prompt": 0, "output": 0, "thinking": 0, "total": 0, "reported": False}
+    g = lambda a: getattr(m, a, 0) or 0
+    return {"prompt": g("prompt_token_count"), "output": g("candidates_token_count"),
+            "thinking": g("thoughts_token_count"), "total": g("total_token_count"), "reported": True}
+
 def _call(system_text, user_text, schema, cfg, retries=4):
-    """One Gemini generateContent call on Vertex. JSON-mode + in-prompt schema (mirrors USAi)."""
+    """One Gemini generateContent call on Vertex. Returns (parsed_json, usage_dict)."""
     from google.genai import types
     client = _client(cfg)
     g = cfg.get("gemini", {})
@@ -88,13 +94,13 @@ def _call(system_text, user_text, schema, cfg, retries=4):
     for attempt in range(retries):
         try:
             resp = client.models.generate_content(model=model, contents=contents, config=config)
-            return _extract_json(resp.text)
+            return _extract_json(resp.text), _usage_from_vertex(resp)
         except Exception as e:                          # noqa: BLE001 — SDK exc hierarchy varies
             if attempt < retries - 1 and _is_transient(e):
                 time.sleep(2 ** attempt * 2)            # backoff for rate limit / transient
                 continue
             raise RuntimeError(f"Vertex generate_content failed: {e}") from None
-    return []
+    return [], None
 
 
 def _vertex_cache(cache_dir):
@@ -102,33 +108,9 @@ def _vertex_cache(cache_dir):
     return cache_dir.rstrip("/\\") + "_vertex"
 
 
-# ---------- stages (same signatures/returns as gemini_audit) ----------
+# ---------- stages (delegate to the shared orchestration with this backend's transport) ----------
 def audit(units, cfg, cache_dir, progress=True):
-    """units: list of (citation, raw_dita). Returns {citation: [ {target, evidence} ]}."""
-    cache_dir = _vertex_cache(cache_dir)
-    out = {}
-    for i, (cit, text) in enumerate(units, 1):
-        h = hashlib.sha1(
-            f"{PROVIDER}|{cfg['gemini']['model']}|{PROMPT_VERSION}|audit|{text}".encode()
-        ).hexdigest()[:16]
-        sys_t = AUDIT_SYSTEM.format(regulation=cfg["regulation"], citation=cit)
-        out[cit] = _cached(cache_dir, cit.replace("/", "_"), h,
-                           lambda t=text, s=sys_t: _call(s, t, AUDIT_SCHEMA, cfg))
-        if progress and i % 25 == 0:
-            print(f"    audited {i}/{len(units)}")
-    return out
+    return run_audit(units, cfg, _vertex_cache(cache_dir), _call, provider_tag="vertex|", progress=progress)
 
-
-def judge(unit_cit, raw_dita, discrepancies, cfg, cache_dir):
-    """discrepancies: [{n, target, source, evidence}]. Returns {n: {choice, value, rationale}}."""
-    if not discrepancies:
-        return {}
-    cache_dir = _vertex_cache(cache_dir)
-    user = raw_dita + "\n\n" + _judge_user_text(unit_cit, discrepancies)
-    h = hashlib.sha1(
-        f"{PROVIDER}|{cfg['gemini']['model']}|{PROMPT_VERSION}|judge|{user}".encode()
-    ).hexdigest()[:16]
-    sys_t = JUDGE_SYSTEM.format(regulation=cfg["regulation"], citation=unit_cit)
-    recs = _cached(cache_dir, "judge_" + unit_cit.replace("/", "_"), h,
-                   lambda: _call(sys_t, user, JUDGE_SCHEMA, cfg))
-    return {r["n"]: r for r in recs if "n" in r}
+def judge_all(jobs, cfg, cache_dir, progress=True):
+    return run_judge(jobs, cfg, _vertex_cache(cache_dir), _call, provider_tag="vertex|", progress=progress)

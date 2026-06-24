@@ -2,19 +2,23 @@
 """Stage 2: blind LLM audit + optional LLM judge (USAi.gov via REST / stdlib urllib).
 
 audit() — per unit, the model lists every reference to another part of the regulation,
-          one `target` each (ranges as one normalized span), with quoted evidence.
-judge() — optional: per unit, the model sees the source + parser-vs-LLM discrepancies and
-          recommends a resolution + rationale for each (pre-fills the human review page).
-Both cache by (model, prompt version, payload hash). No SDK (Python 3.14 safe).
+          one atomic `target` each (ranges expanded into members), with a verbatim evidence
+          sentence; self-references are excluded.
+judge_all() — optional: per unit, the model sees the source + the disagreements and
+          recommends accept/reject/manual + rationale for each (pre-fills the review page).
+run_audit/run_judge are the shared, THREADED orchestration (cfg["concurrency"] workers) used
+by both backends; per-call token usage is captured into TRACKER. Caching by (provider, model,
+prompt version, payload hash). USAi path is stdlib-only (Python 3.14 safe).
 
 USAi.gov exposes an OpenAI-compatible Chat Completions API
 (`<base_url>/api/v1/chat/completions`, `Authorization: Bearer <key>`). It does NOT
 support server-side structured output / response schemas, so we fold the JSON schema
 into the prompt and parse the returned JSON ourselves (see _extract_json).
 """
-import os, json, time, re, hashlib, urllib.request, urllib.error
+import os, json, time, re, hashlib, threading, urllib.request, urllib.error
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-PROMPT_VERSION = "v6"
+PROMPT_VERSION = "v7"
 # USAi is OpenAI-compatible; base_url is agency-specific (https://<agency>.usai.gov).
 ENDPOINT_PATH = "/api/v1/chat/completions"
 
@@ -40,6 +44,14 @@ AUDIT_SYSTEM = (
     "5.203(a), 5.203(b), 5.203(c), 5.203(d). Give each member the SAME `evidence` (the range "
     "sentence). Only expand when the members are unambiguous; if you cannot tell the sequence, "
     "report the endpoints you are sure of.\n"
+    "5. CITATION + PARAGRAPH LIST -- a citation followed by a comma list of bare paragraphs carries "
+    "the citation's number across the WHOLE list, e.g. 'the exemptions at 5.202(a)(1), (a)(4) through "
+    "(a)(9), or (a)(11)' means 5.202(a)(1), 5.202(a)(4)..5.202(a)(9), and 5.202(a)(11) -- ALL under "
+    "5.202, NOT this section. Resolve each bare '(x)' against the most recent explicit citation number, "
+    "not against {citation}.\n"
+    "EXCLUDE SELF-REFERENCES: do NOT report a reference from this unit to itself -- 'this section', or "
+    "the bare citation {citation}, is the document referring to itself and is not a cross-reference "
+    "(but a DIFFERENT paragraph of this section, e.g. {citation}(a)(2), IS a valid reference).\n"
     "Exclude external statutes (U.S.C., or CFR titles other than this regulation), URLs, and DITA "
     "plumbing. For each reference return one `target` citation in standard form (e.g. 5.202, "
     "5.202(a)(2), 6.302-2, subpart 9.4) and, as `evidence`, the COMPLETE sentence(s) containing the "
@@ -119,7 +131,18 @@ def _base_url(cfg):
                            "e.g. https://<agency>.usai.gov) in .env or gemini.base_url in config")
     return url
 
+def _usage_from_usai(data):
+    """Pull token usage from an OpenAI-compatible response (absent on some gateways)."""
+    u = data.get("usage") or {}
+    if not u:
+        return {"prompt": 0, "output": 0, "thinking": 0, "total": 0, "reported": False}
+    details = u.get("completion_tokens_details") or {}
+    return {"prompt": u.get("prompt_tokens", 0), "output": u.get("completion_tokens", 0),
+            "thinking": details.get("reasoning_tokens", 0), "total": u.get("total_tokens", 0),
+            "reported": True}
+
 def _call(system_text, user_text, schema, cfg, retries=4):
+    """Returns (parsed_json, usage_dict). usage_dict.reported is False if the gateway omits usage."""
     key = os.environ.get("USAI_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not key:
         raise RuntimeError("USAI_API_KEY (or GEMINI_API_KEY) not set in environment")
@@ -132,14 +155,14 @@ def _call(system_text, user_text, schema, cfg, retries=4):
             with urllib.request.urlopen(req, timeout=180) as resp:
                 data = json.load(resp)
             content = data["choices"][0]["message"]["content"]
-            return _extract_json(content)
+            return _extract_json(content), _usage_from_usai(data)
         except urllib.error.HTTPError as e:
             if e.code in (429, 500, 503) and attempt < retries - 1:
                 time.sleep(2 ** attempt * 2)            # backoff for rate limit / transient
                 continue
             body = e.read().decode("utf-8", "replace")[:600]
             raise RuntimeError(f"USAi HTTP {e.code}: {body}") from None
-    return []
+    return [], None
 
 def _cached(cache_dir, name, h, fn):
     os.makedirs(cache_dir, exist_ok=True)
@@ -152,26 +175,89 @@ def _cached(cache_dir, name, h, fn):
     json.dump({"hash": h, "result": result}, open(p, "w", encoding="utf-8"))
     return result
 
-# ---------- stages ----------
-def audit(units, cfg, cache_dir, progress=True):
-    """units: list of (citation, raw_dita). Returns {citation: [ {target, evidence} ]}."""
-    out = {}
-    for i, (cit, text) in enumerate(units, 1):
-        h = hashlib.sha1(f"{cfg['gemini']['model']}|{PROMPT_VERSION}|audit|{text}".encode()).hexdigest()[:16]
+# ---------- token usage tracker (thread-safe; counts only real API calls, not cache hits) ----------
+class _Tracker:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self.records = []                              # [{stage, unit, prompt, output, thinking, total, reported}]
+    def reset(self):
+        with self._lock:
+            self.records = []
+    def record(self, stage, unit, usage):
+        with self._lock:
+            self.records.append({"stage": stage, "unit": unit, **usage})
+    def summary(self):
+        with self._lock:
+            recs = list(self.records)
+        keys = ("calls", "prompt", "thinking", "output", "total", "reported")
+        out = {}
+        for st in ("audit", "judge"):
+            rs = [r for r in recs if r["stage"] == st]
+            out[st] = {"calls": len(rs), "prompt": sum(r.get("prompt", 0) for r in rs),
+                       "thinking": sum(r.get("thinking", 0) for r in rs),
+                       "output": sum(r.get("output", 0) for r in rs),
+                       "total": sum(r.get("total", 0) for r in rs),
+                       "reported": sum(1 for r in rs if r.get("reported"))}
+        out["total"] = {k: out["audit"][k] + out["judge"][k] for k in keys}
+        out["per_unit"] = recs
+        return out
+
+TRACKER = _Tracker()
+
+# ---------- shared threaded orchestration (both backends inject their own `call`) ----------
+def _concurrency(cfg):
+    return max(1, int(cfg.get("concurrency", 8)))
+
+def run_audit(units, cfg, cache_dir, call, provider_tag="", progress=True):
+    """units: [(citation, raw_dita)]. Returns {citation: [ {target, evidence} ]}. Concurrent."""
+    model, n, out = cfg["gemini"]["model"], len(units), {}
+    def work(cit, text):
+        h = hashlib.sha1(f"{provider_tag}{model}|{PROMPT_VERSION}|audit|{text}".encode()).hexdigest()[:16]
         sys_t = AUDIT_SYSTEM.format(regulation=cfg["regulation"], citation=cit)
-        out[cit] = _cached(cache_dir, cit.replace("/", "_"), h,
-                           lambda t=text, s=sys_t: _call(s, t, AUDIT_SCHEMA, cfg))
-        if progress and i % 25 == 0:
-            print(f"    audited {i}/{len(units)}")
+        def fn():
+            res, usage = call(sys_t, text, AUDIT_SCHEMA, cfg)
+            if usage:
+                TRACKER.record("audit", cit, usage)
+            return res
+        return cit, _cached(cache_dir, cit.replace("/", "_"), h, fn)
+    with ThreadPoolExecutor(max_workers=_concurrency(cfg)) as ex:
+        futs = [ex.submit(work, cit, text) for cit, text in units]
+        for done, f in enumerate(as_completed(futs), 1):
+            cit, res = f.result()
+            out[cit] = res
+            if progress and (done % 25 == 0 or done == n):
+                print(f"    audited {done}/{n}")
     return out
 
-def judge(unit_cit, raw_dita, discrepancies, cfg, cache_dir):
-    """discrepancies: [{n, target, source, evidence}]. Returns {n: {choice, value, rationale}}."""
+def _judge_one(unit_cit, raw_dita, discrepancies, cfg, cache_dir, call, provider_tag):
     if not discrepancies:
         return {}
     user = raw_dita + "\n\n" + _judge_user_text(unit_cit, discrepancies)
-    h = hashlib.sha1(f"{cfg['gemini']['model']}|{PROMPT_VERSION}|judge|{user}".encode()).hexdigest()[:16]
+    h = hashlib.sha1(f"{provider_tag}{cfg['gemini']['model']}|{PROMPT_VERSION}|judge|{user}".encode()).hexdigest()[:16]
     sys_t = JUDGE_SYSTEM.format(regulation=cfg["regulation"], citation=unit_cit)
-    recs = _cached(cache_dir, "judge_" + unit_cit.replace("/", "_"), h,
-                   lambda: _call(sys_t, user, JUDGE_SCHEMA, cfg))
+    def fn():
+        recs, usage = call(sys_t, user, JUDGE_SCHEMA, cfg)
+        if usage:
+            TRACKER.record("judge", unit_cit, usage)
+        return recs
+    recs = _cached(cache_dir, "judge_" + unit_cit.replace("/", "_"), h, fn)
     return {r["n"]: r for r in recs if "n" in r}
+
+def run_judge(jobs, cfg, cache_dir, call, provider_tag="", progress=True):
+    """jobs: [(unit_cit, raw_dita, discrepancies)]. Returns {unit_cit: {n: rec}}. Concurrent."""
+    jobs = [j for j in jobs if j[2]]
+    out, n = {}, len(jobs)
+    with ThreadPoolExecutor(max_workers=_concurrency(cfg)) as ex:
+        futs = {ex.submit(_judge_one, u, r, d, cfg, cache_dir, call, provider_tag): u for u, r, d in jobs}
+        for done, f in enumerate(as_completed(futs), 1):
+            out[futs[f]] = f.result()
+            if progress and (done % 10 == 0 or done == n):
+                print(f"    judged {done}/{n}")
+    return out
+
+# ---------- stages (USAi backend = inject this module's _call) ----------
+def audit(units, cfg, cache_dir, progress=True):
+    return run_audit(units, cfg, cache_dir, _call, provider_tag="", progress=progress)
+
+def judge_all(jobs, cfg, cache_dir, progress=True):
+    return run_judge(jobs, cfg, cache_dir, _call, provider_tag="", progress=progress)
