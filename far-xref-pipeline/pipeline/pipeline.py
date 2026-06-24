@@ -116,7 +116,7 @@ def cmd_run(cfg, args):
             sys.exit(f"unit {cit} not found (try the full citation, e.g. {reg}-{cit})")
         raw = open(sources[key], encoding="utf-8").read()
         print("=" * 70 + "\nSYSTEM INSTRUCTION:\n" + "=" * 70)
-        print(gemini_audit.SYSTEM.format(regulation=reg, citation=key))
+        print(gemini_audit.AUDIT_SYSTEM.format(regulation=reg, citation=key))
         print("\n" + "=" * 70 + f"\nUSER CONTENT (entire raw .dita for {key}, {len(raw)} chars):\n" + "=" * 70)
         print(raw)
         return
