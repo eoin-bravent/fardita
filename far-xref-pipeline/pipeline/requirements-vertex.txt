@@ -1,0 +1,4 @@
+# Only needed for the Vertex AI backend (provider=vertex). The default USAi.gov backend
+# is stdlib-only and needs nothing here.
+#   pip install -r requirements-vertex.txt
+google-genai>=1.0.0

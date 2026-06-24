@@ -21,10 +21,23 @@ DEFAULTS = {
     "bottom_level": "paragraph",
     "url_template": "https://www.acquisition.gov/far/{num}",
     "output_dir": os.path.join(HERE, "out"),
+    # LLM backend: "usai" (default, stdlib REST) or "vertex" (Google Vertex AI via google-genai).
+    "provider": "usai",
     # USAi.gov (OpenAI-compatible). base_url is agency-specific (https://<agency>.usai.gov).
     "gemini": {"model": "gemini-2.5-pro", "base_url": "", "reasoning": True,
                "thinking_budget": -1, "judge": False},
+    # Vertex AI (used only when provider == "vertex"). Auth via GOOGLE_APPLICATION_CREDENTIALS.
+    "vertex": {"project": "", "location": ""},
 }
+
+def _audit_backend(cfg):
+    """Pick the LLM backend module by provider. Both expose audit()/judge() identically."""
+    provider = (cfg.get("provider") or "usai").lower()
+    if provider in ("vertex", "vertexai", "gcp"):
+        import vertex_audit
+        return vertex_audit
+    import gemini_audit
+    return gemini_audit
 
 def load_dotenv(path):
     """Load KEY=VALUE lines into the environment (real env always wins)."""
@@ -42,15 +55,22 @@ def load_config(args):
     path = getattr(args, "config", None) or os.path.join(HERE, "pipeline.config.json")
     if os.path.exists(path):
         user = json.load(open(path, encoding="utf-8"))
-        cfg.update({k: v for k, v in user.items() if k != "gemini"})
+        cfg.update({k: v for k, v in user.items() if k not in ("gemini", "vertex")})
         cfg["gemini"].update(user.get("gemini", {}))
+        cfg["vertex"].update(user.get("vertex", {}))
     # env / .env overlay
     for ev, k in {"PIPELINE_REGULATION": "regulation", "PIPELINE_INPUT_DIR": "input_dir",
                   "PIPELINE_BOTTOM_LEVEL": "bottom_level", "PIPELINE_OUTPUT_DIR": "output_dir"}.items():
         if os.environ.get(ev):
             cfg[k] = os.environ[ev]
+    if os.environ.get("LLM_PROVIDER"):
+        cfg["provider"] = os.environ["LLM_PROVIDER"]
     if os.environ.get("GEMINI_MODEL"):
         cfg["gemini"]["model"] = os.environ["GEMINI_MODEL"]
+    for ev, k in {"VERTEX_PROJECT": "project", "GOOGLE_CLOUD_PROJECT": "project",
+                  "VERTEX_LOCATION": "location", "GOOGLE_CLOUD_LOCATION": "location"}.items():
+        if os.environ.get(ev):
+            cfg["vertex"][k] = os.environ[ev]
     if os.environ.get("USAI_BASE_URL") or os.environ.get("GEMINI_BASE_URL"):
         cfg["gemini"]["base_url"] = os.environ.get("USAI_BASE_URL") or os.environ["GEMINI_BASE_URL"]
     if os.environ.get("GEMINI_REASONING"):
@@ -60,7 +80,7 @@ def load_config(args):
     if os.environ.get("GEMINI_JUDGE"):
         cfg["gemini"]["judge"] = os.environ["GEMINI_JUDGE"].lower() in ("1", "true", "yes", "on")
     # CLI overlay (highest precedence)
-    for attr in ("regulation", "input_dir", "bottom_level", "output_dir"):
+    for attr in ("regulation", "input_dir", "bottom_level", "output_dir", "provider"):
         if getattr(args, attr, None) is not None:
             cfg[attr] = getattr(args, attr)
     if getattr(args, "model", None):
@@ -120,8 +140,8 @@ def cmd_run(cfg, args):
     if args.mock_llm:
         llm = json.load(open(args.mock_llm, encoding="utf-8"))
     else:
-        import gemini_audit
-        print(f"auditing {len(units)} units with {cfg['gemini']['model']} "
+        gemini_audit = _audit_backend(cfg)
+        print(f"auditing {len(units)} units with {cfg['gemini']['model']} via {cfg['provider']} "
               f"(reasoning={cfg['gemini']['reasoning']})…")
         llm = gemini_audit.audit(units, cfg, os.path.join(out, "llm_cache"))
 
@@ -130,7 +150,7 @@ def cmd_run(cfg, args):
 
     # optional LLM judge: pre-fill each discrepancy with a recommendation + rationale
     if cfg["gemini"].get("judge") and queue and not args.mock_llm:
-        import gemini_audit
+        gemini_audit = _audit_backend(cfg)
         from collections import defaultdict
         raw_by_cit = dict(units)
         by_unit = defaultdict(list)
@@ -206,6 +226,7 @@ def add_overrides(p):
     p.add_argument("--config")
     p.add_argument("--regulation"); p.add_argument("--input-dir", dest="input_dir")
     p.add_argument("--bottom-level", dest="bottom_level"); p.add_argument("--output-dir", dest="output_dir")
+    p.add_argument("--provider", choices=["usai", "vertex"], help="LLM backend (default usai)")
     p.add_argument("--model")
     p.add_argument("--reasoning", dest="reasoning", action="store_true", default=None)
     p.add_argument("--no-reasoning", dest="reasoning", action="store_false")

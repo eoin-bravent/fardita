@@ -1,6 +1,11 @@
 # --- secrets (never commit) ---
 .env
 **/.env
+# Vertex AI service-account key (ADC / GOOGLE_APPLICATION_CREDENTIALS)
+*service-account*.json
+*-sa.json
+service_account*.json
+gcp-key*.json
 
 # --- pipeline scratch output (regenerated every run) ---
 pipeline/out/

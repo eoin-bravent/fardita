@@ -102,6 +102,32 @@ the chunk's level. Below `subparagraph` we use `subunit-depth-N` rather than inv
 - **Rate limits matter**: ~2,964 units = one call each. On a low-RPM tier this is hours; on a
   paid/government tier, minutes. Backoff on 429/5xx is built in.
 
+## LLM backends (USAi.gov · Vertex AI)
+Two interchangeable backends behind the same interface — pick per run; everything downstream
+(reconcile / review / apply) is identical.
+
+| provider | module | transport | auth | deps |
+|----------|--------|-----------|------|------|
+| `usai` (default) | `gemini_audit.py` | USAi.gov OpenAI-compatible REST (`urllib`) | `GEMINI_API_KEY`/`USAI_API_KEY` + `USAI_BASE_URL` | stdlib only |
+| `vertex` | `vertex_audit.py` | Google Vertex AI (`google-genai` SDK) | ADC via `GOOGLE_APPLICATION_CREDENTIALS` | `pip install -r requirements-vertex.txt` |
+
+Select with `--provider vertex`, `LLM_PROVIDER=vertex`, or `"provider": "vertex"` in the config.
+Both call the same model (`gemini.model`, default `gemini-2.5-pro`) at temperature 0 with the
+same prompts/schemas; the Vertex path uses Gemini's native JSON mode + `thinking_config`.
+Vertex responses cache into a **separate** `out/llm_cache_vertex/` dir, so the two backends
+never clobber each other's cached audits.
+
+**Running the Vertex backend (e.g. on a GSA machine):**
+1. `pip install -r requirements-vertex.txt`  (Python 3.9–3.13 recommended for the SDK)
+2. Put the service-account JSON key on disk (git-ignored) and set
+   `GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json` — the same env var the Java
+   sample uses. Project/location default to the GSA values (`prj-t-ogp-acqsplcy-mvcai` /
+   `us-central1`); override via `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION` if needed.
+3. `python pipeline.py run --provider vertex`  (add `--limit 5` for a cheap smoke test).
+
+To keep both backends' full outputs side by side, give each its own `--output-dir`
+(e.g. `--output-dir out_vertex`); otherwise a run overwrites the previous run's output files.
+
 ## Reconcile policy (locked)
 - **corroborated** (LLM target == parser target) → auto-accept, not queued.
 - **det-only** (parser found via `<xref>`, LLM didn't) → kept; markup is authoritative.
