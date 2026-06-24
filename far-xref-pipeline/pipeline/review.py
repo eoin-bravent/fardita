@@ -218,7 +218,7 @@ function banner(){
  const parts=[`${S.provider} / ${S.model}`,
    `${S.units} units (cache hits ${S.cache_hits})`,
    `corrob ${sc.corroborated||0} · parser-exp ${sc.parser_explicit||0} · parser-inf ${sc.parser_inferred||0} · llm-only ${sc.llm_only||0}`];
- if(tk.calls) parts.push(`tokens ${fmt(tk.total)} (think ${fmt(tk.thinking)}, ${tk.calls} calls)`);
+ if(tk.calls) parts.push(`tokens ${fmt(tk.total)} total · in ${fmt(tk.prompt)} · think ${fmt(tk.thinking)} · out ${fmt(tk.output)} · ${tk.calls} calls`);
  if(tm.total!=null) parts.push(`${tm.total}s`);
  el.textContent='▸ '+parts.join('   ·   ');
 }

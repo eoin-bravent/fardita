@@ -138,8 +138,8 @@ def _print_summary(s):
     for st in ("audit", "judge"):
         d = tk[st]
         if d["calls"]:
-            print(f"  tokens {st}: {d['calls']} calls  prompt {d['prompt']:,}  thinking {d['thinking']:,}"
-                  f"  output {d['output']:,}  total {d['total']:,}")
+            print(f"  tokens {st}: {d['calls']} calls  in {d['prompt']:,}  thinking {d['thinking']:,}"
+                  f"  out {d['output']:,}  total {d['total']:,}")
     print(f"  tokens TOTAL: {tk['total']['total']:,}  (cache hits this run: {s['cache_hits']})")
     if tk["total"]["reported"] < tk["total"]["calls"]:
         print(f"  note: {tk['total']['calls'] - tk['total']['reported']} call(s) returned no usage data")
