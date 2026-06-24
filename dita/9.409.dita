@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita
+  PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+   <concept id="FAR_9_409" class="- topic/topic concept/concept " xtrc="">
+      <title class="- topic/title ">
+         <ph class="- topic/ph " props="autonumber">9.409</ph> Contract clause.</title>
+      <conbody class="- topic/body concept/conbody ">
+         <p class="- topic/p " id="d623e9">The contracting officer shall insert the clause at <xref href="52.209-6.dita#FAR_52_209_6"
+                  base="i1062590"
+                  outputclass="fm:ParaNumOnly"
+                  class="- topic/xref ">52.209-6</xref>, Protecting the Government's Interest when Subcontracting with Contractors Debarred, Suspended, Proposed for Debarment, or Voluntarily Excluded, in solicitations and contracts where the contract value exceeds $45,000.</p>
+      </conbody>
+   </concept>
+</dita>
