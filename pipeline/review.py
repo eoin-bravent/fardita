@@ -25,6 +25,8 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  .unit{margin:16px 20px}
  .uh{font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #102032;margin-bottom:6px}
  .ucount{font:11px ui-monospace,monospace;color:#6a7c8c;margin-left:8px;font-weight:400}
+ .ccount{cursor:pointer;text-decoration:underline dotted} .ccount:hover{color:#0e7c8b}
+ .clist{font:12px/1.5 ui-monospace,monospace;color:#33485c;background:#fff;border:1px solid #e6e3da;border-radius:6px;padding:6px 10px;margin:4px 0 8px;font-weight:400}
  a.far{color:#0e7c8b}
  .item{background:#fff;margin:8px 0;border:1px solid #d9d6cc;border-left:4px solid transparent;border-radius:10px;padding:10px 14px}
  .item.done{border-left-color:#5aa86e}
@@ -184,11 +186,16 @@ function render(){
  g.forEach((idx,unit)=>{
    idx.sort((i,j)=>citCmp(Q[i].target, Q[j].target));   // natural FAR order within the unit
    const sec=document.createElement('div'); sec.className='unit';
-   const counts={}; idx.forEach(i=>{const s=Q[i].status; counts[s]=(counts[s]||0)+1;});
+   const byStatus={}; idx.forEach(i=>{const it=Q[i]; (byStatus[it.status]=byStatus[it.status]||[]).push(
+     it.scope==='external'?(it.citation||it.target):it.target);});
    const url=unitUrl(unit);
+   const chips=Object.keys(byStatus).sort().map(k=>{
+     const list=byStatus[k].join(', ');
+     return `<span class=ccount data-list="${esc(list)}" title="${esc(list)}">${lbl(k)} ${byStatus[k].length}</span>`;
+   }).join(' · ');
    sec.innerHTML=`<div class=uh><span>${esc(unit)}</span> ·
      <a class=far href="${esc(url)}" target=_blank rel=noopener>acquisition.gov ↗</a>
-     <span class=ucount>${Object.keys(counts).sort().map(k=>lbl(k)+' '+counts[k]).join(' · ')}</span></div>`;
+     <span class=ucount>${chips}</span></div><div class=clist style="display:none"></div>`;
    idx.forEach(i=>{const d=document.createElement('div'); d.className='item'; d.dataset.bucket=Q[i].status; d.dataset.scope=Q[i].scope||'internal'; d.dataset.i=i; d.innerHTML=rowHtml(Q[i],i); sec.appendChild(d);});
    const add=document.createElement('div'); add.className='addbox';
    add.innerHTML=`<input type=text class=addin placeholder="add reference(s) to ${esc(unit)} — comma list or range, e.g. 5.202(a)(2), 5.203(a)-(c)"><button class=addbtn>+ Add</button>`;
@@ -284,6 +291,12 @@ function banner(){
 document.addEventListener('change',e=>{
  if(e.target.name&&e.target.name[0]==='c'){flt();save();}
  if(e.target.classList&&e.target.classList.contains('man')) save();
+});
+document.addEventListener('click',e=>{           // click a header count chip -> toggle its reference list
+ if(!(e.target.classList&&e.target.classList.contains('ccount'))) return;
+ const box=e.target.closest('.unit').querySelector('.clist'), txt=e.target.dataset.list;
+ if(box.style.display!=='none' && box.dataset.src===txt){ box.style.display='none'; }
+ else { box.textContent=txt; box.dataset.src=txt; box.style.display=''; }
 });
 banner(); render();
 const _saved=localStorage.getItem(KEY); if(_saved){try{applyDecisions(JSON.parse(_saved));}catch(e){}}
