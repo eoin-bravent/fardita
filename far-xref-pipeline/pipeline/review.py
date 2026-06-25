@@ -62,7 +62,8 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  <label title="A reference you added by hand that neither tool found."><input type=checkbox class=f value=added checked onchange=flt()> Manually added</label>
  <label title="Both the parser and the LLM found this (auto-accepted)."><input type=checkbox class=f value=corroborated onchange=flt()> Both agree</label>
  <label title="The parser found a real <xref> link the LLM did not echo (kept automatically)."><input type=checkbox class=f value=parser_explicit onchange=flt()> Tagged link (LLM missed)</label>
- &nbsp;|&nbsp; <label title="References within this regulation (FAR → FAR)."><input type=checkbox class=sf value=internal checked onchange=flt()> Internal</label>
+ &nbsp;|&nbsp; <b style="font-size:12px">Scope:</b>
+ <label title="References within this regulation (FAR → FAR)."><input type=checkbox class=sf value=internal checked onchange=flt()> Internal</label>
  <label title="References to other government documents (U.S.C., CFR, E.O., Pub. L., OMB…)."><input type=checkbox class=sf value=external checked onchange=flt()> External</label>
  &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=flt()> hide reviewed</label>
 </div>
