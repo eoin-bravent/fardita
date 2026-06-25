@@ -1,4 +1,0 @@
-# Use Python 3.12 (fastembed's onnxruntime/tokenizers lack 3.14 wheels as of now;
-# pg8000 is pure-Python and runs anywhere).
-pg8000>=1.31      # pure-Python Postgres driver (talks to Neon, no compiler needed)
-fastembed>=0.3    # CPU embedding model (BAAI/bge-small-en-v1.5, 384-dim)
