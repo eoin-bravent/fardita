@@ -5,12 +5,19 @@ an LLM (blind), reconciles LLM vs. parser, lets a human resolve the differences 
 browser, and emits a provenance-tagged verified dataset. Stdlib-only (no SDKs; Python 3.14
 safe). Runs on FAR today; `regulation` is configurable for DFARS/AFARS/etc.
 
-## Stages
+## Workflow
+1. **`run`** — chunk the regulation, find its references two ways (the deterministic **parser** and a
+   blind **LLM audit**), reconcile them, and write the review page. Add `--judge` to have the LLM
+   pre-fill a recommendation for each disagreement.
+2. **`review`** — serve the page in a browser; accept / reject / fix the flagged references, then click
+   **Save & Apply** — that writes your decisions and builds the verified dataset in one click.
+3. **result** — `out/<REG>_verified.json`: every reference tagged with where it came from and a status.
+
 ```
-run:   resolve file set ─► chunk ─► manifest ─► blind LLM audit ─► reconcile ─► [optional LLM judge] ─► review.html
-            (human opens review.html, accepts/overrides, exports decisions.json)
-apply: merge approved ─► <REG>_verified.json   (every ref tagged with provenance)
+run:   chunk ─► parser refs + LLM audit ─► reconcile ─► [optional judge] ─► review page
+review: you accept/reject/fix in the browser ─► Save & Apply ─► <REG>_verified.json
 ```
+(`apply --decisions <file>` is the manual alternative to Save & Apply — feed it an exported decisions.json.)
 
 ## Commands
 ```

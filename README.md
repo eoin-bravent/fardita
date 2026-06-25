@@ -1,48 +1,66 @@
 # FAR cross-reference pipeline
 
-Chunks the **Federal Acquisition Regulation (FAR)** DITA source, audits its cross-references with
-an LLM (via [USAi.gov](https://www.usai.gov/), the GSA government AI platform), reconciles the LLM
-against a deterministic parser, lets a human resolve the differences in a browser, and emits a
-provenance-tagged verified dataset. Stdlib-only Python (no SDKs).
+Builds a verified map of every cross-reference in the **Federal Acquisition Regulation (FAR)** —
+both **internal** (FAR → FAR) and **external** (FAR → U.S.C. / CFR / E.O. / Pub. L. / OMB). A
+deterministic parser and an LLM each find the references, you resolve the disagreements in a browser,
+and the result is a provenance-tagged dataset (nodes + edges) ready for a graph / RAG.
+
+## Workflow — three steps
+
+```bash
+cd pipeline
+
+# 1. RUN — chunk the FAR and find its references (parser + LLM)
+python pipeline.py run --judge
+
+# 2. REVIEW — open the page, accept / reject / fix the flagged items, click "Save & Apply"
+python pipeline.py review
+
+# 3. DONE — your final dataset is out/FAR_verified.json
+```
+
+**First time, try a handful of sections** so it's fast and cheap (a few cents):
+```bash
+python pipeline.py run --judge --files 5.101 5.202 5.203 6.302-2 --limit 5
+python pipeline.py review
+```
+
+No API key yet? `python pipeline.py run --no-llm` chunks the FAR with the parser alone (no LLM).
+
+## What you get
+`out/FAR_verified.json` — every FAR unit with its cross-references, each tagged with **where it came
+from** (`parser` / `parser+llm` / `llm+human` / `human`) and a **status** (`corroborated` /
+`parser_only` / `human_approved`). Internal references and external ones (U.S.C./CFR/…) are kept in
+separate lists.
+
+## Setup — pick one LLM provider
+Copy `pipeline/.env.example` to `pipeline/.env` and fill in **one** of these (`.env` is gitignored —
+never commit a key):
+
+**USAi.gov** (GSA's OpenAI-compatible AI gateway)
+```
+GEMINI_API_KEY=<your USAi key>
+USAI_BASE_URL=https://<agency>.usai.gov
+```
+
+**Google Vertex AI** (Gemini direct — used on the GSA machine)
+```
+LLM_PROVIDER=vertex
+GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\service-account.json
+```
+then `pip install -r pipeline/requirements-vertex.txt`
+
+Both default to `gemini-2.5-pro`.
 
 ## Layout
 ```
-dita/         FAR DITA source — the government download (3,902 .dita files + DITA toolchain artifacts)
-pipeline/     the ingestion pipeline (chunk → LLM audit → reconcile → review → apply)
-test_data/    committed chunk snapshots produced by the pipeline (subset + full corpus)
+dita/         FAR DITA source (3,902 .dita files — the government download)
+pipeline/     the pipeline + full documentation (pipeline/README.md)
+test_data/    committed chunk snapshots
 ```
 
-## Quick start
-```bash
-cd pipeline
-cp .env.example .env            # then fill in your USAi key + agency base URL (see below)
-
-# parser only — no API key needed (chunks + manifest)
-python pipeline.py run --no-llm
-
-# full run with the LLM judge, restricted to the 8-section test set
-python pipeline.py run --judge \
-    --files 5.101 5.201 5.202 5.203 5.205 5.207 6.302-2 12.603
-```
-The pipeline reads its source from `../dita` (set in [`pipeline/pipeline.config.json`](pipeline/pipeline.config.json))
-and writes working output to `pipeline/out/` (gitignored). Full docs:
-[`pipeline/README.md`](pipeline/README.md).
-
-## LLM provider — USAi.gov
-USAi exposes an **OpenAI-compatible** Chat Completions API. Two settings are required for the live
-LLM pass, both read from the environment / `pipeline/.env` (never committed):
-
-| variable | meaning |
-|----------|---------|
-| `GEMINI_API_KEY` (or `USAI_API_KEY`) | your USAi API key |
-| `USAI_BASE_URL` | your agency-specific endpoint, e.g. `https://<agency>.usai.gov` (shown in the USAi API console after login) |
-
-`GEMINI_MODEL` selects the model id (USAi serves Gemini, Claude, GPT, Llama, Grok). See
-[`pipeline/README.md`](pipeline/README.md) for every option.
-
-## Notes
-- **Secrets:** `.env` files are gitignored. Never commit your API key or database URLs.
-- **`dita/` is source data**, lightly mixed with DITA build artifacts (`*.tmp`, `*.ditamap`,
-  publish logs) that ship alongside the government download; the pipeline only reads the `*.dita`
-  files.
+## Good to know
+- **Reruns are cached** — only changed sections re-call the LLM, so the first full run is the only
+  expensive one. The console (and the review page) show token usage and an estimated cost.
+- **Full reference / every option:** [`pipeline/README.md`](pipeline/README.md).
 - The FAR is U.S. public-domain regulatory text (acquisition.gov).
