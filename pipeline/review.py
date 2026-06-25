@@ -14,8 +14,9 @@ import json, html
 PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</title>
 <style>
  body{font:14px/1.5 system-ui,sans-serif;margin:0;background:#f4f4f0;color:#16202e}
- header{position:sticky;top:0;background:#102032;color:#fff;padding:12px 20px;display:flex;
-   gap:16px;align-items:center;justify-content:space-between;z-index:5}
+ .topbar{position:sticky;top:0;z-index:5}            /* header + Show bar stay pinned; banner below scrolls away */
+ header{background:#102032;color:#fff;padding:12px 20px;display:flex;
+   gap:16px;align-items:center;justify-content:space-between}
  header b{font-size:16px} .meta{opacity:.85;font-size:12px}
  button{font:inherit;padding:8px 14px;border:0;border-radius:7px;cursor:pointer}
  .exp{background:#0e7c8b;color:#fff}
@@ -49,14 +50,15 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  .addbox{margin:8px 0 2px;padding:8px 10px;border:1px dashed #c7c3b8;border-radius:8px;background:#fbfbf8}
  .addin{width:460px} .addbtn{background:#102032;color:#fff;margin-left:8px;padding:5px 12px}
 </style></head><body>
+<div class="topbar">
 <header><b>__TITLE__</b>
  <span class="meta" id="meta"></span>
  <span>
    <input type=file id=imp accept="application/json,.json" style="display:none" onchange="importDecisions(this)">
    <button onclick="document.getElementById('imp').click()">Import ▲</button>
    <button class="exp" onclick="exportDecisions()">Export decisions ▼</button>
+   <button class="exp" onclick="saveApply()" title="Save decisions to out/ and run apply (served review only)">Save &amp; Apply ▶</button>
  </span></header>
-<div id="banner"></div>
 <div class="filt">
  <b style="font-size:12px">Show:</b>
  <label title="The LLM found this; the parser did not — usually an untagged prose reference."><input type=checkbox class=f value=llm_only checked onchange=flt()> LLM only (parser missed)</label>
@@ -69,6 +71,8 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  <label title="References to other government documents (U.S.C., CFR, E.O., Pub. L., OMB…)."><input type=checkbox class=sf value=external onchange=flt()> External</label>
  &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=flt()> hide reviewed</label>
 </div>
+</div>
+<div id="banner"></div>
 <div id="list"></div>
 <script>
 const Q = __DATA__;
@@ -279,6 +283,11 @@ function importDecisions(input){
 function exportDecisions(){
  const blob=new Blob([JSON.stringify(collect(),null,2)],{type:'application/json'});
  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='decisions.json'; a.click();
+}
+function saveApply(){                            // served review only: POST decisions -> server writes out/ + runs apply
+ fetch('apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(collect())})
+  .then(r=>r.json()).then(d=>{ alert(d.ok ? ('Saved & applied ✓\n'+d.decisions+' decisions → '+d.verified) : ('Error: '+(d.error||'unknown'))); })
+  .catch(e=>alert('“Save & Apply” needs the served review — run:  python pipeline.py review\n('+e+')'));
 }
 function banner(){
  const el=document.getElementById('banner');

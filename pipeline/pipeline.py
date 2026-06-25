@@ -363,6 +363,49 @@ def cmd_apply(cfg, args):
     json.dump(rows, open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
     print(f"wrote {path}  (+{added} approved, -{removed} rejected/replaced, {len(decisions)} decisions)")
 
+def cmd_review(cfg, args):
+    """Serve the review page on localhost. Its "Save & Apply" button POSTs decisions back here,
+    which writes out/<REG>_decisions.json and runs apply -> out/<REG>_verified.json (no Downloads, one click)."""
+    import http.server, socketserver, webbrowser
+    out, reg = cfg["output_dir"], cfg["regulation"]
+    page = f"{reg}_review.html"
+    if not os.path.exists(os.path.join(out, page)):
+        sys.exit(f"{page} not found in {out} — run `python pipeline.py run` first")
+    port = getattr(args, "port", None) or 8765
+
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *a, **k):
+            super().__init__(*a, directory=out, **k)
+        def log_message(self, *a):
+            pass
+        def do_POST(self):
+            if self.path.rstrip("/") != "/apply":
+                self.send_error(404); return
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                decisions = json.loads(self.rfile.read(n) or b"[]")
+                dpath = os.path.join(out, f"{reg}_decisions.json")
+                json.dump(decisions, open(dpath, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+                cmd_apply(cfg, argparse.Namespace(decisions=[dpath]))
+                body, code = json.dumps({"ok": True, "decisions": len(decisions),
+                                         "verified": os.path.join(out, f"{reg}_verified.json")}), 200
+            except Exception as e:                          # noqa: BLE001
+                body, code = json.dumps({"ok": False, "error": str(e)}), 500
+            self.send_response(code); self.send_header("Content-Type", "application/json")
+            self.end_headers(); self.wfile.write(body.encode())
+
+    class Server(socketserver.TCPServer):
+        allow_reuse_address = True
+
+    url = f"http://127.0.0.1:{port}/{page}"
+    with Server(("127.0.0.1", port), Handler) as srv:
+        print(f"review: {url}\n  review, then click 'Save & Apply' -> writes out/{reg}_verified.json.  Ctrl+C to stop.")
+        try:
+            webbrowser.open(url)
+            srv.serve_forever()
+        except KeyboardInterrupt:
+            print("\nstopped.")
+
 def add_overrides(p):
     """Config-overriding flags shared by both subcommands (highest precedence)."""
     p.add_argument("--config")
@@ -391,9 +434,11 @@ def main():
     a = sub.add_parser("apply"); add_overrides(a)
     a.add_argument("--decisions", nargs="+", required=True, metavar="FILE",
                    help="one or more decisions.json files; later files override earlier per (unit, target)")
+    v = sub.add_parser("review"); add_overrides(v)
+    v.add_argument("--port", type=int, help="localhost port for the review server (default 8765)")
     args = ap.parse_args()
     cfg = load_config(args)
-    (cmd_run if args.cmd == "run" else cmd_apply)(cfg, args)
+    {"run": cmd_run, "apply": cmd_apply, "review": cmd_review}[args.cmd](cfg, args)
 
 if __name__ == "__main__":
     main()

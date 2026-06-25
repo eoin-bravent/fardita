@@ -23,7 +23,8 @@ python pipeline.py run --limit 50                   # audit only the first 50 un
 python pipeline.py run --dump-payload 5.203         # print the exact prompt + raw .dita for one unit
 python pipeline.py run --judge                      # also run the LLM judge to pre-fill review recs
 python pipeline.py run --concurrency 16              # parallel LLM calls (default 8; 1 = sequential)
-python pipeline.py apply --decisions decisions.json
+python pipeline.py review                            # serve the review page; "Save & Apply" writes verified.json in one click
+python pipeline.py apply --decisions decisions.json  # (manual path: feed an exported decisions.json)
 ```
 - **`--no-llm`** is the parser-only switch — it stops after `chunks` + `manifest` (no API key, no
   review page). **`--files`** picks specific files; otherwise the whole `input_dir` folder is scanned.
@@ -210,14 +211,22 @@ span highlighted, **Judge** recommendation + rationale), and a link to the unit 
 Rows are **grouped by unit** and shown in **natural FAR order** (`(a)(1) < (a)(4) < (a)(11)`; romans
 by value), with a top **banner** summarizing the run (provider/model, status counts, tokens, timing,
 cost, cache hits). Status labels are plain-English — **Both agree** (corroborated), **LLM only (parser
-missed)**, **Parser guess (LLM disagrees)**, **Tagged link (LLM missed)**, **Manually added** — with a
+missed)**, **Parser guess (LLM missed)**, **Tagged link (LLM missed)**, **Manually added** — with a
 hover tooltip on each spelling out what it means. **Every row is editable** with a uniform choice: **Accept /
 Reject / Manual**. When a judge ran, its recommended option is tagged **`judge ✓`** (click it to
 re-select). Each unit also has an **"Add reference(s)"** box for refs neither tool found. Both the
 Manual and Add boxes accept **comma lists *and* ranges**, expanded client-side into atomic citations
 (`5.203(a)-(c)` → three) — same rules as the parser. **Status filters** toggle which rows show (by
 default the disagreements + added; tick **Corroborated** / **Parser-only (explicit)** to inspect
-agreements; **hide decided** to focus). Click **Export decisions** to download `decisions.json`.
+agreements; **hide decided** to focus). The **Show** filter bar stays pinned at the top while you scroll
+(the token/cost banner scrolls away).
+
+**Two ways to finish:**
+- **Served (one click):** `python pipeline.py review` serves the page on `localhost` and opens it. Click
+  **Save & Apply ▶** — your decisions are written to `out/<REG>_decisions.json` and `apply` runs
+  immediately, producing `out/<REG>_verified.json`. No Downloads, no second command.
+- **Manual:** click **Export decisions** to download `decisions.json`, then run
+  `python pipeline.py apply --decisions <path>/decisions.json`.
 
 **Reviewing over multiple sittings:**
 - Your selections **auto-save** to the browser (`localStorage`), so reloading the page restores them.
