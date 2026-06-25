@@ -60,13 +60,13 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
 <div class="filt">
  <b style="font-size:12px">Show:</b>
  <label title="The LLM found this; the parser did not — usually an untagged prose reference."><input type=checkbox class=f value=llm_only checked onchange=flt()> LLM only (parser missed)</label>
- <label title="The parser inferred this from prose / a range and the LLM did not corroborate it."><input type=checkbox class=f value=parser_inferred checked onchange=flt()> Parser guess (LLM disagrees)</label>
- <label title="A reference you added by hand that neither tool found."><input type=checkbox class=f value=added checked onchange=flt()> Manually added</label>
- <label title="Both the parser and the LLM found this (auto-accepted)."><input type=checkbox class=f value=corroborated onchange=flt()> Both agree</label>
+ <label title="The parser inferred this from prose / a range; the LLM did not find it."><input type=checkbox class=f value=parser_inferred checked onchange=flt()> Parser guess (LLM missed)</label>
  <label title="The parser found a real <xref> link the LLM did not echo (kept automatically)."><input type=checkbox class=f value=parser_explicit onchange=flt()> Tagged link (LLM missed)</label>
+ <label title="Both the parser and the LLM found this (auto-accepted)."><input type=checkbox class=f value=corroborated onchange=flt()> Both agree</label>
+ <label title="A reference you added by hand that neither tool found."><input type=checkbox class=f value=added checked onchange=flt()> Manually added</label>
  &nbsp;|&nbsp; <b style="font-size:12px">Scope:</b>
  <label title="References within this regulation (FAR → FAR)."><input type=checkbox class=sf value=internal checked onchange=flt()> Internal</label>
- <label title="References to other government documents (U.S.C., CFR, E.O., Pub. L., OMB…)."><input type=checkbox class=sf value=external checked onchange=flt()> External</label>
+ <label title="References to other government documents (U.S.C., CFR, E.O., Pub. L., OMB…)."><input type=checkbox class=sf value=external onchange=flt()> External</label>
  &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=flt()> hide reviewed</label>
 </div>
 <div id="list"></div>
@@ -121,7 +121,9 @@ function expandCitations(raw, base){
 
 // ---- plain-English labels + tooltips for the status buckets ----
 const LABELS={corroborated:'Both agree', llm_only:'LLM only (parser missed)',
-  parser_inferred:'Parser guess (LLM disagrees)', parser_explicit:'Tagged link (LLM missed)', added:'Manually added'};
+  parser_inferred:'Parser guess (LLM missed)', parser_explicit:'Tagged link (LLM missed)', added:'Manually added'};
+const STATUS_ORDER=['llm_only','parser_inferred','parser_explicit','corroborated','added'];
+const statusRank=s=>{const i=STATUS_ORDER.indexOf(s); return i<0?99:i;};
 const TIPS={corroborated:'Both the parser and the LLM found this reference (auto-accepted).',
   llm_only:'The LLM found this; the deterministic parser did not — usually an untagged prose reference.',
   parser_inferred:'The parser inferred this from prose / an expanded range (not a tagged link) and the LLM did not corroborate it.',
@@ -184,12 +186,15 @@ function render(){
  const g=new Map();
  Q.forEach((it,i)=>{ if(!g.has(it.unit)) g.set(it.unit,[]); g.get(it.unit).push(i); });
  g.forEach((idx,unit)=>{
-   idx.sort((i,j)=>citCmp(Q[i].target, Q[j].target));   // natural FAR order within the unit
+   idx.sort((i,j)=>{                                    // FAR (internal) first, external second; natural order within each
+     const sa=Q[i].scope==='external'?1:0, sb=Q[j].scope==='external'?1:0;
+     return sa-sb || citCmp(Q[i].target, Q[j].target);
+   });
    const sec=document.createElement('div'); sec.className='unit';
    const byStatus={}; idx.forEach(i=>{const it=Q[i]; (byStatus[it.status]=byStatus[it.status]||[]).push(
      it.scope==='external'?(it.citation||it.target):it.target);});
    const url=unitUrl(unit);
-   const chips=Object.keys(byStatus).sort().map(k=>{
+   const chips=Object.keys(byStatus).sort((a,b)=>statusRank(a)-statusRank(b)).map(k=>{
      const list=byStatus[k].join(', ');
      return `<span class=ccount data-list="${esc(list)}" title="${esc(list)}">${lbl(k)} ${byStatus[k].length}</span>`;
    }).join(' · ');
