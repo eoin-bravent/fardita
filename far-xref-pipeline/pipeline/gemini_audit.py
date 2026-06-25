@@ -18,7 +18,7 @@ into the prompt and parse the returned JSON ourselves (see _extract_json).
 import os, json, time, re, hashlib, threading, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-PROMPT_VERSION = "v7"
+PROMPT_VERSION = "v8"
 # USAi is OpenAI-compatible; base_url is agency-specific (https://<agency>.usai.gov).
 ENDPOINT_PATH = "/api/v1/chat/completions"
 
@@ -52,18 +52,25 @@ AUDIT_SYSTEM = (
     "EXCLUDE SELF-REFERENCES: do NOT report a reference from this unit to itself -- 'this section', or "
     "the bare citation {citation}, is the document referring to itself and is not a cross-reference "
     "(but a DIFFERENT paragraph of this section, e.g. {citation}(a)(2), IS a valid reference).\n"
-    "Exclude external statutes (U.S.C., or CFR titles other than this regulation), URLs, and DITA "
-    "plumbing. For each reference return one `target` citation in standard form (e.g. 5.202, "
-    "5.202(a)(2), 6.302-2, subpart 9.4) and, as `evidence`, the COMPLETE sentence(s) containing the "
-    "reference, quoted VERBATIM from the source, with the exact citation text that triggers this "
-    "reference wrapped in « » guillemets -- e.g. 'The contracting officer shall, as required by "
-    "«5.207», publicize the action.' Quote enough surrounding text to judge the reference; do not "
-    "paraphrase or shorten."
+    "For each reference set `scope`:\n"
+    " - scope='internal' for references to ANOTHER part of {regulation} (the cases above). `target` is "
+    "the {regulation} citation in standard form (e.g. 5.202, 5.202(a)(2), 6.302-2, subpart 9.4).\n"
+    " - scope='external' for references to OTHER government documents -- U.S.C., CFR titles, Executive "
+    "Orders, Public Laws, OMB Circulars, the Federal Register, agency regulations, standards, treaties, "
+    "etc. Set `target` to the citation as written (e.g. '41 U.S.C. 1303(a)', '13 CFR 128.300', "
+    "'E.O. 11246', 'Pub. L. 118-31', 'OMB Circular A-76') and `ref_type` to one of "
+    "usc|cfr|eo|public_law|omb|other. Expand an external range only if unambiguous.\n"
+    "Exclude only bare web URLs/emails and DITA plumbing. As `evidence`, give the COMPLETE sentence(s) "
+    "containing the reference, quoted VERBATIM, with the exact citation text wrapped in « » guillemets "
+    "-- e.g. 'The contracting officer shall, as required by «5.207», publicize the action.' Quote "
+    "enough surrounding text to judge the reference; do not paraphrase or shorten."
 )
 AUDIT_SCHEMA = {
     "type": "array",
     "items": {"type": "object",
-              "properties": {"target": {"type": "string"}, "evidence": {"type": "string"}},
+              "properties": {"target": {"type": "string"}, "evidence": {"type": "string"},
+                             "scope": {"type": "string", "enum": ["internal", "external"]},
+                             "ref_type": {"type": "string"}},
               "required": ["target", "evidence"]},
 }
 

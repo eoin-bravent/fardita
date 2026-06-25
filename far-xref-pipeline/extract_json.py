@@ -283,13 +283,90 @@ def collect_refs(ps, sec_num, url):
                      "evidence": _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))})
     return _group_refs(refs)
 
+# ---------- external references (other government documents: USC / CFR / EO / Pub. L. / OMB) ----------
+# Each becomes a node = the doc/section (canonical `target`); finer subdivisions ride on the edge as
+# `locator`. `division_levels` is the full parse (title, section, subsections…), mirroring the DITA
+# decomposition. The parser catches these rigid formats; the LLM catches the long tail.
+def _parens_list(p):
+    return re.findall(r"\(([A-Za-z0-9]+)\)", p or "")
+
+def _b_usc_ch(m):
+    t, n = m.group("title"), m.group("num")
+    return {"ref_type": "usc", "target": f"usc:{t}/ch{n}", "division_levels": [t, "chapter", n], "locator": ""}
+
+def _b_usc(m):
+    t, s, p = m.group("title"), m.group("sec"), m.group("parens") or ""
+    return {"ref_type": "usc", "target": f"usc:{t}/{s}", "division_levels": [t, s] + _parens_list(p), "locator": p}
+
+def _b_cfr(m):
+    t, part, s, p = m.group("title"), m.group("part"), m.group("sec"), m.group("parens") or ""
+    node = f"cfr:{t}/{part}" + (f".{s}" if s else "")
+    return {"ref_type": "cfr", "target": node,
+            "division_levels": [t, part] + ([s] if s else []) + _parens_list(p), "locator": p}
+
+def _b_eo(m):
+    n = m.group("num")
+    return {"ref_type": "eo", "target": f"eo:{n}", "division_levels": [n], "locator": ""}
+
+def _b_publ(m):
+    c, n = m.group("cong"), m.group("num")
+    return {"ref_type": "public_law", "target": f"publ:{c}-{n}", "division_levels": [c, n], "locator": ""}
+
+def _b_omb(m):
+    s, n = m.group("ser"), m.group("num")
+    return {"ref_type": "omb", "target": f"omb:{s}-{n}", "division_levels": [s, n], "locator": ""}
+
+EXTERNAL_PATTERNS = [
+    (re.compile(r"(?P<title>\d+)\s+U\.S\.C\.\s+chapter\s+(?P<num>\d+)", re.I), _b_usc_ch),
+    (re.compile(r"(?P<title>\d+)\s+U\.S\.C\.\s*(?P<sec>\d+[A-Za-z]?)(?P<parens>(?:\([A-Za-z0-9]+\))*)"), _b_usc),
+    (re.compile(r"(?P<title>\d+)\s+CFR\s+(?:part\s+)?(?P<part>\d+)(?:\.(?P<sec>\d+))?(?P<parens>(?:\([A-Za-z0-9]+\))*)", re.I), _b_cfr),
+    (re.compile(r"(?:E\.O\.|Executive\s+Order)\s+(?P<num>\d+)", re.I), _b_eo),
+    (re.compile(r"(?:Pub\.\s*L\.|Public\s+Law)\s+(?:No\.?\s*)?(?P<cong>\d+)-(?P<num>\d+)", re.I), _b_publ),
+    (re.compile(r"OMB\s+Circular\s+(?:No\.?\s*)?(?P<ser>[A-Z])-(?P<num>\d+)", re.I), _b_omb),
+]
+
+def parse_external(s):
+    """Normalize one external citation string -> {ref_type, target, division_levels, locator, citation}.
+    Returns None if it matches no known format (the LLM may still tag it ref_type='other')."""
+    s = (s or "").strip()
+    for rx, build in EXTERNAL_PATTERNS:
+        m = rx.search(s)
+        if m:
+            r = build(m)
+            r["citation"] = s
+            return r
+    return None
+
+def collect_external_refs(ps):
+    """Scan a unit's text for external (non-FAR) citations, grouped by (target, locator) like internal
+    cross_references. High-precision regex -> confidence 'explicit'."""
+    text, _ = render_scope(ps)
+    found = []
+    for rx, build in EXTERNAL_PATTERNS:
+        for m in rx.finditer(text):
+            r = build(m)
+            r["citation"] = m.group(0)
+            r["evidence"] = _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))
+            found.append(r)
+    out, index = [], {}
+    for r in found:
+        key = (r["target"], r["locator"])
+        if key not in index:
+            index[key] = len(out)
+            out.append({"ref_type": r["ref_type"], "target": r["target"], "locator": r["locator"],
+                        "division_levels": r["division_levels"], "citation": r["citation"],
+                        "confidence": "explicit", "mentions": []})
+        out[index[key]]["mentions"].append({"kind": "explicit", "evidence": r["evidence"]})
+    return out
+
 # ---------- build rows ----------
 def make_row(citation, typ, comp, url, ps, sec_num, text):
     return {"citation": citation, "type": typ,
             "part": comp["part"], "subpart": comp["subpart"], "section": comp["section"],
             "subsection": comp["subsection"], "paragraph": comp["paragraph"],
             "subparagraph": comp["subparagraph"], "url": url,
-            "cross_references": collect_refs(ps, sec_num, url), "text": text}
+            "cross_references": collect_refs(ps, sec_num, url),
+            "external_references": collect_external_refs(ps), "text": text}
 
 def build(far):
     c = load_concept(far)

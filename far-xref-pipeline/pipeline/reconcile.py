@@ -13,7 +13,9 @@ target, each tagged by who found it:
 needs_review = parser_inferred | llm_only — only these go to the human queue and the LLM judge.
 The full ledger (all four statuses) drives the review page so agreements are inspectable too.
 """
-import re
+import re, os, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import extract_json as X                          # parse_external (canonicalize LLM external citations)
 
 CIT = re.compile(r"^(\d+\.\d+(-\d+)?)((\([A-Za-z0-9]+\))*)$")   # 5.202 / 6.302-2 / 5.202(a)(2)
 SUBPART = re.compile(r"^subpart\s+\d+\.\d+$", re.I)
@@ -94,14 +96,16 @@ def build_address_map(rows):
     return m
 
 def reconcile(rows, llm_by_cit, addr_map):
-    """rows: chunk rows. llm_by_cit: {unit_citation: [ {target, evidence} ]}.
-    Returns (ledger, stats). Only unit-level rows (section/subsection) are reconciled."""
+    """rows: chunk rows. llm_by_cit: {unit_citation: [ {target, evidence, scope, ref_type} ]}.
+    Returns (ledger, stats). Internal + external refs reconciled per unit; items tagged `scope`."""
     ledger = []
     stats = {"corroborated": 0, "parser_explicit": 0, "parser_inferred": 0, "llm_only": 0}
     units = [r for r in rows if r["type"] in ("section", "subsection")]
     for u in units:
         cit = u["citation"]
         self_cit = norm_cit(strip_agency(cit))             # exact self-reference (e.g. 5.101 -> 5.101 / "this section")
+
+        # ----- internal references (FAR -> FAR) -----
         parser_map = {}                                    # norm target -> {kind, evidence}
         for cr in u["cross_references"]:
             t = norm_cit(cr["target"])
@@ -109,6 +113,8 @@ def reconcile(rows, llm_by_cit, addr_map):
                 parser_map[t] = {"kind": cr.get("confidence", "inferred"), "evidence": cr_evidence(cr)}
         llm_map = {}                                       # norm target -> {evidence, validation}
         for ref in llm_by_cit.get(cit, []):
+            if ref.get("scope") == "external":
+                continue
             raw = ref.get("target", "")
             if not raw:
                 continue
@@ -125,11 +131,52 @@ def reconcile(rows, llm_by_cit, addr_map):
                 status = "llm_only"
             stats[status] += 1
             ledger.append({
-                "unit": cit, "url": u["url"], "target": t, "status": status,
+                "unit": cit, "url": u["url"], "scope": "internal", "target": t, "status": status,
                 "validation": l["validation"] if l else validate(t, addr_map)[1],
                 "parser": {"kind": p["kind"], "evidence": p["evidence"]} if p else None,
                 "llm": {"evidence": l["evidence"]} if l else None,
                 "judge": None,                             # filled by the optional judge stage
                 "needs_review": status in ("parser_inferred", "llm_only"),
+            })
+
+        # ----- external references (FAR -> other government documents) -----
+        p_ext = {}                                         # (target, locator) -> {ref_type, citation, levels, evidence}
+        for cr in u.get("external_references", []):
+            key = (cr["target"], cr.get("locator", ""))
+            if key not in p_ext:
+                p_ext[key] = {"ref_type": cr["ref_type"], "citation": cr["citation"],
+                              "division_levels": cr.get("division_levels", []), "evidence": cr_evidence(cr)}
+        l_ext = {}
+        for ref in llm_by_cit.get(cit, []):
+            if ref.get("scope") != "external":
+                continue
+            raw = ref.get("target", "")
+            if not raw:
+                continue
+            parsed = X.parse_external(raw)
+            if parsed:
+                tgt, loc, rt, lv, cite = (parsed["target"], parsed["locator"], parsed["ref_type"],
+                                          parsed["division_levels"], parsed["citation"])
+            else:                                          # unknown source -> 'other'
+                tgt, loc, rt, lv, cite = ("other:" + norm_cit(raw).lower(), "", ref.get("ref_type", "other"), [], raw)
+            key = (tgt, loc)
+            if key not in l_ext:
+                l_ext[key] = {"ref_type": rt, "citation": cite, "division_levels": lv,
+                              "evidence": ref.get("evidence", "")}
+        for key in sorted(set(p_ext) | set(l_ext)):
+            tgt, loc = key
+            p, l = p_ext.get(key), l_ext.get(key)
+            status = "corroborated" if (p and l) else ("parser_explicit" if p else "llm_only")
+            stats[status] += 1
+            src = p or l
+            ledger.append({
+                "unit": cit, "url": u["url"], "scope": "external",
+                "target": tgt, "locator": loc, "ref_type": src["ref_type"],
+                "citation": src["citation"], "division_levels": src.get("division_levels", []),
+                "status": status, "validation": "external",
+                "parser": {"kind": "explicit", "evidence": p["evidence"]} if p else None,
+                "llm": {"evidence": l["evidence"]} if l else None,
+                "judge": None,
+                "needs_review": status == "llm_only",
             })
     return ledger, stats

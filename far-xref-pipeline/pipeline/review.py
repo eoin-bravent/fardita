@@ -34,6 +34,7 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  .b-corroborated{background:#d7ecdd;color:#1c6a2e} .b-parser_explicit{background:#e3e6ee;color:#33425e}
  .b-parser_inferred{background:#f5ddcb;color:#8f4316} .b-llm_only{background:#d6ebed;color:#0b6a78}
  .b-added{background:#efe2f4;color:#6a2c83}
+ .b-ext{background:#e7eef3;color:#3a5a72} .ext-loc{font:11px ui-monospace,monospace;color:#6a7c8c;margin-left:4px}
  .val{font:10px ui-monospace,monospace;opacity:.6;margin-left:6px}
  .cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:8px 0}
  .col{border:1px solid #e6e3da;border-radius:8px;padding:8px 10px}
@@ -61,6 +62,8 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  <label title="A reference you added by hand that neither tool found."><input type=checkbox class=f value=added checked onchange=flt()> Manually added</label>
  <label title="Both the parser and the LLM found this (auto-accepted)."><input type=checkbox class=f value=corroborated onchange=flt()> Both agree</label>
  <label title="The parser found a real <xref> link the LLM did not echo (kept automatically)."><input type=checkbox class=f value=parser_explicit onchange=flt()> Tagged link (LLM missed)</label>
+ &nbsp;|&nbsp; <label title="References within this regulation (FAR → FAR)."><input type=checkbox class=sf value=internal checked onchange=flt()> Internal</label>
+ <label title="References to other government documents (U.S.C., CFR, E.O., Pub. L., OMB…)."><input type=checkbox class=sf value=external checked onchange=flt()> External</label>
  &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=flt()> hide reviewed</label>
 </div>
 <div id="list"></div>
@@ -153,15 +156,17 @@ function pickJudge(i){const j=Q[i].judge; if(!j)return; const r=q(`input[name=c$
   if(j.choice==='manual'){const mb=document.getElementById('man'+i); if(mb)mb.value=(j.value||[]).join(', ');} flt(); save();}
 function rowHtml(it,i){
   const p=it.parser,l=it.llm,j=it.judge;
-  return `<div class=hd><span class=tgt>${esc(it.target)}</span>
-     <span><span class="badge b-${it.status}" title="${esc(TIPS[it.status]||'')}">${esc(lbl(it.status))}</span><span class=val>${esc(it.validation||'')}</span></span></div>
+  const disp=it.scope==='external'?(it.citation||it.target):it.target;
+  const rt=it.scope==='external'?`<span class="badge b-ext" title="external document node: ${esc(it.target)}">${esc(it.ref_type||'ext')}</span> `:'';
+  return `<div class=hd><span class=tgt>${esc(disp)}</span>
+     <span>${rt}<span class="badge b-${it.status}" title="${esc(TIPS[it.status]||'')}">${esc(lbl(it.status))}</span><span class=val>${esc(it.validation||'')}</span></span></div>
    <div class=cols>
      <div class=col><h4>Parser</h4>${p?`<div class=ev><b>${esc(p.kind)}</b><br>${xrefHtml(p.evidence)}</div>`:'<div class=none>(parser did not find this)</div>'}</div>
      <div class=col><h4>LLM</h4>${l?`<div class=ev>${llmHtml(l.evidence)}</div>`:'<div class=none>(LLM did not find this)</div>'}</div>
      <div class=col><h4>Judge</h4>${j?`<div class=ev><b>${esc(j.choice)}${(j.value&&j.value.length)?': '+esc(j.value.join(', ')):''}</b><br>${esc(j.rationale||'')}</div>`:'<div class=none>(no judge / agreement)</div>'}</div>
    </div>
    <div class=choose>
-     <label><input type=radio name=c${i} value=accept> Accept (${esc(it.target)})</label>${jtag(it,'accept')}
+     <label><input type=radio name=c${i} value=accept> Accept (${esc(disp)})</label>${jtag(it,'accept')}
      <label><input type=radio name=c${i} value=reject> Reject</label>${jtag(it,'reject')}
      <label><input type=radio name=c${i} value=manual onchange="document.getElementById('man${i}').focus()"> Manual:</label>${jtag(it,'manual')}
      <input type=text id=man${i} class=man placeholder="comma list or range">
@@ -179,7 +184,7 @@ function render(){
    sec.innerHTML=`<div class=uh><span>${esc(unit)}</span> ·
      <a class=far href="${esc(url)}" target=_blank rel=noopener>acquisition.gov ↗</a>
      <span class=ucount>${Object.keys(counts).sort().map(k=>lbl(k)+' '+counts[k]).join(' · ')}</span></div>`;
-   idx.forEach(i=>{const d=document.createElement('div'); d.className='item'; d.dataset.bucket=Q[i].status; d.dataset.i=i; d.innerHTML=rowHtml(Q[i],i); sec.appendChild(d);});
+   idx.forEach(i=>{const d=document.createElement('div'); d.className='item'; d.dataset.bucket=Q[i].status; d.dataset.scope=Q[i].scope||'internal'; d.dataset.i=i; d.innerHTML=rowHtml(Q[i],i); sec.appendChild(d);});
    const add=document.createElement('div'); add.className='addbox';
    add.innerHTML=`<input type=text class=addin placeholder="add reference(s) to ${esc(unit)} — comma list or range, e.g. 5.202(a)(2), 5.203(a)-(c)"><button class=addbtn>+ Add</button>`;
    add.querySelector('.addbtn').onclick=()=>addRefs(unit, add.querySelector('.addin'));
@@ -198,12 +203,13 @@ function addRefs(unit, inputEl){
 }
 function flt(){
  const on=[...document.querySelectorAll('.f:checked')].map(x=>x.value);
+ const scopes=[...document.querySelectorAll('.sf:checked')].map(x=>x.value);
  const hide=document.getElementById('hideDone').checked;
  let shown=0, rTot=0, rDone=0;
  document.querySelectorAll('.item').forEach(d=>{
-   const i=d.dataset.i, st=d.dataset.bucket, picked=q(`input[name=c${i}]:checked`);
+   const i=d.dataset.i, st=d.dataset.bucket, sc=d.dataset.scope, picked=q(`input[name=c${i}]:checked`);
    if(NEEDS.has(st)){rTot++; if(picked)rDone++;}
-   const vis=on.includes(st) && !(hide&&picked);
+   const vis=on.includes(st) && scopes.includes(sc) && !(hide&&picked);
    d.style.display=vis?'':'none'; d.classList.toggle('done',!!picked); if(vis)shown++;
  });
  document.getElementById('meta').textContent=`${Q.length} refs · flagged reviewed ${rDone}/${rTot} · ${shown} shown`;
@@ -215,7 +221,8 @@ function collect(){
    let value=[];
    if(picked.value==='accept') value=[it.target];
    else if(picked.value==='manual'){const mb=document.getElementById('man'+i); value=expandCitations(mb?mb.value:'', unitBase(it.unit));}
-   out.push({unit:it.unit, target:it.target, status:it.status, choice:picked.value, value});
+   out.push({unit:it.unit, target:it.target, status:it.status, choice:picked.value, value,
+             scope:it.scope||'internal', locator:it.locator||''});
  });
  return out;
 }

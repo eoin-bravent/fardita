@@ -58,6 +58,7 @@ def build(path, far, cfg):
         r.update(decompose(sec_num, tokens, field_levels))
         r["url"] = url
         r["cross_references"] = X.collect_refs(ps, sec_num, url)
+        r["external_references"] = X.collect_external_refs(ps)
         r["text"] = text
         return r
 

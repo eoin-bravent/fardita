@@ -57,7 +57,30 @@ citation); every textual occurrence is kept as a mention:
   range's `evidence`. The enumerator handles letters / digits / romans / numeric subsection dashes and
   every separator (`-`, `–`, `to`, `through`, repeated citation); a genuinely ambiguous range (e.g.
   `(i)-(v)`, letter vs. roman) is left for the LLM + human rather than guessed.
-- External U.S.C./URL references are excluded.
+- References to **other government documents** (U.S.C., CFR, E.O., …) are captured separately — see
+  **External references** below. Bare web URLs / emails are excluded.
+
+## External references (other government documents)
+Each unit also carries an `external_references` list — edges to documents *outside* this regulation
+(for the eventual Graph-RAG, these are nodes you may ingest later). Handled the **same way as internal
+refs**: the parser catches the rigid formats, the LLM catches the long tail, and they reconcile into the
+same statuses (corroborated / parser_explicit / llm_only) and human review (a **scope filter** splits
+internal vs external on the review page).
+
+```json
+{ "target": "usc:41/1303", "ref_type": "usc", "citation": "41 U.S.C. 1303(a)(4)",
+  "locator": "(a)(4)", "division_levels": ["41","1303","a","4"],
+  "mentions": [ {"kind":"explicit","evidence":"…as defined in 41 U.S.C. 1303(a)(4)…"} ], "status": "parser_only" }
+```
+- **`target`** is a canonical **node id** — `usc:<title>/<sec>`, `cfr:<title>/<part.sec>`, `eo:<num>`,
+  `publ:<cong>-<num>`, `omb:<series>-<num>` (LLM-only unknowns → `other:<slug>`). The node is the
+  doc/**section**; the precise sub-part rides on the edge as **`locator`**, so many citations to
+  different subsections of one statute collapse to one node.
+- **`division_levels`** is the full parse (title, section, subsections…), mirroring the DITA decomposition.
+- **`ref_type`** ∈ `usc | cfr | eo | public_law | omb | other`.
+- **Parser** handles USC / CFR / E.O. / Pub. L. / OMB (high-precision regex → `confidence: explicit`,
+  auto-kept). **LLM** adds the long tail (`scope:"external"`, `ref_type`), reconciled against the parser;
+  LLM-only externals get human review. The internal-framed LLM judge does **not** run on externals.
 
 ## Configuration — `pipeline.config.json`
 | key | meaning | default |
@@ -202,13 +225,13 @@ agreements; **hide decided** to focus). Click **Export decisions** to download `
 ## Outputs (in `output_dir`)
 | file | what |
 |------|------|
-| `<REG>_chunks.json` | the chunks (pristine, parser-only) |
+| `<REG>_chunks.json` | the chunks (pristine, parser-only) — each row has `cross_references` (internal) + `external_references` |
 | `<REG>_manifest.json` | every file **seen**, **processed**, and **skipped** (with reasons) — the parser and LLM use this same set |
 | `<REG>_ledger.json` | the per-unit master list: every atomic target tagged `status` (corroborated / parser_explicit / parser_inferred / llm_only), with parser/llm/judge evidence — drives the review page and `apply` |
 | `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |
 | `<REG>_addrmap.json` | cached whole-corpus address map (so `--files` subset runs validate cross-file targets) |
 | `<REG>_review.html` | the review page |
-| `<REG>_verified.json` | after `apply`: chunks + human-approved refs, every ref tagged with a flat `status` (`parser_only` / `corroborated` / `human_approved`) |
+| `<REG>_verified.json` | after `apply`: chunks + human-approved refs (both `cross_references` and `external_references`), every ref tagged with a flat `status` (`parser_only` / `corroborated` / `human_approved`) |
 | `llm_cache/` | cached raw LLM audit + judge responses |
 
 The reviewer's **`decisions.json`** is downloaded from the review page (not written to `output_dir`)

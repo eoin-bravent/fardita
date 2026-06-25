@@ -13,6 +13,7 @@ import os, sys, json, time, glob, argparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import chunker, reconcile, review, gemini_audit
+import extract_json as X                          # parse_external (for human-corrected external citations)
 
 DITA_DEFAULT = os.path.abspath(os.path.join(HERE, "..", ".."))
 DEFAULTS = {
@@ -217,7 +218,8 @@ def cmd_run(cfg, args):
     # optional LLM judge (concurrent): recommend accept/reject/manual per disagreement
     t["judge"] = 0.0
     if cfg["gemini"].get("judge") and backend is not None:
-        review_idx = [i for i, it in enumerate(ledger) if it["needs_review"]]
+        review_idx = [i for i, it in enumerate(ledger)
+                       if it["needs_review"] and it.get("scope") == "internal"]   # judge prompt is FAR-internal
         if review_idx:
             from collections import defaultdict
             raw_by_cit = dict(units)
@@ -260,54 +262,98 @@ def cmd_apply(cfg, args):
     rows = json.load(open(os.path.join(out, f"{reg}_chunks.json"), encoding="utf-8"))
     lpath = os.path.join(out, f"{reg}_ledger.json")
     ledger = json.load(open(lpath, encoding="utf-8")) if os.path.exists(lpath) else []
-    confirmed = {}                                        # {unit: {corroborated targets}} for status tagging
+    int_conf, ext_conf, ext_index = {}, {}, {}            # corroborated sets + external-item index
     for it in ledger:
-        if it["status"] == "corroborated":
-            confirmed.setdefault(it["unit"], set()).add(reconcile.norm_cit(it["target"]))
+        if it.get("scope", "internal") == "external":
+            ekey = (it["unit"], it["target"], it.get("locator", ""))
+            ext_index[ekey] = it
+            if it["status"] == "corroborated":
+                ext_conf.setdefault(it["unit"], set()).add((it["target"], it.get("locator", "")))
+        elif it["status"] == "corroborated":
+            int_conf.setdefault(it["unit"], set()).add(reconcile.norm_cit(it["target"]))
 
-    # merge one or more decisions files; later files win per (unit, target)
+    # merge one or more decisions files; later files win per (unit, scope, target, locator)
     merged = {}
     for p in (args.decisions or []):
         for d in json.load(open(p, encoding="utf-8")):
-            merged[(d["unit"], reconcile.norm_cit(d.get("target", "")))] = d
+            sc = d.get("scope", "internal")
+            tk = d["target"] if sc == "external" else reconcile.norm_cit(d.get("target", ""))
+            merged[(d["unit"], sc, tk, d.get("locator", ""))] = d
     decisions = list(merged.values())
-    # reject removes a target; manual replaces it with corrected citation(s) -> both drop the original
-    replaced = {(d["unit"], reconcile.norm_cit(d["target"]))
-                for d in decisions if d["choice"] in ("reject", "manual")}
+    int_dec = [d for d in decisions if d.get("scope", "internal") != "external"]
+    ext_dec = [d for d in decisions if d.get("scope") == "external"]
+    # reject removes a ref; manual replaces it with corrected citation(s) -> both drop the original
+    int_replaced = {(d["unit"], reconcile.norm_cit(d["target"])) for d in int_dec if d["choice"] in ("reject", "manual")}
+    ext_replaced = {(d["unit"], d["target"], d.get("locator", "")) for d in ext_dec if d["choice"] in ("reject", "manual")}
 
     # 1) tag existing (parser) refs with status; drop any the human rejected/replaced
     removed = 0
+    by_cit = {}
     for r in rows:
-        conf = confirmed.get(r["citation"], set())
+        by_cit[r["citation"]] = r
+        iconf = int_conf.get(r["citation"], set())
         kept = []
         for cr in r["cross_references"]:
             t = reconcile.norm_cit(cr["target"])
-            if (r["citation"], t) in replaced:
+            if (r["citation"], t) in int_replaced:
                 removed += 1
                 continue
-            cr["status"] = "corroborated" if t in conf else "parser_only"
+            cr["status"] = "corroborated" if t in iconf else "parser_only"
             kept.append(cr)
         r["cross_references"] = kept
+        econf = ext_conf.get(r["citation"], set())
+        ekept = []
+        for cr in r.get("external_references", []):
+            k = (cr["target"], cr.get("locator", ""))
+            if (r["citation"], cr["target"], cr.get("locator", "")) in ext_replaced:
+                removed += 1
+                continue
+            cr["status"] = "corroborated" if k in econf else "parser_only"
+            ekept.append(cr)
+        if "external_references" in r:
+            r["external_references"] = ekept
 
-    # 2) append human-approved additions (accepted llm-only / added + manual corrections) to their unit row
-    by_cit = {r["citation"]: r for r in rows}
+    # 2) append human-approved additions to their unit row
     added = 0
-    for d in decisions:
+    for d in int_dec:                                     # internal: accepted llm-only/added + manual
         if d["choice"] == "manual":
             tgts = d.get("value", [])
         elif d["choice"] == "accept" and d.get("status") in ("llm_only", "added"):
             tgts = [d["target"]]
         else:
-            continue                                      # reject -> nothing; accept of parser/corrob -> already kept
+            continue
         u = by_cit.get(d["unit"])
         if not u:
             continue
         for tgt in tgts:
-            if any(reconcile.norm_cit(c["target"]) == reconcile.norm_cit(tgt)
-                   for c in u["cross_references"]):
-                continue                                  # already present
+            if any(reconcile.norm_cit(c["target"]) == reconcile.norm_cit(tgt) for c in u["cross_references"]):
+                continue
             u["cross_references"].append({
                 "target": tgt, "confidence": "inferred",
+                "mentions": [{"kind": "inferred", "evidence": "(human review)"}],
+                "status": "human_approved"})
+            added += 1
+    for d in ext_dec:                                     # external: accepted llm-only + manual corrections
+        u = by_cit.get(d["unit"])
+        if not u:
+            continue
+        if d["choice"] == "accept" and d.get("status") == "llm_only":
+            it = ext_index.get((d["unit"], d["target"], d.get("locator", "")))
+            edges = [it] if it else []
+        elif d["choice"] == "manual":
+            edges = [X.parse_external(v) or {"ref_type": "other", "target": "other:" + v,
+                                             "locator": "", "division_levels": [], "citation": v}
+                     for v in d.get("value", [])]
+        else:
+            continue
+        u.setdefault("external_references", [])
+        for e in edges:
+            if any(c["target"] == e["target"] and c.get("locator", "") == e.get("locator", "")
+                   for c in u["external_references"]):
+                continue
+            u["external_references"].append({
+                "target": e["target"], "ref_type": e["ref_type"], "locator": e.get("locator", ""),
+                "division_levels": e.get("division_levels", []), "citation": e.get("citation", ""),
                 "mentions": [{"kind": "inferred", "evidence": "(human review)"}],
                 "status": "human_approved"})
             added += 1
