@@ -61,15 +61,15 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  </span></header>
 <div class="filt">
  <b style="font-size:12px">Show:</b>
- <label title="The LLM found this; the parser did not — usually an untagged prose reference."><input type=checkbox class=f value=llm_only checked onchange=flt()> LLM only (parser missed)</label>
- <label title="The parser inferred this from prose / a range; the LLM did not find it."><input type=checkbox class=f value=parser_inferred checked onchange=flt()> Parser guess (LLM missed)</label>
- <label title="The parser found a real <xref> link the LLM did not echo (kept automatically)."><input type=checkbox class=f value=parser_explicit onchange=flt()> Tagged link (LLM missed)</label>
- <label title="Both the parser and the LLM found this (auto-accepted)."><input type=checkbox class=f value=corroborated onchange=flt()> Both agree</label>
- <label title="A reference you added by hand that neither tool found."><input type=checkbox class=f value=added checked onchange=flt()> Manually added</label>
+ <label title="The LLM found this; the parser did not — usually an untagged prose reference."><input type=checkbox class=f value=llm_only checked onchange=fltAnchored()> LLM only (parser missed)</label>
+ <label title="The parser inferred this from prose / a range; the LLM did not find it."><input type=checkbox class=f value=parser_inferred checked onchange=fltAnchored()> Parser guess (LLM missed)</label>
+ <label title="The parser found a real <xref> link the LLM did not echo (kept automatically)."><input type=checkbox class=f value=parser_explicit onchange=fltAnchored()> Tagged link (LLM missed)</label>
+ <label title="Both the parser and the LLM found this (auto-accepted)."><input type=checkbox class=f value=corroborated onchange=fltAnchored()> Both agree</label>
+ <label title="A reference you added by hand that neither tool found."><input type=checkbox class=f value=added checked onchange=fltAnchored()> Manually added</label>
  &nbsp;|&nbsp; <b style="font-size:12px">Scope:</b>
- <label title="References within this regulation (FAR → FAR)."><input type=checkbox class=sf value=internal checked onchange=flt()> Internal</label>
- <label title="References to other government documents (U.S.C., CFR, E.O., Pub. L., OMB…)."><input type=checkbox class=sf value=external onchange=flt()> External</label>
- &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=flt()> hide reviewed</label>
+ <label title="References within this regulation (FAR → FAR)."><input type=checkbox class=sf value=internal checked onchange=fltAnchored()> Internal</label>
+ <label title="References to other government documents (U.S.C., CFR, E.O., Pub. L., OMB…)."><input type=checkbox class=sf value=external onchange=fltAnchored()> External</label>
+ &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=fltAnchored()> hide reviewed</label>
 </div>
 </div>
 <div id="banner"></div>
@@ -221,6 +221,12 @@ function addRefs(unit, inputEl){
  tgts.forEach(t=>{ if(!Q.some(it=>it.unit===unit&&it.target===t))
    Q.push({unit, url:unitUrl(unit), target:t, status:'added', validation:'', parser:null, llm:null, judge:null, needs_review:true, added:true}); });
  render(); applyDecisions(saved); save(); flt();
+}
+function fltAnchored(){                           // keep the section you're viewing in place while filtering
+ let anchor=null, top=0;
+ for(const u of document.querySelectorAll('.unit')){ const r=u.getBoundingClientRect(); if(r.bottom>0){ anchor=u; top=r.top; break; } }
+ flt();
+ if(anchor) window.scrollBy(0, anchor.getBoundingClientRect().top - top);
 }
 function flt(){
  const on=[...document.querySelectorAll('.f:checked')].map(x=>x.value);
