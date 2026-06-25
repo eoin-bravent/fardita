@@ -155,16 +155,13 @@ def reconcile(rows, llm_by_cit, addr_map):
             if not raw:
                 continue
             parsed = X.parse_external(raw)
-            if parsed:
-                tgt, loc, rt, lv, cite, lab = (parsed["target"], parsed["locator"], parsed["ref_type"],
-                                               parsed["division_levels"], parsed["citation"], parsed["node_label"])
-            else:                                          # unknown source -> 'other'
-                tgt, loc, rt, lv, cite, lab = ("other:" + norm_cit(raw).lower(), "",
-                                               ref.get("ref_type", "other"), [], raw, raw)
-            key = (tgt, loc)
+            if not parsed:                                 # not a rigid type (USC/CFR/EO/Pub.L./OMB) -> drop the noise
+                continue
+            key = (parsed["target"], parsed["locator"])
             if key not in l_ext:
-                l_ext[key] = {"ref_type": rt, "citation": cite, "node_label": lab,
-                              "division_levels": lv, "evidence": ref.get("evidence", "")}
+                l_ext[key] = {"ref_type": parsed["ref_type"], "citation": parsed["citation"],
+                              "node_label": parsed["node_label"], "division_levels": parsed["division_levels"],
+                              "evidence": ref.get("evidence", "")}
         for key in sorted(set(p_ext) | set(l_ext)):
             tgt, loc = key
             p, l = p_ext.get(key), l_ext.get(key)

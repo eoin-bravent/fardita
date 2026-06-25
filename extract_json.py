@@ -323,13 +323,8 @@ def _b_omb(m):
     return {"ref_type": "omb", "target": f"omb:{s}-{n}", "node_label": f"OMB Circular {s}-{n}",
             "division_levels": [s, n], "locator": ""}
 
-def _b_act(m):
-    """'section 8(a) of the Small Business Act' -> node = the Act, section = locator."""
-    act, sec = m.group("act").strip(), (m.group("sec") or "").strip()
-    parts = re.findall(r"\d+|[A-Za-z]+", sec)
-    return {"ref_type": "act", "target": "act:" + _slug(act), "node_label": act,
-            "division_levels": [act] + parts, "locator": sec}
-
+# Only rigid, well-formed citation types. Named statutes ("the X Act") were too noisy to parse
+# reliably (line-wrapped names fragment into many nodes; capitalized phrases over-match) — dropped.
 EXTERNAL_PATTERNS = [
     (re.compile(r"(?P<title>\d+)\s+U\.S\.C\.\s+chapter\s+(?P<num>\d+)", re.I), _b_usc_ch),
     (re.compile(r"(?P<title>\d+)\s+U\.S\.C\.\s*(?P<sec>\d+[A-Za-z]?)(?P<parens>(?:\([A-Za-z0-9]+\))*)"), _b_usc),
@@ -337,16 +332,13 @@ EXTERNAL_PATTERNS = [
     (re.compile(r"(?:E\.O\.|Executive\s+Order)\s+(?P<num>\d+)", re.I), _b_eo),
     (re.compile(r"(?:Pub\.\s*L\.|Public\s+Law)\s+(?:No\.?\s*)?(?P<cong>\d+)-(?P<num>\d+)", re.I), _b_publ),
     (re.compile(r"OMB\s+Circular\s+(?:No\.?\s*)?(?P<ser>[A-Z])-(?P<num>\d+)", re.I), _b_omb),
-    # named statute: "section 8(a) of the Small Business Act [of 1958]" (connectors in/of/and/for/on/to lowercase)
-    (re.compile(r"(?:section\s+(?P<sec>\d+[A-Za-z]?(?:\([A-Za-z0-9]+\))*)\s+of\s+)?the\s+"
-                r"(?P<act>[A-Z][A-Za-z.\-]*(?:\s+(?:[A-Z][A-Za-z.\-]*|in|of|and|for|on|to))*\s+Act"
-                r"(?:\s+of\s+\d{4})?)"), _b_act),
 ]
+EXTERNAL_TYPES = {"usc", "cfr", "eo", "public_law", "omb"}
 
 def parse_external(s):
     """Normalize one external citation string -> {ref_type, target, node_label, division_levels, locator, citation}.
-    Returns None if it matches no known format (the LLM may still tag it ref_type='other')."""
-    s = (s or "").strip()
+    Returns None unless it's one of the rigid types (USC/CFR/EO/Pub.L./OMB)."""
+    s = norm(s)                                            # collapse any line-wrap whitespace
     for rx, build in EXTERNAL_PATTERNS:
         m = rx.search(s)
         if m:
@@ -380,7 +372,7 @@ def collect_external_refs(ps):
     for rx, build in EXTERNAL_PATTERNS:
         for m in rx.finditer(text):
             r = build(m)
-            r["citation"] = m.group(0)
+            r["citation"] = norm(m.group(0))               # collapse any line-wrap whitespace
             r["evidence"] = _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))
             found.append(r)
     out, index = [], {}

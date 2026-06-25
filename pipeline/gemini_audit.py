@@ -18,7 +18,7 @@ into the prompt and parse the returned JSON ourselves (see _extract_json).
 import os, json, time, re, hashlib, threading, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-PROMPT_VERSION = "v9"
+PROMPT_VERSION = "v10"
 # USAi is OpenAI-compatible; base_url is agency-specific (https://<agency>.usai.gov).
 ENDPOINT_PATH = "/api/v1/chat/completions"
 
@@ -55,14 +55,13 @@ AUDIT_SYSTEM = (
     "For each reference set `scope`:\n"
     " - scope='internal' for references to ANOTHER part of {regulation} (the cases above). `target` is "
     "the {regulation} citation in standard form (e.g. 5.202, 5.202(a)(2), 6.302-2, subpart 9.4).\n"
-    " - scope='external' for references to OTHER government documents -- U.S.C., CFR titles, Executive "
-    "Orders, Public Laws, OMB Circulars, the Federal Register, agency regulations, standards, treaties, "
-    "etc. Set `target` to the citation as written (e.g. '41 U.S.C. 1303(a)', '13 CFR 128.300', "
-    "'E.O. 11246', 'Pub. L. 118-31', 'OMB Circular A-76') and `ref_type` to one of "
-    "usc|cfr|eo|public_law|omb|act|other. For a NAMED STATUTE use ref_type='act' and keep the whole "
-    "citation in `target` -- e.g. 'section 8(a) of the Small Business Act' (the Act is the document, the "
-    "section is part of the citation); do NOT also report its Public Law number as a separate ref unless "
-    "the text cites it separately. Expand an external range only if unambiguous.\n"
+    " - scope='external' ONLY for a reference written in one of these five strict citation formats: "
+    "U.S.C. (e.g. '41 U.S.C. 1303(a)'), CFR ('13 CFR 128.300'), Executive Order ('E.O. 11246'), Public "
+    "Law ('Pub. L. 118-31'), or OMB Circular ('OMB Circular A-76'). Set `target` to the citation as "
+    "written and `ref_type` to one of usc|cfr|eo|public_law|omb. Expand an external range only if "
+    "unambiguous. Do NOT report anything else as external -- NO named statutes/Acts (e.g. 'the Small "
+    "Business Act'), program names, agency names, form numbers, treaties, standards, or web addresses. "
+    "If it is not in one of those five formats, omit it.\n"
     "Exclude only bare web URLs/emails and DITA plumbing. As `evidence`, give the COMPLETE sentence(s) "
     "containing the reference, quoted VERBATIM, with the exact citation text wrapped in « » guillemets "
     "-- e.g. 'The contracting officer shall, as required by «5.207», publicize the action.' Quote "
