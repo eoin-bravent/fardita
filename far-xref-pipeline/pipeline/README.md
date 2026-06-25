@@ -207,7 +207,7 @@ agreements; **hide decided** to focus). Click **Export decisions** to download `
 | `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |
 | `<REG>_addrmap.json` | cached whole-corpus address map (so `--files` subset runs validate cross-file targets) |
 | `<REG>_review.html` | the review page |
-| `<REG>_verified.json` | after `apply`: chunks + human-approved refs, every ref tagged `provenance{producer, status}` (producer `parser`/`parser+gemini`/`gemini+human`/`human`; status `parser_only`/`corroborated`/`human_approved`) |
+| `<REG>_verified.json` | after `apply`: chunks + human-approved refs, every ref tagged `provenance{producer, status}` (producer `parser`/`parser+llm`/`llm+human`/`human`; status `parser_only`/`corroborated`/`human_approved`) |
 | `llm_cache/` | cached raw LLM audit + judge responses |
 
 The reviewer's **`decisions.json`** is downloaded from the review page (not written to `output_dir`)

@@ -286,7 +286,7 @@ def cmd_apply(cfg, args):
                 removed += 1
                 continue
             corrob = t in conf
-            cr["provenance"] = {"producer": "parser+gemini" if corrob else "parser",
+            cr["provenance"] = {"producer": "parser+llm" if corrob else "parser",
                                 "status": "corroborated" if corrob else "parser_only"}
             kept.append(cr)
         r["cross_references"] = kept
@@ -298,7 +298,7 @@ def cmd_apply(cfg, args):
         if d["choice"] == "manual":
             tgts, producer = d.get("value", []), "human"
         elif d["choice"] == "accept" and d.get("status") == "llm_only":
-            tgts, producer = [d["target"]], "gemini+human"
+            tgts, producer = [d["target"]], "llm+human"
         elif d["choice"] == "accept" and d.get("status") == "added":
             tgts, producer = [d["target"]], "human"       # reference the human added (neither tool found it)
         else:
