@@ -254,7 +254,7 @@ agreements; **hide decided** to focus). The **Show** filter bar stays pinned at 
 | `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |
 | `<REG>_addrmap.json` | cached whole-corpus address map (so `--files` subset runs validate cross-file targets) |
 | `<REG>_review.html` | the review page |
-| `<REG>_verified.json` | after `apply`: chunks + human-approved refs (both `cross_references` and `external_references`), every ref tagged with a flat `status` (`parser_only` / `corroborated` / `human_approved`) |
+| `<REG>_verified.json` | after `apply`: the final dataset — chunks + verified refs (`cross_references` + `external_references`), every ref tagged with a flat `status`. **Field-by-field structure: [`VERIFIED_FORMAT.md`](VERIFIED_FORMAT.md).** |
 | `llm_cache/` | cached raw LLM audit + judge responses |
 
 The reviewer's **`decisions.json`** is downloaded from the review page (not written to `output_dir`)
