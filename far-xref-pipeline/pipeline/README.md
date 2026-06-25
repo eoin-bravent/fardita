@@ -77,10 +77,16 @@ internal vs external on the review page).
   doc/**section**; the precise sub-part rides on the edge as **`locator`**, so many citations to
   different subsections of one statute collapse to one node.
 - **`division_levels`** is the full parse (title, section, subsections…), mirroring the DITA decomposition.
-- **`ref_type`** ∈ `usc | cfr | eo | public_law | omb | other`.
-- **Parser** handles USC / CFR / E.O. / Pub. L. / OMB (high-precision regex → `confidence: explicit`,
-  auto-kept). **LLM** adds the long tail (`scope:"external"`, `ref_type`), reconciled against the parser;
-  LLM-only externals get human review. The internal-framed LLM judge does **not** run on externals.
+- **`ref_type`** ∈ `usc | cfr | eo | public_law | omb | act | other`.
+- **Named statutes** (`act`) decompose like everything else: `section 8(a) of the Small Business Act`
+  → node `act:small-business-act` (the Act), `locator: "8(a)"` (the section). An Act and its Public Law
+  number are left as **separate nodes** (no name↔Pub.L. table) — merge later in the graph if needed.
+- **Parser** handles USC / CFR / E.O. / Pub. L. / OMB / Acts (high-precision regex → `confidence:
+  explicit`, auto-kept). **LLM** adds the long tail (`scope:"external"`, `ref_type`), reconciled against
+  the parser; LLM-only externals get human review. The internal-framed LLM judge does **not** run on externals.
+- **Editing**: on the review page, an external row's **Manual** option gives two fields — **Document**
+  (the node, e.g. `Small Business Act` or `41 U.S.C. 1303`) and **Section** (the locator, e.g. `8(a)`) —
+  so you correct the document and the section independently; `apply` rebuilds the canonical edge.
 
 ## Configuration — `pipeline.config.json`
 | key | meaning | default |

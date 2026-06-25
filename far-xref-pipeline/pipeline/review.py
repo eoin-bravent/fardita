@@ -169,8 +169,12 @@ function rowHtml(it,i){
    <div class=choose>
      <label><input type=radio name=c${i} value=accept> Accept (${esc(disp)})</label>${jtag(it,'accept')}
      <label><input type=radio name=c${i} value=reject> Reject</label>${jtag(it,'reject')}
-     <label><input type=radio name=c${i} value=manual onchange="document.getElementById('man${i}').focus()"> Manual:</label>${jtag(it,'manual')}
-     <input type=text id=man${i} class=man placeholder="comma list or range">
+     ${it.scope==='external'
+       ? `<label><input type=radio name=c${i} value=manual onchange="document.getElementById('doc${i}').focus()"> Manual:</label>${jtag(it,'manual')}
+          <input type=text id=doc${i} class=man placeholder="document (e.g. Small Business Act)" value="${esc(it.node_label||'')}">
+          <input type=text id=sec${i} placeholder="section (e.g. 8(a))" style="width:140px" value="${esc(it.locator||'')}">`
+       : `<label><input type=radio name=c${i} value=manual onchange="document.getElementById('man${i}').focus()"> Manual:</label>${jtag(it,'manual')}
+          <input type=text id=man${i} class=man placeholder="comma list or range">`}
    </div>`;
 }
 function render(){
@@ -219,11 +223,17 @@ function collect(){
  const out=[];
  Q.forEach((it,i)=>{
    const picked=q(`input[name=c${i}]:checked`); if(!picked) return;
+   const base={unit:it.unit, target:it.target, status:it.status, choice:picked.value,
+               scope:it.scope||'internal', locator:it.locator||''};
+   if(picked.value==='manual' && it.scope==='external'){       // structured external edit: document + section
+     const dv=document.getElementById('doc'+i), sv=document.getElementById('sec'+i);
+     out.push({...base, value:[], edit:{document:dv?dv.value:'', section:sv?sv.value:'', ref_type:it.ref_type||'other'}});
+     return;
+   }
    let value=[];
    if(picked.value==='accept') value=[it.target];
    else if(picked.value==='manual'){const mb=document.getElementById('man'+i); value=expandCitations(mb?mb.value:'', unitBase(it.unit));}
-   out.push({unit:it.unit, target:it.target, status:it.status, choice:picked.value, value,
-             scope:it.scope||'internal', locator:it.locator||''});
+   out.push({...base, value});
  });
  return out;
 }
@@ -238,7 +248,14 @@ function applyDecisions(list){
  list.forEach(d=>{
    const i=idx[d.unit+'|'+d.target]; if(i===undefined) return;
    const r=q(`input[name=c${i}][value=${d.choice}]`); if(r) r.checked=true;
-   if(d.choice==='manual'){const mb=document.getElementById('man'+i); if(mb)mb.value=(d.value||[]).join(', ');}
+   if(d.choice==='manual'){
+     if(d.scope==='external' && d.edit){
+       const dv=document.getElementById('doc'+i), sv=document.getElementById('sec'+i);
+       if(dv)dv.value=d.edit.document||''; if(sv)sv.value=d.edit.section||'';
+     } else {
+       const mb=document.getElementById('man'+i); if(mb)mb.value=(d.value||[]).join(', ');
+     }
+   }
  });
 }
 function importDecisions(input){

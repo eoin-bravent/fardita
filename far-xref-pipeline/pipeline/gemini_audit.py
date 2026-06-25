@@ -18,7 +18,7 @@ into the prompt and parse the returned JSON ourselves (see _extract_json).
 import os, json, time, re, hashlib, threading, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-PROMPT_VERSION = "v8"
+PROMPT_VERSION = "v9"
 # USAi is OpenAI-compatible; base_url is agency-specific (https://<agency>.usai.gov).
 ENDPOINT_PATH = "/api/v1/chat/completions"
 
@@ -59,7 +59,10 @@ AUDIT_SYSTEM = (
     "Orders, Public Laws, OMB Circulars, the Federal Register, agency regulations, standards, treaties, "
     "etc. Set `target` to the citation as written (e.g. '41 U.S.C. 1303(a)', '13 CFR 128.300', "
     "'E.O. 11246', 'Pub. L. 118-31', 'OMB Circular A-76') and `ref_type` to one of "
-    "usc|cfr|eo|public_law|omb|other. Expand an external range only if unambiguous.\n"
+    "usc|cfr|eo|public_law|omb|act|other. For a NAMED STATUTE use ref_type='act' and keep the whole "
+    "citation in `target` -- e.g. 'section 8(a) of the Small Business Act' (the Act is the document, the "
+    "section is part of the citation); do NOT also report its Public Law number as a separate ref unless "
+    "the text cites it separately. Expand an external range only if unambiguous.\n"
     "Exclude only bare web URLs/emails and DITA plumbing. As `evidence`, give the COMPLETE sentence(s) "
     "containing the reference, quoted VERBATIM, with the exact citation text wrapped in « » guillemets "
     "-- e.g. 'The contracting officer shall, as required by «5.207», publicize the action.' Quote "

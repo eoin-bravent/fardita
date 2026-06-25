@@ -140,11 +140,12 @@ def reconcile(rows, llm_by_cit, addr_map):
             })
 
         # ----- external references (FAR -> other government documents) -----
-        p_ext = {}                                         # (target, locator) -> {ref_type, citation, levels, evidence}
+        p_ext = {}                                         # (target, locator) -> {ref_type, citation, label, levels, evidence}
         for cr in u.get("external_references", []):
             key = (cr["target"], cr.get("locator", ""))
             if key not in p_ext:
                 p_ext[key] = {"ref_type": cr["ref_type"], "citation": cr["citation"],
+                              "node_label": cr.get("node_label", cr["target"]),
                               "division_levels": cr.get("division_levels", []), "evidence": cr_evidence(cr)}
         l_ext = {}
         for ref in llm_by_cit.get(cit, []):
@@ -155,14 +156,15 @@ def reconcile(rows, llm_by_cit, addr_map):
                 continue
             parsed = X.parse_external(raw)
             if parsed:
-                tgt, loc, rt, lv, cite = (parsed["target"], parsed["locator"], parsed["ref_type"],
-                                          parsed["division_levels"], parsed["citation"])
+                tgt, loc, rt, lv, cite, lab = (parsed["target"], parsed["locator"], parsed["ref_type"],
+                                               parsed["division_levels"], parsed["citation"], parsed["node_label"])
             else:                                          # unknown source -> 'other'
-                tgt, loc, rt, lv, cite = ("other:" + norm_cit(raw).lower(), "", ref.get("ref_type", "other"), [], raw)
+                tgt, loc, rt, lv, cite, lab = ("other:" + norm_cit(raw).lower(), "",
+                                               ref.get("ref_type", "other"), [], raw, raw)
             key = (tgt, loc)
             if key not in l_ext:
-                l_ext[key] = {"ref_type": rt, "citation": cite, "division_levels": lv,
-                              "evidence": ref.get("evidence", "")}
+                l_ext[key] = {"ref_type": rt, "citation": cite, "node_label": lab,
+                              "division_levels": lv, "evidence": ref.get("evidence", "")}
         for key in sorted(set(p_ext) | set(l_ext)):
             tgt, loc = key
             p, l = p_ext.get(key), l_ext.get(key)
@@ -172,6 +174,7 @@ def reconcile(rows, llm_by_cit, addr_map):
             ledger.append({
                 "unit": cit, "url": u["url"], "scope": "external",
                 "target": tgt, "locator": loc, "ref_type": src["ref_type"],
+                "node_label": src.get("node_label", tgt),
                 "citation": src["citation"], "division_levels": src.get("division_levels", []),
                 "status": status, "validation": "external",
                 "parser": {"kind": "explicit", "evidence": p["evidence"]} if p else None,

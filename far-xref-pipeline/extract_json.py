@@ -290,31 +290,45 @@ def collect_refs(ps, sec_num, url):
 def _parens_list(p):
     return re.findall(r"\(([A-Za-z0-9]+)\)", p or "")
 
+def _slug(s):
+    return re.sub(r"[^a-z0-9]+", "-", (s or "").lower()).strip("-")
+
 def _b_usc_ch(m):
     t, n = m.group("title"), m.group("num")
-    return {"ref_type": "usc", "target": f"usc:{t}/ch{n}", "division_levels": [t, "chapter", n], "locator": ""}
+    return {"ref_type": "usc", "target": f"usc:{t}/ch{n}", "node_label": f"{t} U.S.C. chapter {n}",
+            "division_levels": [t, "chapter", n], "locator": ""}
 
 def _b_usc(m):
     t, s, p = m.group("title"), m.group("sec"), m.group("parens") or ""
-    return {"ref_type": "usc", "target": f"usc:{t}/{s}", "division_levels": [t, s] + _parens_list(p), "locator": p}
+    return {"ref_type": "usc", "target": f"usc:{t}/{s}", "node_label": f"{t} U.S.C. {s}",
+            "division_levels": [t, s] + _parens_list(p), "locator": p}
 
 def _b_cfr(m):
     t, part, s, p = m.group("title"), m.group("part"), m.group("sec"), m.group("parens") or ""
     node = f"cfr:{t}/{part}" + (f".{s}" if s else "")
-    return {"ref_type": "cfr", "target": node,
+    return {"ref_type": "cfr", "target": node, "node_label": f"{t} CFR {part}" + (f".{s}" if s else ""),
             "division_levels": [t, part] + ([s] if s else []) + _parens_list(p), "locator": p}
 
 def _b_eo(m):
     n = m.group("num")
-    return {"ref_type": "eo", "target": f"eo:{n}", "division_levels": [n], "locator": ""}
+    return {"ref_type": "eo", "target": f"eo:{n}", "node_label": f"E.O. {n}", "division_levels": [n], "locator": ""}
 
 def _b_publ(m):
     c, n = m.group("cong"), m.group("num")
-    return {"ref_type": "public_law", "target": f"publ:{c}-{n}", "division_levels": [c, n], "locator": ""}
+    return {"ref_type": "public_law", "target": f"publ:{c}-{n}", "node_label": f"Pub. L. {c}-{n}",
+            "division_levels": [c, n], "locator": ""}
 
 def _b_omb(m):
     s, n = m.group("ser"), m.group("num")
-    return {"ref_type": "omb", "target": f"omb:{s}-{n}", "division_levels": [s, n], "locator": ""}
+    return {"ref_type": "omb", "target": f"omb:{s}-{n}", "node_label": f"OMB Circular {s}-{n}",
+            "division_levels": [s, n], "locator": ""}
+
+def _b_act(m):
+    """'section 8(a) of the Small Business Act' -> node = the Act, section = locator."""
+    act, sec = m.group("act").strip(), (m.group("sec") or "").strip()
+    parts = re.findall(r"\d+|[A-Za-z]+", sec)
+    return {"ref_type": "act", "target": "act:" + _slug(act), "node_label": act,
+            "division_levels": [act] + parts, "locator": sec}
 
 EXTERNAL_PATTERNS = [
     (re.compile(r"(?P<title>\d+)\s+U\.S\.C\.\s+chapter\s+(?P<num>\d+)", re.I), _b_usc_ch),
@@ -323,10 +337,14 @@ EXTERNAL_PATTERNS = [
     (re.compile(r"(?:E\.O\.|Executive\s+Order)\s+(?P<num>\d+)", re.I), _b_eo),
     (re.compile(r"(?:Pub\.\s*L\.|Public\s+Law)\s+(?:No\.?\s*)?(?P<cong>\d+)-(?P<num>\d+)", re.I), _b_publ),
     (re.compile(r"OMB\s+Circular\s+(?:No\.?\s*)?(?P<ser>[A-Z])-(?P<num>\d+)", re.I), _b_omb),
+    # named statute: "section 8(a) of the Small Business Act [of 1958]" (connectors in/of/and/for/on/to lowercase)
+    (re.compile(r"(?:section\s+(?P<sec>\d+[A-Za-z]?(?:\([A-Za-z0-9]+\))*)\s+of\s+)?the\s+"
+                r"(?P<act>[A-Z][A-Za-z.\-]*(?:\s+(?:[A-Z][A-Za-z.\-]*|in|of|and|for|on|to))*\s+Act"
+                r"(?:\s+of\s+\d{4})?)"), _b_act),
 ]
 
 def parse_external(s):
-    """Normalize one external citation string -> {ref_type, target, division_levels, locator, citation}.
+    """Normalize one external citation string -> {ref_type, target, node_label, division_levels, locator, citation}.
     Returns None if it matches no known format (the LLM may still tag it ref_type='other')."""
     s = (s or "").strip()
     for rx, build in EXTERNAL_PATTERNS:
@@ -336,6 +354,23 @@ def parse_external(s):
             r["citation"] = s
             return r
     return None
+
+def build_external_edge(document, section, fallback_type="other"):
+    """Build a canonical external edge from a human-edited (document, section). Re-detects the type
+    from the text; falls back to the row's ref_type (e.g. 'act') for named documents the regex can't type."""
+    document, section = (document or "").strip(), (section or "").strip()
+    for src in (f"{document}{section}", f"{document} {section}".strip(), document):
+        p = parse_external(src)
+        if p:
+            if section:
+                p["locator"] = section
+            return p
+    rt = fallback_type or "other"
+    parts = re.findall(r"\d+|[A-Za-z]+", section)
+    label = document
+    cite = (f"section {section} of the {document}" if section else document) if rt == "act" else (document + section)
+    return {"ref_type": rt, "target": f"{rt}:{_slug(document)}", "node_label": label,
+            "division_levels": [document] + parts, "locator": section, "citation": cite}
 
 def collect_external_refs(ps):
     """Scan a unit's text for external (non-FAR) citations, grouped by (target, locator) like internal
@@ -354,6 +389,7 @@ def collect_external_refs(ps):
         if key not in index:
             index[key] = len(out)
             out.append({"ref_type": r["ref_type"], "target": r["target"], "locator": r["locator"],
+                        "node_label": r.get("node_label", r["target"]),
                         "division_levels": r["division_levels"], "citation": r["citation"],
                         "confidence": "explicit", "mentions": []})
         out[index[key]]["mentions"].append({"kind": "explicit", "evidence": r["evidence"]})

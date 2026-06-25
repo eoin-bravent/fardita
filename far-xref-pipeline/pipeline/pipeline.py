@@ -341,9 +341,9 @@ def cmd_apply(cfg, args):
             it = ext_index.get((d["unit"], d["target"], d.get("locator", "")))
             edges = [it] if it else []
         elif d["choice"] == "manual":
-            edges = [X.parse_external(v) or {"ref_type": "other", "target": "other:" + v,
-                                             "locator": "", "division_levels": [], "citation": v}
-                     for v in d.get("value", [])]
+            ed = d.get("edit") or {}
+            edges = [X.build_external_edge(ed.get("document", ""), ed.get("section", ""),
+                                           ed.get("ref_type", "other"))] if ed.get("document") else []
         else:
             continue
         u.setdefault("external_references", [])
@@ -353,6 +353,7 @@ def cmd_apply(cfg, args):
                 continue
             u["external_references"].append({
                 "target": e["target"], "ref_type": e["ref_type"], "locator": e.get("locator", ""),
+                "node_label": e.get("node_label", e["target"]),
                 "division_levels": e.get("division_levels", []), "citation": e.get("citation", ""),
                 "mentions": [{"kind": "inferred", "evidence": "(human review)"}],
                 "status": "human_approved"})
