@@ -44,16 +44,17 @@ Each chunk's `cross_references` is a list **grouped by `target`** (one entry per
 citation); every textual occurrence is kept as a mention:
 ```json
 { "target": "5.207(c)", "confidence": "inferred",
-  "mentions": [ {"kind": "inferred", "context": "…requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>(c). The notice…"},
-                {"kind": "inferred", "context": "…"} ] }
+  "mentions": [ {"kind": "inferred", "evidence": "…requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>(c). The notice…"},
+                {"kind": "inferred", "evidence": "…"} ] }
 ```
 - `kind` (per mention) — `explicit` (a precise `<xref>` link) or `inferred` (resolved from a trailing
   qualifier, prose, or a range). `confidence` (per reference) = `explicit` if any mention is explicit,
   else `inferred`.
-- `context` shows the source sentence with the raw `<xref>` markup inline, windowed past the reference.
+- `evidence` (per mention) shows the source sentence with the raw `<xref>` markup inline, windowed past
+  the reference. (Same field name as the LLM/ledger evidence, for alignment.)
 - **Ranges are expanded into atomic members** — `5.203(a) through (d)` becomes four references
   `5.203(a)`, `5.203(b)`, `5.203(c)`, `5.203(d)` (no `(a)-(d)` spans anywhere). All members share the
-  range's `context`. The enumerator handles letters / digits / romans / numeric subsection dashes and
+  range's `evidence`. The enumerator handles letters / digits / romans / numeric subsection dashes and
   every separator (`-`, `–`, `to`, `through`, repeated citation); a genuinely ambiguous range (e.g.
   `(i)-(v)`, letter vs. roman) is left for the LLM + human rather than guessed.
 - External U.S.C./URL references are excluded.
@@ -207,7 +208,7 @@ agreements; **hide decided** to focus). Click **Export decisions** to download `
 | `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |
 | `<REG>_addrmap.json` | cached whole-corpus address map (so `--files` subset runs validate cross-file targets) |
 | `<REG>_review.html` | the review page |
-| `<REG>_verified.json` | after `apply`: chunks + human-approved refs, every ref tagged `provenance{producer, status}` (producer `parser`/`parser+llm`/`llm+human`/`human`; status `parser_only`/`corroborated`/`human_approved`) |
+| `<REG>_verified.json` | after `apply`: chunks + human-approved refs, every ref tagged with a flat `status` (`parser_only` / `corroborated` / `human_approved`) |
 | `llm_cache/` | cached raw LLM audit + judge responses |
 
 The reviewer's **`decisions.json`** is downloaded from the review page (not written to `output_dir`)

@@ -235,14 +235,14 @@ def _range_refs(text, sec_num):
         prefix = base + "".join(f"({t})" for t in fixed)
         ctx = _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))
         for tok in members:
-            out.append({"kind": "inferred", "target": f"{prefix}({tok})", "context": ctx})
+            out.append({"kind": "inferred", "target": f"{prefix}({tok})", "evidence": ctx})
     for m in RANGE_DASH.finditer(text):
         a, b = int(m.group("s")), int(m.group("e"))
         if not 0 < b - a <= 40:
             continue
         ctx = _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))
         for n in range(a, b + 1):
-            out.append({"kind": "inferred", "target": f"{m.group('base')}-{n}", "context": ctx})
+            out.append({"kind": "inferred", "target": f"{m.group('base')}-{n}", "evidence": ctx})
     return out
 
 # ---------- cross references ----------
@@ -255,7 +255,7 @@ def _group_refs(refs):
         if t not in index:
             index[t] = len(out)
             out.append({"target": t, "confidence": r["kind"], "mentions": []})
-        out[index[t]]["mentions"].append({"kind": r["kind"], "context": r["context"]})
+        out[index[t]]["mentions"].append({"kind": r["kind"], "evidence": r["evidence"]})
         if r["kind"] == "explicit":
             out[index[t]]["confidence"] = "explicit"
     return out
@@ -274,13 +274,13 @@ def collect_refs(ps, sec_num, url):
         lit = f'<xref href="{href}">{text[s:e]}</xref>'                    # splice the raw markup back in
         ctx = ("…" if a > 0 else "") + norm(text[a:s] + lit + text[e:b]) + ("…" if b < len(text) else "")
         if q:
-            refs.append({"kind": "inferred", "target": base + q.group(1), "context": ctx})
+            refs.append({"kind": "inferred", "target": base + q.group(1), "evidence": ctx})
         else:
-            refs.append({"kind": "explicit", "target": base, "context": ctx})
+            refs.append({"kind": "explicit", "target": base, "evidence": ctx})
     refs.extend(_range_refs(text, sec_num))                                # ranges -> explicit members
     for m in re.finditer(r"paragraphs?\s+(\([a-z0-9]+\)(?:\([a-z0-9]+\))*)\s+of this section", text):
         refs.append({"kind": "inferred", "target": sec_num + m.group(1),
-                     "context": _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))})
+                     "evidence": _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))})
     return _group_refs(refs)
 
 # ---------- build rows ----------

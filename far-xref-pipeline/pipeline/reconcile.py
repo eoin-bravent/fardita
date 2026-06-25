@@ -64,10 +64,10 @@ def cit_sort_key(target):
             key.append((1, tk.lower()))
     return (0, key)
 
-def cr_context(cr):
+def cr_evidence(cr):
     """Representative evidence string from a cross_reference (first mention)."""
     ms = cr.get("mentions")
-    return ms[0].get("context", "") if ms else cr.get("context", "")
+    return ms[0].get("evidence", "") if ms else cr.get("evidence", "")
 
 def grammar_ok(c):
     return bool(CIT.match(c) or SUBPART.match(c) or PART.match(c))
@@ -106,7 +106,7 @@ def reconcile(rows, llm_by_cit, addr_map):
         for cr in u["cross_references"]:
             t = norm_cit(cr["target"])
             if t and t != self_cit and t not in parser_map:
-                parser_map[t] = {"kind": cr.get("confidence", "inferred"), "evidence": cr_context(cr)}
+                parser_map[t] = {"kind": cr.get("confidence", "inferred"), "evidence": cr_evidence(cr)}
         llm_map = {}                                       # norm target -> {evidence, validation}
         for ref in llm_by_cit.get(cit, []):
             raw = ref.get("target", "")

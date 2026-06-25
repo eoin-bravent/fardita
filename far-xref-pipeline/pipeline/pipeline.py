@@ -4,7 +4,7 @@
   python pipeline.py run    [--config C] [--mock-llm F | --no-llm] [--limit N]
       resolve file set -> chunk -> manifest -> blind LLM audit -> reconcile -> review.html
   python pipeline.py apply  [--config C] --decisions decisions.json
-      merge approved refs -> <regulation>_verified.json   (with provenance)
+      merge approved refs -> <regulation>_verified.json   (every ref tagged with a status)
 
 Config: pipeline.config.json (regulation, input_dir, bottom_level, gemini model/reasoning, …).
 Secret: GEMINI_API_KEY in the environment (never written to config or logs).
@@ -260,7 +260,7 @@ def cmd_apply(cfg, args):
     rows = json.load(open(os.path.join(out, f"{reg}_chunks.json"), encoding="utf-8"))
     lpath = os.path.join(out, f"{reg}_ledger.json")
     ledger = json.load(open(lpath, encoding="utf-8")) if os.path.exists(lpath) else []
-    confirmed = {}                                        # {unit: {corroborated targets}} for provenance
+    confirmed = {}                                        # {unit: {corroborated targets}} for status tagging
     for it in ledger:
         if it["status"] == "corroborated":
             confirmed.setdefault(it["unit"], set()).add(reconcile.norm_cit(it["target"]))
@@ -275,7 +275,7 @@ def cmd_apply(cfg, args):
     replaced = {(d["unit"], reconcile.norm_cit(d["target"]))
                 for d in decisions if d["choice"] in ("reject", "manual")}
 
-    # 1) annotate existing (parser) refs with provenance; drop any the human rejected/replaced
+    # 1) tag existing (parser) refs with status; drop any the human rejected/replaced
     removed = 0
     for r in rows:
         conf = confirmed.get(r["citation"], set())
@@ -285,22 +285,18 @@ def cmd_apply(cfg, args):
             if (r["citation"], t) in replaced:
                 removed += 1
                 continue
-            corrob = t in conf
-            cr["provenance"] = {"producer": "parser+llm" if corrob else "parser",
-                                "status": "corroborated" if corrob else "parser_only"}
+            cr["status"] = "corroborated" if t in conf else "parser_only"
             kept.append(cr)
         r["cross_references"] = kept
 
-    # 2) append human-approved additions (accepted llm-only + manual corrections) to their unit row
+    # 2) append human-approved additions (accepted llm-only / added + manual corrections) to their unit row
     by_cit = {r["citation"]: r for r in rows}
     added = 0
     for d in decisions:
         if d["choice"] == "manual":
-            tgts, producer = d.get("value", []), "human"
-        elif d["choice"] == "accept" and d.get("status") == "llm_only":
-            tgts, producer = [d["target"]], "llm+human"
-        elif d["choice"] == "accept" and d.get("status") == "added":
-            tgts, producer = [d["target"]], "human"       # reference the human added (neither tool found it)
+            tgts = d.get("value", [])
+        elif d["choice"] == "accept" and d.get("status") in ("llm_only", "added"):
+            tgts = [d["target"]]
         else:
             continue                                      # reject -> nothing; accept of parser/corrob -> already kept
         u = by_cit.get(d["unit"])
@@ -312,8 +308,8 @@ def cmd_apply(cfg, args):
                 continue                                  # already present
             u["cross_references"].append({
                 "target": tgt, "confidence": "inferred",
-                "mentions": [{"kind": "inferred", "context": "(human review)"}],
-                "provenance": {"producer": producer, "status": "human_approved"}})
+                "mentions": [{"kind": "inferred", "evidence": "(human review)"}],
+                "status": "human_approved"})
             added += 1
 
     path = os.path.join(out, f"{reg}_verified.json")
