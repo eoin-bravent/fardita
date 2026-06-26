@@ -59,7 +59,7 @@ def build(path, far, cfg):
         r["url"] = url
         r["cross_references"] = X.collect_refs(ps, sec_num, url)
         r["external_references"] = X.collect_external_refs(ps)
-        r["tables"], r["images"] = X.collect_media(el, url)    # omitted from text; recorded here as metadata
+        r["images"] = X.collect_images(el)                     # tables are inlined as HTML in `text`
         r["text"] = text
         return r
 

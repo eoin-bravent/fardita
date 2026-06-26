@@ -12,9 +12,9 @@ configured bottom level. Every chunk carries its identity, its text, and the ref
 - `text` — the chunk's text.
 - `cross_references` — references to **other parts of the FAR** (see below).
 - `external_references` — references to **other government documents** (see below).
-- `tables` — `[{caption, url}]`, a manifest of the tables in the chunk. The **table content itself is
-  inlined into `text` as clean HTML** (`<table><caption>…</caption><thead>…<tbody>…`, with `colspan`
-  for merged header cells), so an LLM reading the chunk sees the full table.
+- Tables aren't a separate field — the **table content is inlined into `text` as clean HTML**
+  (`<table><caption>…</caption><thead>…<tbody>…`, with `colspan` for merged header cells), so an LLM
+  reading the chunk sees the full table.
 - `images` — a deduped list of **image ids** present in the chunk, e.g. `["piid.png"]`. In `text` each
   appears as an inline placeholder `[IMAGE: piid.png]` marking its position. The image's **binary and
   plain-language `description` live in a separate downstream store keyed by that id** (not duplicated on

@@ -304,7 +304,7 @@ function banner(){
    `corrob ${sc.corroborated||0} · parser-exp ${sc.parser_explicit||0} · parser-inf ${sc.parser_inferred||0} · llm-only ${sc.llm_only||0}`];
  if(tk.calls) parts.push(`tokens ${fmt(tk.total)} total · in ${fmt(tk.prompt)} · think ${fmt(tk.thinking)} · out ${fmt(tk.output)} · ${tk.calls} calls`);
  const co=S.cost;
- if(co && (co.rates_per_1m.input||co.rates_per_1m.output) && tk.calls) parts.push(`est ${co.currency} ${co.total.toFixed(2)}`);
+ if(co && (co.rates_per_1m.input||co.rates_per_1m.output) && tk.calls) parts.push(`est ${co.currency} $${co.total.toFixed(2)}`);
  if(tm.total!=null) parts.push(`${tm.total}s`);
  el.textContent='▸ '+parts.join('   ·   ');
 }

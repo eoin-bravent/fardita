@@ -160,7 +160,7 @@ def _print_summary(s):
     co = s.get("cost", {})
     if tk["total"]["calls"] and (co.get("rates_per_1m", {}).get("input") or co.get("rates_per_1m", {}).get("output")):
         r = co["rates_per_1m"]
-        print(f"  est. cost: {co['currency']} {co['total']:.4f}  (in {co['in_cost']:.4f} + out {co['out_cost']:.4f}"
+        print(f"  est. cost: {co['currency']} ${co['total']:.4f}  (in ${co['in_cost']:.4f} + out ${co['out_cost']:.4f}"
               f"; rates {r['input']}/{r['output']} per 1M — set in pipeline.config.json 'pricing')")
 
 def cmd_run(cfg, args):

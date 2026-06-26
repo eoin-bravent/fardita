@@ -112,20 +112,17 @@ def table_to_html(t):
     parts.append("</table>")
     return "".join(parts)
 
-def collect_media(el, url):
-    """Per-chunk media manifest. Returns (tables, images):
-      tables — [{caption, url}] (the table content itself is inlined as HTML in `text`).
-      images — deduped list of image ids, e.g. ["piid.png"] (binary + description live downstream)."""
-    tables, images = [], []
+def collect_images(el):
+    """Deduped list of image ids in this chunk, e.g. ["piid.png"]. Each appears inline in `text` as an
+    [IMAGE: id] token; the binary + plain-language description live in a downstream store keyed by id.
+    (Tables aren't listed — their content is inlined as HTML directly in `text`.)"""
+    images = []
     for ch in el.iter():
-        if ch.tag in ("table", "simpletable"):
-            ti = ch.find(".//title")
-            tables.append({"caption": norm("".join(ti.itertext())) if ti is not None else "", "url": url})
-        elif ch.tag == "image":
+        if ch.tag == "image":
             iid = img_id(ch.get("href") or "")
             if iid not in images:
                 images.append(iid)
-    return tables, images
+    return images
 
 # ---------- text flattening ----------
 def flatten_p(p, url):
@@ -430,14 +427,13 @@ def collect_external_refs(ps):
 
 # ---------- build rows ----------
 def make_row(citation, typ, comp, url, ps, sec_num, text, el):
-    tables, images = collect_media(el, url)
     return {"citation": citation, "type": typ,
             "part": comp["part"], "subpart": comp["subpart"], "section": comp["section"],
             "subsection": comp["subsection"], "paragraph": comp["paragraph"],
             "subparagraph": comp["subparagraph"], "url": url,
             "cross_references": collect_refs(ps, sec_num, url),
             "external_references": collect_external_refs(ps),
-            "tables": tables, "images": images, "text": text}
+            "images": collect_images(el), "text": text}
 
 def build(far):
     c = load_concept(far)
