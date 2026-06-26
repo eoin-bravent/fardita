@@ -248,7 +248,7 @@ agreements; **hide decided** to focus). The **Show** filter bar stays pinned at 
 ## Outputs (in `output_dir`)
 | file | what |
 |------|------|
-| `<REG>_chunks.json` | the chunks (pristine, parser-only) — each row has `cross_references` (internal), `external_references`, and `tables`/`images` (omitted from `text`, recorded as metadata) |
+| `<REG>_chunks.json` | the chunks (pristine, parser-only) — each row has `cross_references` (internal), `external_references`, `tables` (content inlined in `text` as HTML; `[{caption,url}]` manifest), and `images` (deduped id list; inline `[IMAGE: id]` token in `text`) |
 | `<REG>_manifest.json` | every file **seen**, **processed**, and **skipped** (with reasons) — the parser and LLM use this same set |
 | `<REG>_ledger.json` | the per-unit master list: every atomic target tagged `status` (corroborated / parser_explicit / parser_inferred / llm_only), with parser/llm/judge evidence — drives the review page and `apply` |
 | `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |

@@ -11,7 +11,7 @@ v1 scope: only files named like a FAR citation (^\\d+\\.\\d+(-\\d+)?$) are proce
 parts, subparts, covers, matrices, etc. are skipped and reported. Tables and images
 are dropped from the grid but left as obvious inline placeholders in the text.
 """
-import os, re, sys, json, shutil, glob
+import os, re, sys, json, glob
 import xml.etree.ElementTree as ET
 from collections import Counter
 
@@ -22,7 +22,6 @@ SUBSET = ["5.201", "5.202", "5.203", "5.205", "5.207", "12.603", "5.101", "6.302
 NUMERIC = re.compile(r"^\d+\.\d+(-\d+)?$")
 WB, WA = 90, 75                                 # context window: chars before link / after ref end
 MIN_TEXT = 40                                   # skip near-empty units
-ASSETS = os.path.join(DITA, "test_data", "assets")
 
 # ---------- DITA loading + whitespace helpers ----------
 def norm(s):
@@ -65,39 +64,67 @@ def href_to_citation(href):
             return f"{t[0]}.{t[1]}" + ("-" + "-".join(t[2:]) if len(t) > 2 else "")
     return frag
 
-# ---------- table / image placeholders ----------
-def table_marker(t, url):
-    title = t.find(".//title")
-    cap = norm("".join(title.itertext())) if title is not None else ""
-    return f'[TABLE OMITTED{f": \"{cap}\"" if cap else ""} — see {url}]'
+# ---------- inline rendering: tables -> HTML, images -> [IMAGE: id] ----------
+def _esc(s):
+    return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-def image_marker(im, url):
-    href = im.get("href") or ""
-    alt_el = im.find("alt")
-    alt = norm("".join(alt_el.itertext())) if alt_el is not None else ""
-    ref = href
-    src = os.path.join(DITA, href) if href else ""
-    if src and os.path.isfile(src):                       # copy binary if present (Graphics/ is empty now)
-        os.makedirs(ASSETS, exist_ok=True)
-        try:
-            shutil.copyfile(src, os.path.join(ASSETS, os.path.basename(href)))
-            ref = "assets/" + os.path.basename(href)
-        except OSError:
-            pass
-    return f'[FIGURE OMITTED{f": \"{alt}\"" if alt else ""} — {ref} — see {url}]'
+def img_id(href):
+    """Stable id for an image = its filename (unique across the FAR; keys the downstream image store)."""
+    return os.path.basename(href) or (href or "image")
+
+def image_token(im):
+    """Inline placeholder carrying the image id; the binary + description live in a downstream store."""
+    return f"[IMAGE: {img_id(im.get('href') or '')}]"
+
+def table_to_html(t):
+    """Render a CALS <table> as clean minimal HTML (caption + colspan), inlined in the chunk text."""
+    title = t.find("./title")
+    cap = _esc(norm("".join(title.itertext()))) if title is not None else ""
+    tg = t.find(".//tgroup")
+    if tg is None:
+        return f"<table>{f'<caption>{cap}</caption>' if cap else ''}</table>"
+    colnum = {}
+    for cs in tg.findall("./colspec"):
+        nm, cn = cs.get("colname"), cs.get("colnum")
+        if nm:
+            colnum[nm] = int(cn) if (cn and cn.isdigit()) else len(colnum) + 1
+    def span(e):
+        a, b = e.get("namest"), e.get("nameend")
+        return colnum[b] - colnum[a] + 1 if (a in colnum and b in colnum and colnum[b] >= colnum[a]) else 1
+    def section(sec, tag):
+        out = []
+        for row in sec.findall("./row"):
+            cells = []
+            for e in row.findall("./entry"):
+                sp = span(e)
+                attr = f' colspan="{sp}"' if sp > 1 else ""
+                cells.append(f"<{tag}{attr}>{_esc(norm(''.join(e.itertext())))}</{tag}>")
+            out.append("<tr>" + "".join(cells) + "</tr>")
+        return "".join(out)
+    parts = ["<table>"]
+    if cap:
+        parts.append(f"<caption>{cap}</caption>")
+    thead, tbody = tg.find("./thead"), tg.find("./tbody")
+    if thead is not None:
+        parts.append("<thead>" + section(thead, "th") + "</thead>")
+    if tbody is not None:
+        parts.append("<tbody>" + section(tbody, "td") + "</tbody>")
+    parts.append("</table>")
+    return "".join(parts)
 
 def collect_media(el, url):
-    """Structured record of the tables/images in this chunk (omitted from `text`, shown there as
-    [TABLE OMITTED]/[FIGURE OMITTED] placeholders). Returns (tables, images)."""
+    """Per-chunk media manifest. Returns (tables, images):
+      tables — [{caption, url}] (the table content itself is inlined as HTML in `text`).
+      images — deduped list of image ids, e.g. ["piid.png"] (binary + description live downstream)."""
     tables, images = [], []
     for ch in el.iter():
         if ch.tag in ("table", "simpletable"):
             ti = ch.find(".//title")
             tables.append({"caption": norm("".join(ti.itertext())) if ti is not None else "", "url": url})
         elif ch.tag == "image":
-            alt_el = ch.find("alt")
-            images.append({"href": ch.get("href") or "",
-                           "alt": norm("".join(alt_el.itertext())) if alt_el is not None else "", "url": url})
+            iid = img_id(ch.get("href") or "")
+            if iid not in images:
+                images.append(iid)
     return tables, images
 
 # ---------- text flattening ----------
@@ -109,7 +136,7 @@ def flatten_p(p, url):
         if ch.tag == "ph" and ch.get("props") == "autonumber":
             label = norm(ch.text)
         elif ch.tag == "image":
-            parts.append(" " + image_marker(ch, url) + " ")
+            parts.append(" " + image_token(ch) + " ")
         else:
             parts.append("".join(ch.itertext()))
         if ch.tail:
@@ -131,11 +158,11 @@ def flatten_block(el, url):
                 if t:
                     out.append(t)
         elif ch.tag in ("table", "simpletable"):
-            out.append(table_marker(ch, url))
+            out.append(table_to_html(ch))
         elif ch.tag in ("image", "fig"):
             img = ch if ch.tag == "image" else ch.find(".//image")
             if img is not None:
-                out.append(image_marker(img, url))
+                out.append(image_token(img))
     return out
 
 def flatten_li(li, url):
