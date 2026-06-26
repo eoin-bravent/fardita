@@ -129,18 +129,19 @@ internal vs external on the review page).
   "mentions": [ {"kind":"explicit","evidence":"…as defined in 41 U.S.C. 1303(a)(4)…"} ], "status": "parser_only" }
 ```
 - **`target`** is a canonical **node id** — `usc:<title>/<sec>`, `cfr:<title>/<part.sec>`, `eo:<num>`,
-  `publ:<cong>-<num>`, `omb:<series>-<num>`. The node is the doc/**section**; the precise sub-part rides
-  on the edge as **`locator`**, so many citations to different subsections of one statute collapse to one node.
+  `publ:<cong>-<num>`, `omb:<series>-<num>`, `form:SF-33` (forms), or the URL itself (`url`). The node is
+  the doc/**section**; the precise sub-part rides on the edge as **`locator`**, so many references to one
+  document collapse to one node.
+- **`ref_type`** ∈ `usc | cfr | eo | public_law | omb` (statutory citations) · `form` (Standard / Optional
+  / DD forms) · `url` (any other tagged external link, e.g. a NIST or agency page).
+- **`href`** — a resolvable link when the source provided one (gov form pages, `uscode.house.gov`, …);
+  also attached to the statutory reference a tagged link points to.
 - **`division_levels`** is the full parse (title, section, subsections…), mirroring the DITA decomposition.
-- **`ref_type`** ∈ `usc | cfr | eo | public_law | omb` — only these **five strict formats** are kept.
-  Named statutes ("the Small Business Act"), program/agency names, treaties, standards, etc. are
-  **deliberately excluded**: regex-detecting named acts produced far too many false hits (line-wrapped
-  names fragmenting into many nodes, capitalized phrases over-matching). Recoverable later via a curated
-  act whitelist if needed.
-- **Parser** handles the five formats (high-precision regex → `confidence: explicit`, auto-kept). **LLM**
-  is restricted to the same five and told not to report anything else; any LLM external that doesn't
-  parse to one of the five is dropped at reconcile. LLM-only externals get human review; the
-  internal-framed LLM judge does **not** run on externals.
+- **How they're found:** statutory citations come from **regex over the prose** (high-precision formats
+  only — named statutes/"the X Act" are deliberately excluded, they were too noisy). **Forms and URLs come
+  from tagged `<xref>` links** in the source, so they're reliable (the author explicitly linked them).
+  The **LLM** also reports statutory externals (restricted to those formats; anything it can't format is
+  dropped at reconcile). LLM-only externals get human review; the LLM judge doesn't run on externals.
 - **Editing**: on the review page, an external row's **Manual** option gives two fields — **Document**
   (the node, e.g. `Small Business Act` or `41 U.S.C. 1303`) and **Section** (the locator, e.g. `8(a)`) —
   so you correct the document and the section independently; `apply` rebuilds the canonical edge.

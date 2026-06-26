@@ -28,11 +28,18 @@ configured bottom level. Every chunk carries its identity, its text, and the ref
 - `mentions` — each occurrence, with its `kind` and `evidence` (the surrounding source sentence).
 - `status` — how it was verified: `corroborated` (parser and LLM agreed), `parser_only`, or `human_approved`.
 
-**`external_references`** (other gov docs: U.S.C., CFR, E.O., Public Law, OMB Circular) — each entry:
-- `target` — a canonical id for the document/section (`usc:41/1303`, `cfr:13/128.300`, `eo:11246`,
-  `publ:118-31`, `omb:A-76`), so repeated citations to one document share one id.
-- `ref_type` — `usc` / `cfr` / `eo` / `public_law` / `omb`.
+**`external_references`** (other government documents) — each entry:
+- `ref_type` — `usc` / `cfr` / `eo` / `public_law` / `omb` (statutory citations), `form` (Standard /
+  Optional / DD forms), or `url` (any other tagged external link).
+- `target` — a canonical id, so repeated references to one document share one node: `usc:41/1303`,
+  `cfr:13/128.300`, `eo:11246`, `publ:118-31`, `omb:A-76`, `form:SF-33`; for a `url` it's the URL itself.
 - `locator` — the specific subsection cited (e.g. `"(a)(4)"`), kept separate from the document id.
-- `node_label` / `citation` — human-readable form (`"41 U.S.C. 1303"`) and the verbatim text as written.
-- `division_levels` — the citation parsed into ordered parts (e.g. `["41","1303","a","4"]`).
+- `node_label` / `citation` — human-readable form (`"41 U.S.C. 1303"`, `"Standard Form 33"`) and the
+  verbatim text as written.
+- `href` — a resolvable link when the source had one (gov form pages, `uscode.house.gov`, etc.); `""` if none.
+- `division_levels` — the citation parsed into ordered parts (e.g. `["41","1303","a","4"]`, `["SF","33"]`).
 - `mentions` / `status` — same as internal.
+
+Statutory citations are found by regex in the prose; **forms and URLs come from tagged `<xref>` links**
+in the source (so they're high-precision), and a tagged link's `href` is also attached to the statutory
+reference it points to.

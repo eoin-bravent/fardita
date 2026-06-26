@@ -145,7 +145,7 @@ def reconcile(rows, llm_by_cit, addr_map):
             key = (cr["target"], cr.get("locator", ""))
             if key not in p_ext:
                 p_ext[key] = {"ref_type": cr["ref_type"], "citation": cr["citation"],
-                              "node_label": cr.get("node_label", cr["target"]),
+                              "node_label": cr.get("node_label", cr["target"]), "href": cr.get("href", ""),
                               "division_levels": cr.get("division_levels", []), "evidence": cr_evidence(cr)}
         l_ext = {}
         for ref in llm_by_cit.get(cit, []):
@@ -171,7 +171,7 @@ def reconcile(rows, llm_by_cit, addr_map):
             ledger.append({
                 "unit": cit, "url": u["url"], "scope": "external",
                 "target": tgt, "locator": loc, "ref_type": src["ref_type"],
-                "node_label": src.get("node_label", tgt),
+                "node_label": src.get("node_label", tgt), "href": src.get("href", ""),
                 "citation": src["citation"], "division_levels": src.get("division_levels", []),
                 "status": status, "validation": "external",
                 "parser": {"kind": "explicit", "evidence": p["evidence"]} if p else None,

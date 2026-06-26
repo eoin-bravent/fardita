@@ -353,7 +353,7 @@ def cmd_apply(cfg, args):
                 continue
             u["external_references"].append({
                 "target": e["target"], "ref_type": e["ref_type"], "locator": e.get("locator", ""),
-                "node_label": e.get("node_label", e["target"]),
+                "node_label": e.get("node_label", e["target"]), "href": e.get("href", ""),
                 "division_levels": e.get("division_levels", []), "citation": e.get("citation", ""),
                 "mentions": [{"kind": "inferred", "evidence": "(human review)"}],
                 "status": "human_approved"})

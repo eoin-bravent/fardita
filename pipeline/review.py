@@ -167,7 +167,8 @@ function rowHtml(it,i){
   const p=it.parser,l=it.llm,j=it.judge;
   const disp=it.scope==='external'?(it.citation||it.target):it.target;
   const rt=it.scope==='external'?`<span class="badge b-ext" title="external document node: ${esc(it.target)}">${esc(it.ref_type||'ext')}</span> `:'';
-  return `<div class=hd><span class=tgt>${esc(disp)}</span>
+  const tgtHtml = (it.scope==='external'&&it.href) ? `<a class=far href="${esc(it.href)}" target=_blank rel=noopener>${esc(disp)}</a>` : esc(disp);
+  return `<div class=hd><span class=tgt>${tgtHtml}</span>
      <span>${rt}<span class="badge b-${it.status}" title="${esc(TIPS[it.status]||'')}">${esc(lbl(it.status))}</span><span class=val>${esc(it.validation||'')}</span></span></div>
    <div class=cols>
      <div class=col><h4>Parser</h4>${p?`<div class=ev><b>${esc(p.kind)}</b><br>${xrefHtml(p.evidence)}</div>`:'<div class=none>(parser did not find this)</div>'}</div>

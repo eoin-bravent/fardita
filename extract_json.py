@@ -385,6 +385,18 @@ def parse_external(s):
             return r
     return None
 
+FORM_RX = re.compile(r"\b(Standard Form|SF|Optional Form|OF|DD Form|DD)\s*-?\s*(\d+[A-Za-z]?)\b", re.I)
+
+def parse_form(anchor):
+    """'Standard Form 33' / 'SF 33' / 'DD Form 254' -> {ref_type:'form', target:'form:SF-33', …}. Else None."""
+    m = FORM_RX.search(anchor or "")
+    if not m:
+        return None
+    w = m.group(1).lower()
+    series = "SF" if w.startswith(("standard", "sf")) else "OF" if w.startswith(("optional", "of")) else "DD"
+    return {"ref_type": "form", "target": f"form:{series}-{m.group(2)}", "node_label": (anchor or "").strip(),
+            "division_levels": [series, m.group(2)], "locator": "", "citation": (anchor or "").strip()}
+
 def build_external_edge(document, section, fallback_type="other"):
     """Build a canonical external edge from a human-edited (document, section). Re-detects the type
     from the text; falls back to the row's ref_type (e.g. 'act') for named documents the regex can't type."""
@@ -403,26 +415,47 @@ def build_external_edge(document, section, fallback_type="other"):
             "division_levels": [document] + parts, "locator": section, "citation": cite}
 
 def collect_external_refs(ps):
-    """Scan a unit's text for external (non-FAR) citations, grouped by (target, locator) like internal
-    cross_references. High-precision regex -> confidence 'explicit'."""
-    text, _ = render_scope(ps)
-    found = []
-    for rx, build in EXTERNAL_PATTERNS:
-        for m in rx.finditer(text):
-            r = build(m)
-            r["citation"] = norm(m.group(0))               # collapse any line-wrap whitespace
-            r["evidence"] = _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA))
-            found.append(r)
+    """External (non-FAR) references in a unit, grouped by (target, locator):
+      - statutory citations in the prose (USC/CFR/EO/Pub.L./OMB), via regex;
+      - tagged external links (<xref scope=external / http href>): forms (form:SF-33) and other URLs,
+        plus the resolvable `href` attached to whichever ref the link points to.
+    Each entry: {ref_type, target, locator, node_label, division_levels, citation, href, confidence, mentions}."""
+    text, xpos = render_scope(ps)
     out, index = [], {}
-    for r in found:
-        key = (r["target"], r["locator"])
+    def add(r, ev, kind, href=""):
+        key = (r["target"], r.get("locator", ""))
         if key not in index:
             index[key] = len(out)
-            out.append({"ref_type": r["ref_type"], "target": r["target"], "locator": r["locator"],
+            out.append({"ref_type": r["ref_type"], "target": r["target"], "locator": r.get("locator", ""),
                         "node_label": r.get("node_label", r["target"]),
-                        "division_levels": r["division_levels"], "citation": r["citation"],
-                        "confidence": "explicit", "mentions": []})
-        out[index[key]]["mentions"].append({"kind": "explicit", "evidence": r["evidence"]})
+                        "division_levels": r.get("division_levels", []), "citation": r.get("citation", ""),
+                        "href": href, "confidence": "explicit", "mentions": []})
+        e = out[index[key]]
+        if href and not e["href"]:
+            e["href"] = href                               # enrich with the resolvable link when present
+        if ev and not any(m["evidence"] == ev for m in e["mentions"]):
+            e["mentions"].append({"kind": kind, "evidence": ev})
+        return e
+    # (A) statutory citations written in the prose
+    for rx, build in EXTERNAL_PATTERNS:
+        for m in rx.finditer(text):
+            r = build(m); r["citation"] = norm(m.group(0))
+            add(r, _window(text, max(0, m.start() - WB), min(len(text), m.end() + WA)), "inferred")
+    # (B) tagged external links — forms, other URLs, and hrefs for statutory links
+    for el, s, e in xpos:
+        href = el.get("href") or ""
+        if not (el.get("scope") == "external" or href.startswith("http")) or href.startswith("mailto"):
+            continue
+        anchor = norm(text[s:e])
+        ev = _window(text, max(0, s - WB), min(len(text), e + WA))
+        r = parse_external(anchor) or parse_form(anchor)
+        if r:
+            r.setdefault("citation", anchor)
+            add(r, ev, "explicit", href)
+        elif href.startswith("http"):                      # a plain external URL (NIST, agency page, …)
+            tgt = href.rstrip("/")
+            add({"ref_type": "url", "target": tgt, "node_label": anchor or tgt,
+                 "division_levels": [], "locator": "", "citation": anchor or tgt}, ev, "explicit", href)
     return out
 
 # ---------- build rows ----------
