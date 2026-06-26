@@ -113,17 +113,36 @@ def _schema_instruction(schema):
             "explanation, no markdown code fences:\n" + json.dumps(schema))
 
 def _extract_json(text):
-    """Parse the model's JSON, tolerating ```json fences or stray prose around it."""
-    s = text.strip()
+    """Parse the model's JSON, tolerating ```json fences, a junk prefix, or trailing 'extra data'
+    after a complete value (seen from Vertex: e.g. an empty value then the real array)."""
+    s = (text or "").strip()
     if s.startswith("```"):                              # strip ```json … ``` fences
         s = re.sub(r"^```[a-zA-Z]*\s*|\s*```$", "", s).strip()
     try:
         return json.loads(s)
     except json.JSONDecodeError:
-        m = re.search(r"(\[.*\]|\{.*\})", s, re.S)        # first array/object in the text
-        if m:
-            return json.loads(m.group(1))
-        raise
+        pass
+    # Collect every top-level JSON array/object in the text. Handles the 'extra data' case where
+    # the reply is several concatenated values (e.g. an empty `[]` then the real array), plus any
+    # junk/prose before or between them.
+    dec, vals, i, n = json.JSONDecoder(), [], 0, len(s)
+    while i < n:
+        while i < n and s[i] not in "[{":                # skip to the next array/object
+            i += 1
+        if i >= n:
+            break
+        try:
+            v, i = dec.raw_decode(s, i)
+            vals.append(v)
+        except json.JSONDecodeError:
+            i += 1
+    if not vals:
+        raise ValueError(f"no JSON value found in model output: {s[:200]!r}")
+    if len(vals) == 1:
+        return vals[0]
+    if all(isinstance(v, list) for v in vals):           # merge concatenated arrays into one
+        return [item for v in vals for item in v]
+    return next((v for v in vals if v), vals[0])          # else first non-empty value
 
 def _body(system_text, user_text, schema, cfg):
     # Fold the schema into the user turn since USAi can't enforce it server-side.
