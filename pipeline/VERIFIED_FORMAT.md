@@ -26,7 +26,8 @@ configured bottom level. Every chunk carries its identity, its text, and the ref
   into individual members, so each target is atomic.
 - `confidence` — `explicit` (came from a tagged `<xref>` link) or `inferred` (resolved from prose / a range).
 - `mentions` — each occurrence, with its `kind` and `evidence` (the surrounding source sentence).
-- `status` — how it was verified: `corroborated` (parser and LLM agreed), `parser_only`, or `human_approved`.
+- `status` — how it was verified: `corroborated` (parser and LLM agreed), `parser_only`, `human_approved`,
+  or `auto_accepted` (accepted by an `--auto-accept` run — judge verdict or parser∪LLM union — without a human pass; still auditable).
 
 **`external_references`** (other government documents) — each entry:
 - `ref_type` — `usc` / `cfr` / `eo` / `public_law` / `omb` (statutory citations), `form` (Standard /

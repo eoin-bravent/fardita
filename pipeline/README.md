@@ -77,17 +77,42 @@ python pipeline.py run --mock-llm refs.json         # drive reconcile/review fro
 python pipeline.py run --limit 50                   # audit only the first 50 units (cheap smoke test)
 python pipeline.py run --dump-payload 5.203         # print the exact prompt + raw .dita for one unit
 python pipeline.py run --judge                      # also run the LLM judge to pre-fill review recs
+python pipeline.py run --auto-accept                 # hands-off: skip human review, write verified.json directly
+python pipeline.py run --judge --auto-accept         # hands-off, but apply the judge's verdict on each disagreement
 python pipeline.py run --concurrency 16              # parallel LLM calls (default 8; 1 = sequential)
 python pipeline.py review                            # serve the review page; "Save & Apply" writes verified.json in one click
 python pipeline.py apply --decisions decisions.json  # (manual path: feed an exported decisions.json)
 ```
 - **`--no-llm`** is the parser-only switch — it stops after `chunks` + `manifest` (no API key, no
-  review page). **`--files`** picks specific files; otherwise the whole `input_dir` folder is scanned.
+  review page). **`--files`** picks specific files; otherwise the file set comes from the **ditamap**
+  (authoritative — see *Source & versioning*), falling back to scanning the whole `input_dir` folder.
   **`--judge`/`--no-judge`** toggles the optional reconciliation pass.
+- **`--auto-accept`** skips the human review step and writes `verified.json` directly, for scheduled /
+  hands-off runs. Policy: **with `--judge`** it applies the judge's verdict (accept/reject/manual) on
+  each disagreement; **without**, it takes the **union** — every reference either tool found. Anything
+  accepted this way is tagged `status: auto_accepted` (distinct from `human_approved`), so a later human
+  pass can still audit or override it — the gate is skipped, not removed.
 - **`--concurrency N`** runs N audit/judge calls in parallel (the audit is the slow stage — a full
   corpus is many hours sequential, ~N× faster threaded). Tune down if you hit provider rate limits
   (429s back off automatically). Subset (`--files`) runs build a **whole-corpus address map** (cached
   to `out/<REG>_addrmap.json`) so cross-file targets still validate.
+
+## Source & versioning
+- **Source.** `input_dir` points at GSA's authoritative DITA repo (`GSA/GSA-Acquisition-FAR`, the
+  `dita/` folder), a sibling clone by default (`../../GSA-Acquisition-FAR/dita`). Override with
+  `--input-dir` or `PIPELINE_INPUT_DIR` (it's a machine-local path).
+- **File list from the ditamap.** When no `--files` are given, the file set is driven by `FAR.ditamap`
+  (config `ditamap`) — the canonical, ordered list of real clauses — rather than a blind folder scan.
+  This excludes backups/matrices/error-reports the scan would otherwise pick up. The map references
+  **whole files only**, so the parser still does all intra-file paragraph decomposition. If the map is
+  absent (or `ditamap: ""`), the run falls back to scanning `input_dir`. The manifest records which was
+  used as `file_source` (`ditamap` / `folder` / `explicit`).
+- **Version stamp.** Every run records its identity: **`source_version`** (the FAR edition, read from the
+  ditamap's `rev`, e.g. `FAC 2026-01 March 13, 2026`) and **`pipeline_version`** (this repo's git short
+  SHA — explains output changes when the FAR itself didn't move). These two **determine** the output.
+  A processing timestamp **`chunked_at`** is recorded separately as provenance. The stamp lands in
+  `<REG>_manifest.json` (`version` + `chunked_at`), `<REG>_token_usage.json`, and — for the product —
+  `<REG>_verified_meta.json` (a sidecar; `verified.json` itself stays a bare array of chunks).
 
 ## Row identity
 Each row's `citation` is prefixed with the regulation — `FAR-5.101`, `FAR-6.302-2(a)` — and carries
@@ -150,7 +175,8 @@ internal vs external on the review page).
 | key | meaning | default |
 |-----|---------|---------|
 | `regulation` | label stamped on every row; names outputs | `FAR` |
-| `input_dir` | folder of `.dita` files (relative paths resolve against this dir) | `../..` |
+| `input_dir` | folder of `.dita` files (GSA repo's `dita/`; relative paths resolve against the pipeline dir) | `../../GSA-Acquisition-FAR/dita` |
+| `ditamap` | map file in `input_dir` giving the authoritative file list + version stamp; `""` forces a folder scan | `FAR.ditamap` |
 | `bottom_level` | deepest chunk level: `section`/`subsection` (unit only) · `paragraph` · `subparagraph` · `subunit-depth-1…4` | `paragraph` |
 | `url_template` | source link, `{num}` filled with the citation | acquisition.gov/far/{num} |
 | `output_dir` | where outputs land | `out` |
@@ -254,7 +280,10 @@ target lands in a **master list (ledger)** tagged by who found it:
 - **llm_only** (LLM found, parser missed) → **review** (the high-value catch).
 
 `needs_review = parser_inferred | llm_only` — only these go to the human queue and the LLM judge
-(corroborated/explicit are shown read-by-default but stay editable). A former "conflict" (LLM `5.202`
+(corroborated/explicit are shown read-by-default but stay editable). **`--auto-accept`** resolves this
+queue without a human: with `--judge` it follows the judge's per-item verdict; otherwise it accepts the
+union (keep every parser ref, accept every `llm_only`) — those refs land in `verified.json` as
+`auto_accepted`. A former "conflict" (LLM `5.202`
 vs parser `5.202(a)(2)`) is simply two atomic rows: `llm_only 5.202` + `parser_* 5.202(a)(2)`.
 Every LLM target is validated
 against the FAR address map (grammar + existence); non-citations (U.S.C., URLs, hallucinations)
@@ -298,12 +327,13 @@ agreements; **hide decided** to focus). The **Show** filter bar stays pinned at 
 | file | what |
 |------|------|
 | `<REG>_chunks.json` | the chunks (pristine, parser-only) — each row has `cross_references` (internal), `external_references`, and `images` (deduped id list; inline `[IMAGE: id]` token in `text`). Tables are inlined as HTML directly in `text`. |
-| `<REG>_manifest.json` | every file **seen**, **processed**, and **skipped** (with reasons) — the parser and LLM use this same set |
+| `<REG>_manifest.json` | every file **seen**, **processed**, and **skipped** (with reasons); plus `file_source` (ditamap/folder/explicit), the `version` stamp, and `chunked_at` |
 | `<REG>_ledger.json` | the per-unit master list: every atomic target tagged `status` (corroborated / parser_explicit / parser_inferred / llm_only), with parser/llm/judge evidence — drives the review page and `apply` |
 | `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |
 | `<REG>_addrmap.json` | cached whole-corpus address map (so `--files` subset runs validate cross-file targets) |
 | `<REG>_review.html` | the review page |
-| `<REG>_verified.json` | after `apply`: the final dataset — chunks + verified refs (`cross_references` + `external_references`), every ref tagged with a flat `status`. **Field-by-field structure: [`VERIFIED_FORMAT.md`](VERIFIED_FORMAT.md).** |
+| `<REG>_verified.json` | after `apply`: the final dataset — chunks + verified refs (`cross_references` + `external_references`), every ref tagged with a flat `status` (`corroborated`/`parser_only`/`human_approved`/`auto_accepted`). **Field-by-field structure: [`VERIFIED_FORMAT.md`](VERIFIED_FORMAT.md).** |
+| `<REG>_verified_meta.json` | version stamp for the product alongside `verified.json` — `source_version`, `pipeline_version`, `generated_at`, and add/remove/decision counts |
 | `llm_cache/` | cached raw LLM audit + judge responses |
 
 The reviewer's **`decisions.json`** is downloaded from the review page (not written to `output_dir`)
@@ -311,5 +341,7 @@ and fed back via `apply --decisions`.
 
 ## Status
 Chunker, range expansion, reconcile (atomic master list), review page (status filters + editable rows
-+ auto-save/import), and apply are built and tested end-to-end with `--mock-llm`. The LLM audit and
-judge calls are wired for both backends but need credentials (USAi key, or Vertex ADC) to run live.
++ auto-save/import), apply, **ditamap-driven file list**, the **run version stamp** (source/pipeline/
+chunked_at), and **`--auto-accept`** (judge / union) are built and tested end-to-end with `--mock-llm`.
+The LLM audit and judge calls are wired for both backends but need credentials (USAi key, or Vertex ADC)
+to run live.

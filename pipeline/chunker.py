@@ -30,6 +30,26 @@ def load_concept_path(path):
     except (ET.ParseError, OSError):
         return None
 
+def parse_ditamap(path):
+    """Parse a FAR-style DITA map. Returns (source_version, files):
+      source_version  the <map rev="…"> stamp (e.g. 'FAC 2026-01 March 13, 2026') or '';
+      files           ordered, de-duplicated list of .dita hrefs the map references.
+    The map references whole files only (never paragraphs), so this is purely the authoritative
+    file list + version stamp; intra-file decomposition stays the parser's job. Returns ('', [])
+    if the map is missing or unparseable (callers then fall back to a folder scan)."""
+    try:
+        raw = re.sub(r"<!DOCTYPE.*?>", "", open(path, encoding="utf-8").read(), flags=re.S)
+        root = ET.fromstring(raw)
+    except (ET.ParseError, OSError):
+        return "", []
+    rev = (root.get("rev") or "").strip()
+    files, seen = [], set()
+    for tr in root.iter("topicref"):
+        href = tr.get("href") or ""
+        if href.endswith(".dita") and href not in seen:
+            seen.add(href); files.append(href)
+    return rev, files
+
 def decompose(sec_num, tokens, field_levels):
     base = X.components(sec_num)                # part / subpart / section / subsection (bare)
     d = {k: base[k] for k in ("part", "subpart", "section", "subsection")}
@@ -102,24 +122,37 @@ def sort_key(r):
             tuple(rank(t) for t in para))
 
 def _resolve_files(cfg):
-    """Return (paths, explicit, missing). If cfg['files'] is set, use exactly those;
-    otherwise scan input_dir for *.dita."""
+    """Return (paths, explicit, missing, source). File set, in priority order:
+      * cfg['files'] given    -> use exactly those (source='explicit');
+      * a ditamap is present  -> drive the list from the map, authoritative (source='ditamap');
+      * otherwise             -> scan input_dir for *.dita (source='folder', the fallback).
+    `missing` lists requested/referenced files not found on disk (logged as skips)."""
     files = cfg.get("files")
-    if not files:
-        paths = sorted(os.path.join(cfg["input_dir"], f)
-                       for f in os.listdir(cfg["input_dir"]) if f.endswith(".dita"))
-        return paths, False, []
-    paths, missing = [], []
-    for f in files:
-        cands = [f, f + ".dita", os.path.join(cfg["input_dir"], f),
-                 os.path.join(cfg["input_dir"], f + ".dita")]
-        hit = next((c for c in cands if os.path.isfile(c)), None)
-        (paths.append(hit) if hit else missing.append(f))
-    return paths, True, missing
+    if files:
+        paths, missing = [], []
+        for f in files:
+            cands = [f, f + ".dita", os.path.join(cfg["input_dir"], f),
+                     os.path.join(cfg["input_dir"], f + ".dita")]
+            hit = next((c for c in cands if os.path.isfile(c)), None)
+            (paths.append(hit) if hit else missing.append(f))
+        return paths, True, missing, "explicit"
+    mapname = cfg.get("ditamap")
+    mappath = os.path.join(cfg["input_dir"], mapname) if mapname else None
+    if mappath and os.path.isfile(mappath):
+        _, mapfiles = parse_ditamap(mappath)
+        if mapfiles:
+            paths, missing = [], []
+            for href in mapfiles:
+                p = os.path.join(cfg["input_dir"], href)
+                (paths.append(p) if os.path.isfile(p) else missing.append(href))
+            return paths, False, missing, "ditamap"
+    paths = sorted(os.path.join(cfg["input_dir"], f)
+                   for f in os.listdir(cfg["input_dir"]) if f.endswith(".dita"))
+    return paths, False, [], "folder"
 
 def run_chunker(cfg):
     """Resolve the file set (shared by the LLM stage), chunk, return (rows, manifest, sources)."""
-    paths, explicit, missing = _resolve_files(cfg)
+    paths, explicit, missing, file_source = _resolve_files(cfg)
     rows, processed, skipped = [], [], []
     sources = {}                               # {unit_citation: .dita file path} — for the raw-file LLM pass
     for f in missing:
@@ -142,7 +175,7 @@ def run_chunker(cfg):
             skipped.append({"file": far, "reason": reason})
     rows.sort(key=sort_key)
     manifest = {"regulation": cfg["regulation"], "input_dir": os.path.abspath(cfg["input_dir"]),
-                "bottom_level": cfg["bottom_level"], "files_seen": len(paths),
+                "file_source": file_source, "bottom_level": cfg["bottom_level"], "files_seen": len(paths),
                 "processed_count": len(processed), "skipped_count": len(skipped),
                 "processed": processed, "skipped": skipped}
     return rows, manifest, sources

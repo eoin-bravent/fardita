@@ -95,6 +95,34 @@ def build_address_map(rows):
         m.add(section_root(bare))
     return m
 
+def auto_decisions(ledger, judge_on):
+    """Build a decisions list (same shape the review page emits) for hands-off `--auto-accept` runs,
+    so the human queue can be skipped. Two policies:
+
+      judge_on=False  UNION: accept everything either method found. Parser refs (incl. parser_inferred)
+                      are already kept by `apply`, so we only need to accept the `llm_only` catches.
+      judge_on=True   JUDGE: for the internal disagreements the judge ruled on, mirror its verdict
+                      (accept / reject / manual). The judge never sees external refs, and may leave an
+                      item unjudged — those fall back to the union default (accept what was found).
+
+    Every emitted decision is tagged by='auto' so `apply` records status `auto_accepted` (still auditable)."""
+    decs = []
+    for it in ledger:
+        if not it.get("needs_review"):                     # corroborated / parser_explicit already trusted
+            continue
+        base = {"unit": it["unit"], "scope": it.get("scope", "internal"), "target": it["target"],
+                "locator": it.get("locator", ""), "status": it["status"], "by": "auto"}
+        j = it.get("judge") or {}
+        choice = j.get("choice") if judge_on else None
+        if choice in ("accept", "reject"):
+            decs.append({**base, "choice": choice})
+        elif choice == "manual":
+            decs.append({**base, "choice": "manual", "value": j.get("value", [])})
+        elif it["status"] == "llm_only":                   # union default (also: judge-on items the judge skipped)
+            decs.append({**base, "choice": "accept"})
+        # parser_inferred with no verdict: kept by apply as parser_only — no decision needed
+    return decs
+
 def reconcile(rows, llm_by_cit, addr_map):
     """rows: chunk rows. llm_by_cit: {unit_citation: [ {target, evidence, scope, ref_type} ]}.
     Returns (ledger, stats). Internal + external refs reconciled per unit; items tagged `scope`."""

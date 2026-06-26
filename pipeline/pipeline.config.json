@@ -1,6 +1,7 @@
 {
   "regulation": "FAR",
-  "input_dir": "../dita",
+  "input_dir": "../../GSA-Acquisition-FAR/dita",
+  "ditamap": "FAR.ditamap",
   "bottom_level": "paragraph",
   "url_template": "https://www.acquisition.gov/far/{num}",
   "output_dir": "out",

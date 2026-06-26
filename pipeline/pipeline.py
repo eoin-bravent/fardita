@@ -9,7 +9,7 @@
 Config: pipeline.config.json (regulation, input_dir, bottom_level, gemini model/reasoning, …).
 Secret: GEMINI_API_KEY in the environment (never written to config or logs).
 """
-import os, sys, json, time, glob, argparse
+import os, sys, json, time, glob, argparse, subprocess, datetime
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import chunker, reconcile, review, gemini_audit
@@ -19,6 +19,7 @@ DITA_DEFAULT = os.path.abspath(os.path.join(HERE, "..", ".."))
 DEFAULTS = {
     "regulation": "FAR",
     "input_dir": DITA_DEFAULT,
+    "ditamap": "FAR.ditamap",                            # authoritative file list + version stamp; "" -> folder scan
     "bottom_level": "paragraph",
     "url_template": "https://www.acquisition.gov/far/{num}",
     "output_dir": os.path.join(HERE, "out"),
@@ -111,6 +112,30 @@ def load_config(args):
     os.makedirs(cfg["output_dir"], exist_ok=True)
     return cfg
 
+def _now():
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+def _git_rev():
+    """Short commit of THIS pipeline repo (explains output changes when the FAR didn't move)."""
+    try:
+        r = subprocess.run(["git", "-C", HERE, "rev-parse", "--short", "HEAD"],
+                           capture_output=True, text=True, timeout=5)
+        return r.stdout.strip() if (r.returncode == 0 and r.stdout.strip()) else "unknown"
+    except Exception:                                     # noqa: BLE001 — git absent / not a repo
+        return "unknown"
+
+def version_stamp(cfg):
+    """Run-level identity (what produced this): which FAR edition (the ditamap `rev`, e.g.
+    'FAC 2026-01 March 13, 2026') + which pipeline build (git short SHA). Provenance like the
+    processing timestamp is kept separately — these two fields alone determine the output."""
+    src = ""
+    mapname = cfg.get("ditamap")
+    if mapname:
+        mappath = os.path.join(cfg["input_dir"], mapname)
+        if os.path.isfile(mappath):
+            src = chunker.parse_ditamap(mappath)[0]
+    return {"source_version": src or "unknown", "pipeline_version": _git_rev()}
+
 def _corpus_address_map(cfg, out, reg):
     """Address map over the WHOLE corpus so --files subset runs still validate cross-file targets.
     Cached to out/<REG>_addrmap.json, keyed by .dita file count."""
@@ -168,6 +193,9 @@ def cmd_run(cfg, args):
     t, t0 = {}, time.perf_counter()
     print("chunking…")
     rows, manifest, sources = chunker.run_chunker(cfg)
+    stamp = version_stamp(cfg)
+    manifest["version"] = stamp                           # identity: which FAR edition + pipeline build
+    manifest["chunked_at"] = _now()                       # provenance: when this run happened
     t["chunk"] = time.perf_counter() - t0
 
     if getattr(args, "dump_payload", None):
@@ -187,7 +215,8 @@ def cmd_run(cfg, args):
     json.dump(manifest, open(os.path.join(out, f"{reg}_manifest.json"), "w", encoding="utf-8"),
               indent=2, ensure_ascii=False)
     print(f"  rows: {len(rows)}   processed {manifest['processed_count']}"
-          f"   skipped {manifest['skipped_count']}")
+          f"   skipped {manifest['skipped_count']}   (files via {manifest['file_source']})")
+    print(f"  version: source={stamp['source_version']}   pipeline={stamp['pipeline_version']}")
 
     if args.no_llm and not args.mock_llm:                 # parser-only: just chunks + manifest
         print("  parser-only (--no-llm): wrote chunks + manifest; skipped audit / reconcile / review")
@@ -245,6 +274,7 @@ def cmd_run(cfg, args):
 
     t["total"] = time.perf_counter() - t0
     summary = _run_summary(cfg, stats, t, gemini_audit.TRACKER.summary(), len(units), bool(args.mock_llm))
+    summary["version"] = stamp
     json.dump(ledger, open(os.path.join(out, f"{reg}_ledger.json"), "w", encoding="utf-8"),
               indent=2, ensure_ascii=False)
     json.dump(summary, open(os.path.join(out, f"{reg}_token_usage.json"), "w", encoding="utf-8"),
@@ -256,6 +286,15 @@ def cmd_run(cfg, args):
     _print_summary(summary)
     print(f"  review page: {os.path.join(out, f'{reg}_review.html')}  "
           f"({len(ledger)} refs, {n_review} need review)")
+
+    if getattr(args, "auto_accept", False):               # hands-off: skip the human queue, write verified.json
+        judge_on = bool(cfg["gemini"].get("judge"))
+        decisions = reconcile.auto_decisions(ledger, judge_on)
+        dpath = os.path.join(out, f"{reg}_decisions.json")
+        json.dump(decisions, open(dpath, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+        mode = "judge verdicts" if judge_on else "union (parser + LLM)"
+        print(f"auto-accept [{mode}]: {len(decisions)} decision(s) -> applying…")
+        cmd_apply(cfg, argparse.Namespace(decisions=[dpath]))
 
 def cmd_apply(cfg, args):
     out = cfg["output_dir"]; reg = cfg["regulation"]
@@ -325,13 +364,15 @@ def cmd_apply(cfg, args):
         u = by_cit.get(d["unit"])
         if not u:
             continue
+        acc_status = "auto_accepted" if d.get("by") == "auto" else "human_approved"
+        evidence = "(auto-accept)" if d.get("by") == "auto" else "(human review)"
         for tgt in tgts:
             if any(reconcile.norm_cit(c["target"]) == reconcile.norm_cit(tgt) for c in u["cross_references"]):
                 continue
             u["cross_references"].append({
                 "target": tgt, "confidence": "inferred",
-                "mentions": [{"kind": "inferred", "evidence": "(human review)"}],
-                "status": "human_approved"})
+                "mentions": [{"kind": "inferred", "evidence": evidence}],
+                "status": acc_status})
             added += 1
     for d in ext_dec:                                     # external: accepted llm-only + manual corrections
         u = by_cit.get(d["unit"])
@@ -347,6 +388,8 @@ def cmd_apply(cfg, args):
         else:
             continue
         u.setdefault("external_references", [])
+        acc_status = "auto_accepted" if d.get("by") == "auto" else "human_approved"
+        evidence = "(auto-accept)" if d.get("by") == "auto" else "(human review)"
         for e in edges:
             if any(c["target"] == e["target"] and c.get("locator", "") == e.get("locator", "")
                    for c in u["external_references"]):
@@ -355,13 +398,20 @@ def cmd_apply(cfg, args):
                 "target": e["target"], "ref_type": e["ref_type"], "locator": e.get("locator", ""),
                 "node_label": e.get("node_label", e["target"]), "href": e.get("href", ""),
                 "division_levels": e.get("division_levels", []), "citation": e.get("citation", ""),
-                "mentions": [{"kind": "inferred", "evidence": "(human review)"}],
-                "status": "human_approved"})
+                "mentions": [{"kind": "inferred", "evidence": evidence}],
+                "status": acc_status})
             added += 1
 
     path = os.path.join(out, f"{reg}_verified.json")
     json.dump(rows, open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
-    print(f"wrote {path}  (+{added} approved, -{removed} rejected/replaced, {len(decisions)} decisions)")
+    # version-stamp the product alongside it (verified.json itself stays a bare array of chunks)
+    stamp = version_stamp(cfg)
+    meta = {"regulation": reg, **stamp, "generated_at": _now(), "chunks": len(rows),
+            "added": added, "removed": removed, "decisions": len(decisions)}
+    json.dump(meta, open(os.path.join(out, f"{reg}_verified_meta.json"), "w", encoding="utf-8"),
+              indent=2, ensure_ascii=False)
+    print(f"wrote {path}  (+{added} approved, -{removed} rejected/replaced, {len(decisions)} decisions; "
+          f"source={stamp['source_version']}, pipeline={stamp['pipeline_version']})")
 
 def cmd_review(cfg, args):
     """Serve the review page on localhost. Its "Save & Apply" button POSTs decisions back here,
@@ -428,6 +478,10 @@ def main():
     r.add_argument("--files", nargs="+", metavar="FILE",
                    help="run only these .dita files (names like 5.101 or paths) instead of the whole folder")
     r.add_argument("--mock-llm"); r.add_argument("--no-llm", action="store_true")
+    r.add_argument("--auto-accept", dest="auto_accept", action="store_true",
+                   help="hands-off: skip human review and write verified.json directly. "
+                        "With --judge, applies the judge's verdicts; otherwise the parser+LLM union "
+                        "(status auto_accepted, still auditable).")
     r.add_argument("--limit", type=int)
     r.add_argument("--dump-payload", metavar="CITATION",
                    help="print the exact prompt + raw .dita sent for one unit, then exit")
