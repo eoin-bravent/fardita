@@ -23,12 +23,24 @@ MIN_TEXT = 40
 def level_name(depth):
     return PARA_LEVELS[depth - 1] if depth >= 1 else "section"
 
-def load_concept_path(path):
+TOPIC_TAGS = {"concept", "task", "reference", "topic"}      # DITA topic-type roots
+BODY_TAGS  = {"conbody", "taskbody", "refbody", "body"}      # their bodies
+
+def _is_kind(el, tags, base):
+    """Match a DITA element by tag name OR by @class derivation (e.g. base 'topic/body').
+    Tag-matching handles FAR files whose elements omit @class (some <concept>/<conbody> do);
+    class-matching future-proofs task/reference and any other specialization without enumerating."""
+    return el.tag in tags or base in (el.get("class") or "")
+
+def load_topic(path):
+    """Return the file's topic-type root element — concept/task/reference/topic (by tag or
+    @class derivation from topic/topic) — or None on parse error / no topic element."""
     try:
         raw = re.sub(r"<!DOCTYPE.*?>", "", open(path, encoding="utf-8").read(), flags=re.S)
-        return ET.fromstring(raw).find(".//concept")
+        root = ET.fromstring(raw)
     except (ET.ParseError, OSError):
         return None
+    return next((el for el in root.iter() if _is_kind(el, TOPIC_TAGS, "topic/topic")), None)
 
 def parse_ditamap(path):
     """Parse a FAR-style DITA map. Returns (source_version, files):
@@ -59,15 +71,15 @@ def decompose(sec_num, tokens, field_levels):
 
 def build(path, far, cfg):
     """Return (rows, skip_reason). rows is None when skipped."""
-    c = load_concept_path(path)
+    c = load_topic(path)
     if c is None:
-        return None, "no <concept> / parse error"
+        return None, "no topic (concept/task/reference) / parse error"
     title = c.find("./title")
     num_ph = title.find(".//ph[@props='autonumber']") if title is not None else None
     sec_num = X.norm(num_ph.text) if num_ph is not None else far
-    conbody = c.find(".//conbody")
+    conbody = next((el for el in c.iter() if _is_kind(el, BODY_TAGS, "topic/body")), None)
     if conbody is None:
-        return None, "no <conbody>"
+        return None, "no body (conbody/taskbody/refbody/body)"
     url = cfg["url_template"].format(num=sec_num)
     reg = cfg["regulation"]
     bottom = cfg["bottom_depth"]
