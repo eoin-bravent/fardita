@@ -46,14 +46,26 @@ def _audit_backend(cfg):
     return gemini_audit
 
 def load_dotenv(path):
-    """Load KEY=VALUE lines into the environment (real env always wins)."""
+    """Load KEY=VALUE lines into the environment (real env always wins).
+    Honors surrounding quotes and strips an inline ' # comment' on unquoted values
+    (so `KEY=val   # note` yields `val`, not `val   # note`)."""
     if not os.path.exists(path):
         return
     for line in open(path, encoding="utf-8"):
         line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            k, v = line.split("=", 1)
-            os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        v = v.strip()
+        if v[:1] in ("'", '"'):                       # quoted: take the quoted span verbatim
+            q = v[0]; end = v.find(q, 1)
+            v = v[1:end] if end != -1 else v[1:]
+        else:                                          # unquoted: a ' #' / '\t#' begins a trailing comment
+            for i in range(1, len(v)):
+                if v[i] == "#" and v[i - 1] in " \t":
+                    v = v[:i]; break
+            v = v.strip()
+        os.environ.setdefault(k.strip(), v)
 
 def load_config(args):
     """Precedence (low -> high): DEFAULTS < pipeline.config.json < .env/env < CLI flags."""
