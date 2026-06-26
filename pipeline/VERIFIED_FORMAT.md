@@ -12,6 +12,11 @@ configured bottom level. Every chunk carries its identity, its text, and the ref
 - `text` — the chunk's text.
 - `cross_references` — references to **other parts of the FAR** (see below).
 - `external_references` — references to **other government documents** (see below).
+- `tables` / `images` — any tables/figures in the chunk. These are **omitted from `text`** (where they
+  appear as `[TABLE OMITTED …]` / `[FIGURE OMITTED …]` placeholders) and recorded here instead:
+  tables as `{caption, url}`, images as `{href, alt, url}`. The `url` points at the source page on
+  acquisition.gov so the real table/figure can be retrieved. (A paragraph chunk inherits the media of
+  any table/figure inside it, just as it inherits that text.)
 
 **`cross_references`** (internal, FAR → FAR) — each entry:
 - `target` — the cited FAR citation, bare (`"5.202(a)(2)"`, `"subpart 9.1"`). Ranges are pre-expanded

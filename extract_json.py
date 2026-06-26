@@ -86,6 +86,20 @@ def image_marker(im, url):
             pass
     return f'[FIGURE OMITTED{f": \"{alt}\"" if alt else ""} — {ref} — see {url}]'
 
+def collect_media(el, url):
+    """Structured record of the tables/images in this chunk (omitted from `text`, shown there as
+    [TABLE OMITTED]/[FIGURE OMITTED] placeholders). Returns (tables, images)."""
+    tables, images = [], []
+    for ch in el.iter():
+        if ch.tag in ("table", "simpletable"):
+            ti = ch.find(".//title")
+            tables.append({"caption": norm("".join(ti.itertext())) if ti is not None else "", "url": url})
+        elif ch.tag == "image":
+            alt_el = ch.find("alt")
+            images.append({"href": ch.get("href") or "",
+                           "alt": norm("".join(alt_el.itertext())) if alt_el is not None else "", "url": url})
+    return tables, images
+
 # ---------- text flattening ----------
 def flatten_p(p, url):
     label, parts = "", []
@@ -388,13 +402,15 @@ def collect_external_refs(ps):
     return out
 
 # ---------- build rows ----------
-def make_row(citation, typ, comp, url, ps, sec_num, text):
+def make_row(citation, typ, comp, url, ps, sec_num, text, el):
+    tables, images = collect_media(el, url)
     return {"citation": citation, "type": typ,
             "part": comp["part"], "subpart": comp["subpart"], "section": comp["section"],
             "subsection": comp["subsection"], "paragraph": comp["paragraph"],
             "subparagraph": comp["subparagraph"], "url": url,
             "cross_references": collect_refs(ps, sec_num, url),
-            "external_references": collect_external_refs(ps), "text": text}
+            "external_references": collect_external_refs(ps),
+            "tables": tables, "images": images, "text": text}
 
 def build(far):
     c = load_concept(far)
@@ -417,11 +433,11 @@ def build(far):
             if not label:
                 continue
             paras.append(make_row(f"{sec_num}({label})", "paragraph", components(sec_num, label),
-                                  url, list(li.iter("p")), sec_num, flatten_li(li, url)))
+                                  url, list(li.iter("p")), sec_num, flatten_li(li, url), li))
     if len(unit_text) < MIN_TEXT and not paras:
         return []
     typ = "subsection" if "-" in sec_num else "section"
-    unit = make_row(sec_num, typ, components(sec_num), url, list(conbody.iter("p")), sec_num, unit_text)
+    unit = make_row(sec_num, typ, components(sec_num), url, list(conbody.iter("p")), sec_num, unit_text, conbody)
     return [unit] + paras
 
 # ---------- sort (FAR citation order) ----------

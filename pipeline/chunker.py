@@ -53,18 +53,19 @@ def build(path, far, cfg):
     bottom = cfg["bottom_depth"]
     field_levels = PARA_LEVELS[:bottom]        # decomposition fields run part..bottom
 
-    def row(number, typ, tokens, ps, text):
+    def row(number, typ, tokens, ps, text, el):
         r = {"citation": f"{reg}-{number}", "regulation": reg, "type": typ}
         r.update(decompose(sec_num, tokens, field_levels))
         r["url"] = url
         r["cross_references"] = X.collect_refs(ps, sec_num, url)
         r["external_references"] = X.collect_external_refs(ps)
+        r["tables"], r["images"] = X.collect_media(el, url)    # omitted from text; recorded here as metadata
         r["text"] = text
         return r
 
     unit_text = X.flatten_section(conbody, url)
     rows = [row(sec_num, "subsection" if "-" in sec_num else "section", [],
-                list(conbody.iter("p")), unit_text)]
+                list(conbody.iter("p")), unit_text, conbody)]
 
     def walk(ol, toks):
         for li in ol.findall("./li"):
@@ -79,7 +80,7 @@ def build(path, far, cfg):
             d = len(nt)
             if d <= bottom:
                 cit = sec_num + "".join(f"({t})" for t in nt)
-                rows.append(row(cit, level_name(d), nt, list(li.iter("p")), X.flatten_li(li, url)))
+                rows.append(row(cit, level_name(d), nt, list(li.iter("p")), X.flatten_li(li, url), li))
             if d < bottom:
                 for sub in li.findall("./ol"):
                     walk(sub, nt)
