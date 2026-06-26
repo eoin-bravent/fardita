@@ -7,6 +7,10 @@ configured bottom level. Every chunk carries its identity, its text, and the ref
 **Each chunk has:**
 - `citation` — its identifier, prefixed with the regulation (`"FAR-5.101"`, `"FAR-6.302-2(a)"`).
 - `regulation` / `type` — `"FAR"` and `section` / `subsection` / `paragraph`.
+- `source_version` — the FAR edition the chunk came from, verbatim from the DITA map's `rev`
+  (e.g. `"FAC 2026-01 March 13, 2026"` — Federal Acquisition Circular number + effective date).
+- `pipeline_version` — the git short SHA of the code that produced the chunk (e.g. `"e3e4eee"`).
+  Together these two are the chunk's provenance; the run timestamp lives in `<REG>_manifest.json` (`chunked_at`).
 - decomposed address — `part`, `subpart`, `section`, `subsection`, `paragraph`, … (the citation broken into levels).
 - `url` — the source page on acquisition.gov.
 - `text` — the chunk's text.

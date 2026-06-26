@@ -74,7 +74,10 @@ def build(path, far, cfg):
     field_levels = PARA_LEVELS[:bottom]        # decomposition fields run part..bottom
 
     def row(number, typ, tokens, ps, text, el):
-        r = {"citation": f"{reg}-{number}", "regulation": reg, "type": typ}
+        r = {"citation": f"{reg}-{number}", "regulation": reg,
+             "source_version": cfg.get("source_version", ""),   # FAR edition (ditamap rev)
+             "pipeline_version": cfg.get("pipeline_version", ""),  # producing commit (git short SHA)
+             "type": typ}
         r.update(decompose(sec_num, tokens, field_levels))
         r["url"] = url
         r["cross_references"] = X.collect_refs(ps, sec_num, url)

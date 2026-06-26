@@ -203,11 +203,11 @@ def _print_summary(s):
 def cmd_run(cfg, args):
     out = cfg["output_dir"]; reg = cfg["regulation"]
     t, t0 = {}, time.perf_counter()
+    stamp = version_stamp(cfg)                            # which FAR edition + pipeline build
+    cfg["source_version"], cfg["pipeline_version"] = stamp["source_version"], stamp["pipeline_version"]
     print("chunking…")
-    rows, manifest, sources = chunker.run_chunker(cfg)
-    stamp = version_stamp(cfg)
-    manifest["version"] = stamp                           # identity: which FAR edition + pipeline build
-    manifest["chunked_at"] = _now()                       # provenance: when this run happened
+    rows, manifest, sources = chunker.run_chunker(cfg)    # each chunk carries source_version + pipeline_version
+    manifest["chunked_at"] = _now()                       # run-level provenance (the versions live on each chunk)
     t["chunk"] = time.perf_counter() - t0
 
     if getattr(args, "dump_payload", None):
@@ -416,14 +416,9 @@ def cmd_apply(cfg, args):
 
     path = os.path.join(out, f"{reg}_verified.json")
     json.dump(rows, open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
-    # version-stamp the product alongside it (verified.json itself stays a bare array of chunks)
-    stamp = version_stamp(cfg)
-    meta = {"regulation": reg, **stamp, "generated_at": _now(), "chunks": len(rows),
-            "added": added, "removed": removed, "decisions": len(decisions)}
-    json.dump(meta, open(os.path.join(out, f"{reg}_verified_meta.json"), "w", encoding="utf-8"),
-              indent=2, ensure_ascii=False)
+    sv = rows[0].get("source_version", "?") if rows else "?"   # version travels on each chunk
     print(f"wrote {path}  (+{added} approved, -{removed} rejected/replaced, {len(decisions)} decisions; "
-          f"source={stamp['source_version']}, pipeline={stamp['pipeline_version']})")
+          f"source={sv})")
 
 def cmd_review(cfg, args):
     """Serve the review page on localhost. Its "Save & Apply" button POSTs decisions back here,

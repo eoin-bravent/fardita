@@ -107,12 +107,13 @@ python pipeline.py apply --decisions decisions.json  # (manual path: feed an exp
   **whole files only**, so the parser still does all intra-file paragraph decomposition. If the map is
   absent (or `ditamap: ""`), the run falls back to scanning `input_dir`. The manifest records which was
   used as `file_source` (`ditamap` / `folder` / `explicit`).
-- **Version stamp.** Every run records its identity: **`source_version`** (the FAR edition, read from the
-  ditamap's `rev`, e.g. `FAC 2026-01 March 13, 2026`) and **`pipeline_version`** (this repo's git short
-  SHA — explains output changes when the FAR itself didn't move). These two **determine** the output.
-  A processing timestamp **`chunked_at`** is recorded separately as provenance. The stamp lands in
-  `<REG>_manifest.json` (`version` + `chunked_at`), `<REG>_token_usage.json`, and — for the product —
-  `<REG>_verified_meta.json` (a sidecar; `verified.json` itself stays a bare array of chunks).
+- **Version stamp.** **Every chunk** carries its own provenance — **`source_version`** (the FAR edition,
+  read verbatim from the ditamap's `rev`, e.g. `FAC 2026-01 March 13, 2026`) and **`pipeline_version`**
+  (this repo's git short SHA — explains output changes when the FAR itself didn't move). Stamping per
+  chunk keeps `chunks.json` / `verified.json` a plain array (no envelope) and pre-shapes the rows for a
+  versioned SQL load. The run timestamp **`chunked_at`** is recorded once at run level in
+  `<REG>_manifest.json` (a per-row timestamp would be noise). `<REG>_token_usage.json` also keeps a
+  run-level `version` block for the banner/cost report.
 
 ## Row identity
 Each row's `citation` is prefixed with the regulation — `FAR-5.101`, `FAR-6.302-2(a)` — and carries
@@ -326,14 +327,13 @@ agreements; **hide decided** to focus). The **Show** filter bar stays pinned at 
 ## Outputs (in `output_dir`)
 | file | what |
 |------|------|
-| `<REG>_chunks.json` | the chunks (pristine, parser-only) — each row has `cross_references` (internal), `external_references`, and `images` (deduped id list; inline `[IMAGE: id]` token in `text`). Tables are inlined as HTML directly in `text`. |
-| `<REG>_manifest.json` | every file **seen**, **processed**, and **skipped** (with reasons); plus `file_source` (ditamap/folder/explicit), the `version` stamp, and `chunked_at` |
+| `<REG>_chunks.json` | the chunks (pristine, parser-only) — each row carries `source_version` + `pipeline_version`, plus `cross_references` (internal), `external_references`, and `images` (deduped id list; inline `[IMAGE: id]` token in `text`). Tables are inlined as HTML directly in `text`. |
+| `<REG>_manifest.json` | every file **seen**, **processed**, and **skipped** (with reasons); plus `file_source` (ditamap/folder/explicit) and `chunked_at` (the run timestamp — per-chunk versions live on the chunks) |
 | `<REG>_ledger.json` | the per-unit master list: every atomic target tagged `status` (corroborated / parser_explicit / parser_inferred / llm_only), with parser/llm/judge evidence — drives the review page and `apply` |
 | `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |
 | `<REG>_addrmap.json` | cached whole-corpus address map (so `--files` subset runs validate cross-file targets) |
 | `<REG>_review.html` | the review page |
-| `<REG>_verified.json` | after `apply`: the final dataset — chunks + verified refs (`cross_references` + `external_references`), every ref tagged with a flat `status` (`corroborated`/`parser_only`/`human_approved`/`auto_accepted`). **Field-by-field structure: [`VERIFIED_FORMAT.md`](VERIFIED_FORMAT.md).** |
-| `<REG>_verified_meta.json` | version stamp for the product alongside `verified.json` — `source_version`, `pipeline_version`, `generated_at`, and add/remove/decision counts |
+| `<REG>_verified.json` | after `apply`: the final dataset — a plain array of chunks (each with `source_version` + `pipeline_version`) + verified refs (`cross_references` + `external_references`), every ref tagged with a flat `status` (`corroborated`/`parser_only`/`human_approved`/`auto_accepted`). **Field-by-field structure: [`VERIFIED_FORMAT.md`](VERIFIED_FORMAT.md).** |
 | `llm_cache/` | cached raw LLM audit + judge responses |
 
 The reviewer's **`decisions.json`** is downloaded from the review page (not written to `output_dir`)
