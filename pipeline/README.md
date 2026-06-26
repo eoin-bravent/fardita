@@ -1,9 +1,10 @@
 # FAR ingestion pipeline (chunk → LLM audit → human review → verified)
 
-One configurable pipeline that chunks a DITA regulation, audits its cross-references with
-an LLM (blind), reconciles LLM vs. parser, lets a human resolve the differences in a
-browser, and emits a provenance-tagged verified dataset. Stdlib-only (no SDKs; Python 3.14
-safe). Runs on FAR today; `regulation` is configurable for DFARS/AFARS/etc.
+Turns the FAR (a regulation published as DITA XML) into a verified map of its cross-references.
+A parser and an LLM each find the references, a person resolves the disagreements in a browser,
+and the result is a dataset where every reference is tagged with where it came from. Built for the
+FAR, but the `regulation` setting makes it reusable for DFARS / AFARS / etc. Pure-Python, no SDKs
+for the default path.
 
 ## Workflow
 1. **`run`** — chunk the regulation, find its references two ways (the deterministic **parser** and a
@@ -18,6 +19,53 @@ run:   chunk ─► parser refs + LLM audit ─► reconcile ─► [optional ju
 review: you accept/reject/fix in the browser ─► Save & Apply ─► <REG>_verified.json
 ```
 (`apply --decisions <file>` is the manual alternative to Save & Apply — feed it an exported decisions.json.)
+
+## How it works (in plain language)
+The pipeline finds every reference in the FAR **two independent ways and compares them**, then asks a
+person to settle the disagreements.
+
+1. **Chunk it.** The FAR ships as DITA (an XML format). The pipeline splits each section into pieces
+   ("chunks") — by default the section plus each lettered paragraph — and pulls out the plain text.
+   Tables are kept inline as HTML so they stay readable; each image becomes a short `[IMAGE: …]` marker.
+2. **Find references two ways.**
+   - A **parser** reads the markup directly. It's exact on the linked references (the `<xref>` tags) and
+     on patterns it can recognize — ranges like "(a) through (f)", and statute citations like
+     "41 U.S.C. 1303".
+   - An **LLM** reads the same section *blind* (it never sees the parser's answers) and lists the
+     references it finds. It's especially good at references written in plain prose with no link.
+3. **Compare them (reconcile).** For each section the two lists are lined up: if both found a reference
+   it's treated as **agreed** (kept automatically); if only one did, or they disagree, it's **flagged for
+   a human**. Every reference is also checked against a master list of real FAR citations, so typos and
+   made-up citations get caught.
+4. **Review.** You open a web page and look only at the flagged ones — Accept / Reject / Fix each. An
+   optional "judge" LLM pass can pre-fill a suggestion for each to speed this up.
+5. **Done.** The output is `<REG>_verified.json` — every reference tagged with where it came from and
+   whether a human approved it. References to *other* documents (U.S.C., CFR, executive orders, etc.) are
+   kept in a separate list.
+
+Two things make it cheap to run again and again:
+- **It remembers (caching).** The LLM's answer for each section is saved, so re-running only re-asks for
+  sections whose text (or the prompt) changed — the first full run is the only expensive one.
+- **The LLM never gets the answer key.** It works from the section text alone, which is exactly what makes
+  its agreement with the parser meaningful (it can't just copy a provided list).
+
+## Settings that matter most
+(The full list is in the Configuration table further down; these are the ones you'll actually touch.)
+
+- **Provider** — which LLM service to use: **USAi.gov** or **Google Vertex AI**. Set in `.env` (see
+  *LLM backends* below). Both use `gemini-2.5-pro` by default.
+- **`--judge`** — also run a second LLM pass that suggests an answer for each flagged item, so reviewing
+  is faster. Optional; costs a bit more.
+- **`--concurrency N`** — how many LLM calls run at once (default 8). Higher is faster but more likely to
+  hit the provider's rate limit; set to 1 for one-at-a-time.
+- **`--files 5.101 5.202 …`** — process only certain sections instead of the whole FAR. Great for a quick,
+  cheap first run.
+- **`bottom_level`** — how finely to split each section into chunks: `section` (one chunk for the whole
+  section), `paragraph` (the default — the section plus each `(a)`, `(b)`, `(c)`), or deeper
+  (`subparagraph`, …). Deeper means more, smaller chunks — and it does **not** change LLM cost, because the
+  LLM always works one section at a time.
+- **`pricing`** — the dollars-per-million-tokens used for the cost estimate; set it to your contract rate
+  (or `0` to hide the dollar figure).
 
 ## Commands
 ```
