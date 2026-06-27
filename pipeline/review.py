@@ -29,7 +29,8 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  .ccount{cursor:pointer;text-decoration:underline dotted} .ccount:hover{color:#0e7c8b}
  .clist{font:12px/1.5 ui-monospace,monospace;color:#33485c;background:#fff;border:1px solid #e6e3da;border-radius:6px;padding:6px 10px;margin:4px 0 8px;font-weight:400}
  a.far{color:#0e7c8b}
- .item{background:#fff;margin:8px 0;border:1px solid #d9d6cc;border-left:4px solid transparent;border-radius:10px;padding:10px 14px}
+ .item{background:#fff;margin:8px 0;border:1px solid #d9d6cc;border-left:4px solid transparent;border-radius:10px;padding:10px 14px;
+   content-visibility:auto;contain-intrinsic-size:0 150px}   /* skip layout/paint for off-screen rows so large ledgers don't hang */
  .item.done{border-left-color:#5aa86e}
  .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:10px}
  .tgt{font:600 15px ui-monospace,monospace;color:#102032}
@@ -69,7 +70,7 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  &nbsp;|&nbsp; <b style="font-size:12px">Scope:</b>
  <label title="References within this regulation (FAR → FAR)."><input type=checkbox class=sf value=internal checked onchange=fltAnchored()> Internal</label>
  <label title="References to other government documents (U.S.C., CFR, E.O., Pub. L., OMB…)."><input type=checkbox class=sf value=external onchange=fltAnchored()> External</label>
- &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=fltAnchored()> hide reviewed</label>
+ &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=applyHideDone()> hide reviewed</label>
 </div>
 </div>
 <div id="banner"></div>
@@ -80,6 +81,12 @@ const S = __SUMMARY__;
 const KEY = 'review:' + document.title;
 const NEEDS = new Set(['parser_inferred','llm_only','added']);
 const q = s => document.querySelector(s);
+// Decisions live HERE, keyed by row, not in the DOM — so we can render only the rows that match
+// the current filter (a full-corpus ledger is 10k+ rows; building them all at once hangs the page).
+const DEC = {};                                   // rowKey -> {choice, value:[], edit:{}}
+function rowKey(it){ return it.unit+'|'+(it.scope||'internal')+'|'+it.target+'|'+(it.locator||''); }
+function activeStatuses(){ return new Set([...document.querySelectorAll('.f:checked')].map(x=>x.value)); }
+function activeScopes(){ return new Set([...document.querySelectorAll('.sf:checked')].map(x=>x.value)); }
 function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 function fmt(n){return (n||0).toLocaleString();}
 function xrefHtml(s){return esc(s).replace(/&lt;xref href=&quot;([^&]*?)&quot;&gt;(.*?)&lt;\/xref&gt;/g,
@@ -161,8 +168,11 @@ function defChoice(it){
   return (it.judge&&it.judge.choice)||null;
 }
 function jtag(it,val){return (it.judge&&it.judge.choice===val)?`<span class=jtag onclick="pickJudge(${Q.indexOf(it)})">judge ✓</span>`:'';}
-function pickJudge(i){const j=Q[i].judge; if(!j)return; const r=q(`input[name=c${i}][value=${j.choice}]`); if(r)r.checked=true;
-  if(j.choice==='manual'){const mb=document.getElementById('man'+i); if(mb)mb.value=(j.value||[]).join(', ');} flt(); save();}
+function pickJudge(i){const j=Q[i].judge; if(!j)return; const it=Q[i];
+  DEC[rowKey(it)]={choice:j.choice, value:j.value||[], edit:(DEC[rowKey(it)]||{}).edit};
+  const r=q(`input[name=c${i}][value=${j.choice}]`); if(r)r.checked=true;
+  if(j.choice==='manual'){const mb=document.getElementById('man'+i); if(mb)mb.value=(j.value||[]).join(', ');}
+  save(); applyHideDone();}
 function rowHtml(it,i){
   const p=it.parser,l=it.llm,j=it.judge;
   const disp=it.scope==='external'?(it.citation||it.target):it.target;
@@ -186,100 +196,108 @@ function rowHtml(it,i){
           <input type=text id=man${i} class=man placeholder="comma list or range">`}
    </div>`;
 }
+let _renderTok=0;                                 // cancels a superseded incremental render
 function render(){
+ const myTok=++_renderTok;
  const list=document.getElementById('list'); list.innerHTML='';
+ const on=activeStatuses(), scopes=activeScopes();
  const g=new Map();
  Q.forEach((it,i)=>{ if(!g.has(it.unit)) g.set(it.unit,[]); g.get(it.unit).push(i); });
+ const work=[];                                   // [unit, allIdx, visibleIdx] for units with anything visible
  g.forEach((idx,unit)=>{
-   idx.sort((i,j)=>{                                    // FAR (internal) first, external second; natural order within each
-     const sa=Q[i].scope==='external'?1:0, sb=Q[j].scope==='external'?1:0;
-     return sa-sb || citCmp(Q[i].target, Q[j].target);
-   });
-   const sec=document.createElement('div'); sec.className='unit';
-   const byStatus={}; idx.forEach(i=>{const it=Q[i]; (byStatus[it.status]=byStatus[it.status]||[]).push(
-     it.scope==='external'?(it.citation||it.target):it.target);});
-   const url=unitUrl(unit);
-   const chips=Object.keys(byStatus).sort((a,b)=>statusRank(a)-statusRank(b)).map(k=>{
-     const list=byStatus[k].join(', ');
-     return `<span class=ccount data-list="${esc(list)}" title="${esc(list)}">${lbl(k)} ${byStatus[k].length}</span>`;
-   }).join(' · ');
-   sec.innerHTML=`<div class=uh><span>${esc(unit)}</span> ·
-     <a class=far href="${esc(url)}" target=_blank rel=noopener>acquisition.gov ↗</a>
-     <span class=ucount>${chips}</span></div><div class=clist style="display:none"></div>`;
-   idx.forEach(i=>{const d=document.createElement('div'); d.className='item'; d.dataset.bucket=Q[i].status; d.dataset.scope=Q[i].scope||'internal'; d.dataset.i=i; d.innerHTML=rowHtml(Q[i],i); sec.appendChild(d);});
-   const add=document.createElement('div'); add.className='addbox';
-   add.innerHTML=`<input type=text class=addin placeholder="add reference(s) to ${esc(unit)} — comma list or range, e.g. 5.202(a)(2), 5.203(a)-(c)"><button class=addbtn>+ Add</button>`;
-   add.querySelector('.addbtn').onclick=()=>addRefs(unit, add.querySelector('.addin'));
-   sec.appendChild(add); list.appendChild(sec);
+   const vis=idx.filter(i=>on.has(Q[i].status) && scopes.has(Q[i].scope||'internal'));
+   if(!vis.length) return;
+   vis.sort((i,j)=>{const sa=Q[i].scope==='external'?1:0, sb=Q[j].scope==='external'?1:0; return sa-sb || citCmp(Q[i].target,Q[j].target);});
+   work.push([unit,idx,vis]);
  });
- Q.forEach((it,i)=>{ const c=defChoice(it); if(c){const r=q(`input[name=c${i}][value=${c}]`); if(r)r.checked=true;}
-   if(it.judge&&it.judge.choice==='manual'){const mb=document.getElementById('man'+i); if(mb)mb.value=(it.judge.value||[]).join(', ');}});
- flt();
+ let wi=0;
+ (function step(){                                // build in time-boxed batches so large filters never block
+   if(myTok!==_renderTok) return;
+   const t0=performance.now();
+   while(wi<work.length && performance.now()-t0<40){
+     const [unit,idx,vis]=work[wi++];
+     const sec=document.createElement('div'); sec.className='unit';
+     const byStatus={}; idx.forEach(i=>{const it=Q[i]; (byStatus[it.status]=byStatus[it.status]||[]).push(it.scope==='external'?(it.citation||it.target):it.target);});
+     const url=unitUrl(unit);
+     const chips=Object.keys(byStatus).sort((a,b)=>statusRank(a)-statusRank(b)).map(k=>{const l=byStatus[k].join(', '); return `<span class=ccount data-list="${esc(l)}" title="${esc(l)}">${lbl(k)} ${byStatus[k].length}</span>`;}).join(' · ');
+     sec.innerHTML=`<div class=uh><span>${esc(unit)}</span> ·
+       <a class=far href="${esc(url)}" target=_blank rel=noopener>acquisition.gov ↗</a>
+       <span class=ucount>${chips}</span></div><div class=clist style="display:none"></div>`;
+     vis.forEach(i=>{const d=document.createElement('div'); d.className='item'; d.dataset.bucket=Q[i].status; d.dataset.scope=Q[i].scope||'internal'; d.dataset.i=i; d.innerHTML=rowHtml(Q[i],i); restoreRow(d,i); sec.appendChild(d);});
+     const add=document.createElement('div'); add.className='addbox';
+     add.innerHTML=`<input type=text class=addin placeholder="add reference(s) to ${esc(unit)} — comma list or range, e.g. 5.202(a)(2), 5.203(a)-(c)"><button class=addbtn>+ Add</button>`;
+     add.querySelector('.addbtn').onclick=()=>addRefs(unit, add.querySelector('.addin'));
+     sec.appendChild(add); list.appendChild(sec);
+   }
+   if(wi<work.length) setTimeout(step,0);
+   else { applyHideDone(); updateMeta(); }
+ })();
+}
+function restoreRow(d,i){                          // reflect this row's DEC entry (or judge/default) into its controls
+ const it=Q[i], dec=DEC[rowKey(it)];
+ const choice = dec ? dec.choice : defChoice(it);
+ if(choice){ const r=d.querySelector(`input[name=c${i}][value=${choice}]`); if(r) r.checked=true; }
+ if(choice==='manual'){
+   if(it.scope==='external'){ const dv=d.querySelector('#doc'+i), sv=d.querySelector('#sec'+i); const ed=(dec&&dec.edit)||{};
+     if(dv&&ed.document!=null) dv.value=ed.document; if(sv&&ed.section!=null) sv.value=ed.section; }
+   else { const mb=d.querySelector('#man'+i); const v=(dec&&dec.value)||((it.judge&&it.judge.value)||[]); if(mb) mb.value=v.join(', '); }
+ }
 }
 function addRefs(unit, inputEl){
  const tgts=expandCitations(inputEl.value, unitBase(unit)); if(!tgts.length) return;
- const saved=collect();
  tgts.forEach(t=>{ if(!Q.some(it=>it.unit===unit&&it.target===t))
    Q.push({unit, url:unitUrl(unit), target:t, status:'added', validation:'', parser:null, llm:null, judge:null, needs_review:true, added:true}); });
- render(); applyDecisions(saved); save(); flt();
+ inputEl.value=''; save(); render();
 }
-function fltAnchored(){                           // keep the section you're viewing in place while filtering
- let anchor=null, top=0;
- for(const u of document.querySelectorAll('.unit')){ const r=u.getBoundingClientRect(); if(r.bottom>0){ anchor=u; top=r.top; break; } }
- flt();
- if(anchor) window.scrollBy(0, anchor.getBoundingClientRect().top - top);
-}
-function flt(){
- const on=[...document.querySelectorAll('.f:checked')].map(x=>x.value);
- const scopes=[...document.querySelectorAll('.sf:checked')].map(x=>x.value);
+function fltAnchored(){ render(); }               // status/scope filter change -> re-render the matching set
+function applyHideDone(){                          // hide already-decided rows among those rendered (no rebuild)
  const hide=document.getElementById('hideDone').checked;
- let shown=0, rTot=0, rDone=0;
- document.querySelectorAll('.item').forEach(d=>{
-   const i=d.dataset.i, st=d.dataset.bucket, sc=d.dataset.scope, picked=q(`input[name=c${i}]:checked`);
-   if(NEEDS.has(st)){rTot++; if(picked)rDone++;}
-   const vis=on.includes(st) && scopes.includes(sc) && !(hide&&picked);
-   d.style.display=vis?'':'none'; d.classList.toggle('done',!!picked); if(vis)shown++;
- });
+ document.querySelectorAll('.item').forEach(d=>{ const i=d.dataset.i; const picked=d.querySelector(`input[name=c${i}]:checked`);
+   d.classList.toggle('done',!!picked); d.style.display=(hide&&picked)?'none':''; });
+ updateMeta();
+}
+function updateMeta(){                             // counts over ALL rows (decisions from DEC), independent of rendering
+ let rTot=0, rDone=0;
+ Q.forEach(it=>{ if(NEEDS.has(it.status)){ rTot++; const dec=DEC[rowKey(it)]; if(dec?dec.choice:defChoice(it)) rDone++; } });
+ const shown=[...document.querySelectorAll('.item')].filter(d=>d.style.display!=='none').length;
  document.getElementById('meta').textContent=`${Q.length} refs · flagged reviewed ${rDone}/${rTot} · ${shown} shown`;
 }
-function collect(){
+function collect(){                                // build decisions.json from DEC (+ defaults), independent of the DOM
  const out=[];
- Q.forEach((it,i)=>{
-   const picked=q(`input[name=c${i}]:checked`); if(!picked) return;
-   const base={unit:it.unit, target:it.target, status:it.status, choice:picked.value,
-               scope:it.scope||'internal', locator:it.locator||''};
-   if(picked.value==='manual' && it.scope==='external'){       // structured external edit: document + section
-     const dv=document.getElementById('doc'+i), sv=document.getElementById('sec'+i);
-     out.push({...base, value:[], edit:{document:dv?dv.value:'', section:sv?sv.value:'', ref_type:it.ref_type||'other'}});
-     return;
+ Q.forEach(it=>{
+   const dec=DEC[rowKey(it)];
+   const choice = dec ? dec.choice : defChoice(it);
+   if(!choice) return;
+   const base={unit:it.unit, target:it.target, status:it.status, choice, scope:it.scope||'internal', locator:it.locator||''};
+   if(choice==='manual' && it.scope==='external'){
+     const ed=(dec&&dec.edit)||{document:it.node_label||'', section:it.locator||'', ref_type:it.ref_type||'other'};
+     out.push({...base, value:[], edit:ed});
+   } else {
+     let value=[];
+     if(choice==='accept') value=[it.target];
+     else if(choice==='manual') value=(dec&&dec.value)||[];
+     out.push({...base, value});
    }
-   let value=[];
-   if(picked.value==='accept') value=[it.target];
-   else if(picked.value==='manual'){const mb=document.getElementById('man'+i); value=expandCitations(mb?mb.value:'', unitBase(it.unit));}
-   out.push({...base, value});
  });
  return out;
 }
-function save(){ try{localStorage.setItem(KEY, JSON.stringify(collect()));}catch(e){} }
-function applyDecisions(list){
- list=list||[];
- let grew=false;
- list.forEach(d=>{ if(d.status==='added' && !Q.some(it=>it.unit===d.unit&&it.target===d.target)){
-   Q.push({unit:d.unit, url:unitUrl(d.unit), target:d.target, status:'added', validation:'', parser:null, llm:null, judge:null, needs_review:true, added:true}); grew=true; }});
- if(grew) render();
- const idx={}; Q.forEach((it,i)=>idx[it.unit+'|'+it.target]=i);
- list.forEach(d=>{
-   const i=idx[d.unit+'|'+d.target]; if(i===undefined) return;
-   const r=q(`input[name=c${i}][value=${d.choice}]`); if(r) r.checked=true;
-   if(d.choice==='manual'){
-     if(d.scope==='external' && d.edit){
-       const dv=document.getElementById('doc'+i), sv=document.getElementById('sec'+i);
-       if(dv)dv.value=d.edit.document||''; if(sv)sv.value=d.edit.section||'';
-     } else {
-       const mb=document.getElementById('man'+i); if(mb)mb.value=(d.value||[]).join(', ');
-     }
-   }
+function save(){ try{localStorage.setItem(KEY, JSON.stringify(DEC));}catch(e){} }
+function captureManual(i){                          // pull row i's manual text / external edit fields into DEC
+ const it=Q[i], dec=DEC[rowKey(it)]=(DEC[rowKey(it)]||{choice:'manual'});
+ if(it.scope==='external'){ const dv=document.getElementById('doc'+i), sv=document.getElementById('sec'+i);
+   dec.edit={document:dv?dv.value:'', section:sv?sv.value:'', ref_type:it.ref_type||'other'}; }
+ else { const mb=document.getElementById('man'+i); dec.value=expandCitations(mb?mb.value:'', unitBase(it.unit)); }
+}
+function applyDecisions(list){                      // merge a decisions.json list into DEC, then re-render
+ (list||[]).forEach(d=>{
+   if(d.status==='added' && !Q.some(it=>it.unit===d.unit&&it.target===d.target))
+     Q.push({unit:d.unit, url:unitUrl(d.unit), target:d.target, status:'added', validation:'', parser:null, llm:null, judge:null, needs_review:true, added:true});
+   const it=Q.find(x=>x.unit===d.unit&&x.target===d.target&&(x.scope||'internal')===(d.scope||'internal')&&(x.locator||'')===(d.locator||''))
+          ||Q.find(x=>x.unit===d.unit&&x.target===d.target);
+   if(!it) return;
+   DEC[rowKey(it)]={choice:d.choice, value:d.value||[], edit:d.edit||null};
  });
+ render();
 }
 function importDecisions(input){
  const f=input.files[0]; if(!f) return;
@@ -310,8 +328,17 @@ function banner(){
  el.textContent='▸ '+parts.join('   ·   ');
 }
 document.addEventListener('change',e=>{
- if(e.target.name&&e.target.name[0]==='c'){flt();save();}
- if(e.target.classList&&e.target.classList.contains('man')) save();
+ const t=e.target;
+ if(t.name && t.name[0]==='c'){                   // a choice radio (name=c<i>)
+   const i=+t.name.slice(1), it=Q[i];
+   (DEC[rowKey(it)]=DEC[rowKey(it)]||{}).choice=t.value;
+   if(t.value==='manual') captureManual(i);
+   save(); applyHideDone();
+ } else if(t.classList && t.classList.contains('man')){     // manual internal text
+   captureManual(+t.id.slice(3)); save();
+ } else if(t.id && /^(doc|sec)\d+$/.test(t.id)){            // manual external document/section
+   captureManual(+t.id.slice(3)); save();
+ }
 });
 document.addEventListener('click',e=>{           // click a header count chip -> toggle its reference list
  if(!(e.target.classList&&e.target.classList.contains('ccount'))) return;
@@ -319,9 +346,15 @@ document.addEventListener('click',e=>{           // click a header count chip ->
  if(box.style.display!=='none' && box.dataset.src===txt){ box.style.display='none'; }
  else { box.textContent=txt; box.dataset.src=txt; box.style.display=''; }
 });
-banner(); render();
-const _saved=localStorage.getItem(KEY); if(_saved){try{applyDecisions(JSON.parse(_saved));}catch(e){}}
-flt();
+banner();
+(function init(){
+  let raw=null; try{ raw=localStorage.getItem(KEY); }catch(e){}
+  if(raw){ try{ const p=JSON.parse(raw);
+      if(Array.isArray(p)){ applyDecisions(p); return; }      // legacy decisions-list format
+      Object.assign(DEC, p);                                  // new DEC-map format
+    }catch(e){} }
+  render();
+})();
 </script></body></html>"""
 
 def write_review(ledger, out_path, title, summary=None):
