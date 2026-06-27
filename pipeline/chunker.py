@@ -131,8 +131,8 @@ def base_meta(conbody):
                 date = X.norm(f"{dm.group(1)} {dm.group(2)}")
     return date, prescribed_by
 
-def kind_of(conbody, end_marker):
-    """Functional instrument kind: 'clause' | 'provision' | '' (ordinary regulatory section).
+def instrument_of(conbody, end_marker):
+    """Functional instrument: 'clause' | 'provision' | '' (ordinary regulatory section).
     end_marker is authoritative; fall back to the prefatory 'insert/use the following clause|
     provision' line for the few clause files that omit the terminator."""
     if end_marker == "(End of clause)":
@@ -220,11 +220,11 @@ def build(path, far, cfg):
                              "fac": ph.get("rev") or m.get("fac", ""),
                              "case_number": m.get("case_number", ""), "why": m.get("why", "")}
 
-    # Instrument-level facts (shared by every row from this file): structural type, terminator, kind.
+    # Instrument-level facts (shared by every row from this file): structural type, terminator, instrument.
     base_type = "subsection" if "-" in sec_num else "section"
     unit_end, end_el, alt_section = find_end_and_alt(conbody)
-    kind = kind_of(conbody, unit_end)                          # clause / provision / '' (regulatory)
-    bdate, bpresc = base_meta(conbody) if kind else ("", "")   # base clause date + prescribing section
+    instrument = instrument_of(conbody, unit_end)              # clause / provision / '' (regulatory)
+    bdate, bpresc = base_meta(conbody) if instrument else ("", "")   # base clause date + prescribing section
 
     def row(number, typ, tokens, ps, text, scan, exclude=None,
             alternate="", date="", prescribed_by="", end_marker=""):
@@ -233,7 +233,7 @@ def build(path, far, cfg):
              "source_version": cfg.get("source_version", ""),   # FAR edition (ditamap rev)
              "pipeline_version": cfg.get("pipeline_version", ""),  # producing commit (git short SHA)
              "type": typ,                                       # structural level (FAR 1.105-2)
-             "kind": kind,                                      # functional: clause / provision / ''
+             "instrument": instrument,                          # functional: clause / provision / ''
              "alternate": alternate}                            # variant: '' (base) or '1'..'5'
         r.update(decompose(sec_num, tokens, field_levels))
         r["url"] = url

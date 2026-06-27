@@ -6,15 +6,15 @@ identity, its text, and the references found in it.
 
 A chunk's identity is the pair **`(citation, alternate)`**. Three independent axes describe it:
 - `type` — **structural** level (FAR 1.105-2): `section` / `subsection` / `paragraph` / `subparagraph` / …
-- `kind` — **functional** instrument: `clause` / `provision` / `""` (an ordinary regulatory section).
-  Propagated to every chunk of an instrument (a clause's paragraphs are `kind:"clause"` too).
+- `instrument` — **functional** kind: `clause` / `provision` / `""` (an ordinary regulatory section).
+  Propagated to every chunk of an instrument (a clause's paragraphs are `instrument:"clause"` too).
 - `alternate` — **variant**: `""` for the base text, or an arabic id `"1"`/`"2"`/… for a clause Alternate.
 
 **Each chunk has:**
 - `citation` — its identifier, prefixed with the regulation (`"FAR-5.101"`, `"FAR-6.302-2(a)"`). A clause
   and its Alternates **share one citation**, distinguished by `alternate` (an Alternate is its own flat
   chunk, e.g. `citation:"FAR-52.247-64", alternate:"1"`, with `type` inherited from the base).
-- `regulation` / `type` / `kind` / `alternate` — `"FAR"` plus the three identity axes above.
+- `regulation` / `type` / `instrument` / `alternate` — `"FAR"` plus the three identity axes above.
 - `source_version` — the FAR edition the chunk came from, verbatim from the DITA map's `rev`
   (e.g. `"FAC 2026-01 March 13, 2026"` — Federal Acquisition Circular number + effective date).
 - `pipeline_version` — the git short SHA of the code that produced the chunk (e.g. `"e3e4eee"`).
@@ -51,7 +51,7 @@ A chunk's identity is the pair **`(citation, alternate)`**. Three independent ax
 - `reserved` — `true` when the chunk is just a placeholder (e.g. `Alternate I [Reserved]`).
 
 **Alternates are flat chunks, not nested.** Each Alternate of a clause is its own row, sharing the base's
-`citation` and distinguished by `alternate` (`"1"`, `"2"`, …), with `type`/`kind` inherited from the base. Its
+`citation` and distinguished by `alternate` (`"1"`, `"2"`, …), with `type`/`instrument` inherited from the base. Its
 `text` is the alternate's **verbatim** content (the literal "Alternate I (date). …" plus any substitute/added
 paragraphs) — **stored as-is, not reconstructed** (the delete/substitute/add instructions are not applied to
 the base). Its `cross_references` / `external_references` / `images` / `changes` are scoped to that alternate
@@ -70,8 +70,6 @@ up the chunk with `citation == X` and `alternate == N`.
 - `mentions` — each occurrence of the reference: `evidence` (the surrounding source sentence) and a
   per-occurrence `kind` — `explicit` (that mention was a tagged `<xref>`) or `inferred` (resolved from
   prose / a range). `confidence` above is the roll-up of these (`explicit` if any mention is).
-  *(This mention-level `kind` is distinct from the chunk-level `kind` = clause/provision/"" — same word,
-  different level.)*
 - `status` — how it was verified: `corroborated` (parser and LLM agreed), `parser_only`, `human_approved`,
   or `auto_accepted` (accepted by an `--auto-accept` run — judge verdict or parser∪LLM union — without a human pass; still auditable).
 
