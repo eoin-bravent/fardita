@@ -49,6 +49,13 @@ AUDIT_SYSTEM = (
     "(a)(9), or (a)(11)' means 5.202(a)(1), 5.202(a)(4)..5.202(a)(9), and 5.202(a)(11) -- ALL under "
     "5.202, NOT this section. Resolve each bare '(x)' against the most recent explicit citation number, "
     "not against {citation}.\n"
+    "6. CLAUSE ALTERNATES -- a FAR clause can have variant versions called Alternates, written "
+    "'Alternate I', 'Alternate II', etc. When the text references one -- 'Alternate I of 52.204-30', "
+    "or '52.203-6 ... with Alternate I' -- report it as a reference to the BASE clause (`target` = "
+    "'52.204-30') and set `alternate` to the roman numeral as written ('I', 'II', …). A reference to "
+    "a clause's Alternate is a DISTINCT reference from the base clause: when the text lists both "
+    "(e.g. '(i) 52.219-6 … (ii) Alternate I of 52.219-6'), report TWO references -- one with "
+    "`alternate` omitted and one with `alternate`='I'. Leave `alternate` unset for ordinary references.\n"
     "EXCLUDE SELF-REFERENCES: do NOT report a reference from this unit to itself -- 'this section', or "
     "the bare citation {citation}, is the document referring to itself and is not a cross-reference "
     "(but a DIFFERENT paragraph of this section, e.g. {citation}(a)(2), IS a valid reference).\n"
@@ -72,7 +79,8 @@ AUDIT_SCHEMA = {
     "items": {"type": "object",
               "properties": {"target": {"type": "string"}, "evidence": {"type": "string"},
                              "scope": {"type": "string", "enum": ["internal", "external"]},
-                             "ref_type": {"type": "string"}},
+                             "ref_type": {"type": "string"},
+                             "alternate": {"type": "string"}},   # clause Alternate variant (roman); '' for base
               "required": ["target", "evidence"]},
 }
 
@@ -86,7 +94,9 @@ JUDGE_SYSTEM = (
     "citation is correct as written), 'manual' (a real reference but the citation is wrong — put the "
     "correct citation(s) in `value`), or 'reject' (not a real reference to this regulation — external, "
     "mis-parsed, or hallucinated). Give a one-sentence `rationale`. Return one object per disagreement "
-    "with its `n`."
+    "with its `n`. A target may be a clause Alternate, shown as e.g. '52.204-30 Alternate I' -- a "
+    "legitimate variant reference, DISTINCT from the base clause; accept it if the unit really "
+    "incorporates that alternate."
 )
 JUDGE_SCHEMA = {
     "type": "array",
@@ -102,7 +112,8 @@ def _judge_user_text(unit_cit, discrepancies):
     """Render the disagreement list for the judge. discrepancies: [{n, target, source, evidence}]."""
     lines = [f"Unit {unit_cit}. Disagreements to resolve:"]
     for d in discrepancies:
-        lines.append(f"  [{d['n']}] (found by {d['source']}) target={d['target']} | "
+        alt = f" Alternate {d['alternate']}" if d.get("alternate") else ""   # show the variant being judged
+        lines.append(f"  [{d['n']}] (found by {d['source']}) target={d['target']}{alt} | "
                      f"evidence: {d.get('evidence', '')[:300]}")
     return "\n".join(lines)
 

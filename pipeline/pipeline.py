@@ -288,7 +288,7 @@ def cmd_run(cfg, args):
             for i in review_idx:
                 by_unit[ledger[i]["unit"]].append(i)
             jobs = [(ucit, raw_by_cit.get(ucit, ""),
-                     [{"n": i, "target": ledger[i]["target"],
+                     [{"n": i, "target": ledger[i]["target"], "alternate": ledger[i].get("alternate", ""),
                        "source": "parser" if ledger[i]["status"] == "parser_inferred" else "llm",
                        "evidence": (ledger[i]["parser"] or ledger[i]["llm"] or {}).get("evidence", "")}
                       for i in idxs])
