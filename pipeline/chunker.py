@@ -25,6 +25,94 @@ MIN_TEXT = 40
 def level_name(depth):
     return PARA_LEVELS[depth - 1] if depth >= 1 else "section"
 
+# ---------- alternates ----------
+# Alternates are variant clause versions that follow the "(End of clause)"/"(End of provision)"
+# marker, gathered in a trailing <section> (usually outputclass="Alternate"; 5 files use a plain
+# <section>). Each begins with an opener <p> whose leading italic is "Alternate <roman>".
+# Canonical terminator per outputclass — the source text varies ("(End of Provision)", "End of
+# clause"), so we normalize from the authoritative @outputclass for a clean, reusable delimiter.
+END_MARKER = {"Endofclause": "(End of clause)", "Endofprovision": "(End of provision)"}
+ALT_OPENER = re.compile(r"^Alternate\s+([IVXLCDM]+)\b", re.I)
+ALT_DATE   = re.compile(r"([A-Za-z]{3,9}\.?)\s*(\d{4})")                # "(Feb 2000)" / "(Sept1989)"
+PRESCRIBED = re.compile(r"As prescribed in\s+(\d+\.\d+(?:-\d+)?(?:\s*\([A-Za-z0-9]+\))*)", re.I)
+ALT_BLOCKS = ("p", "table", "simpletable", "ol", "ul", "fig", "image")
+
+def _opener_roman(el):
+    """If this <p> opens an alternate, return its roman numeral (upper-cased); else None.
+    Matched on the flattened text so all markup variants are caught: '<i>Alternate I</i> (date)',
+    '<i>Alternate I (date)</i>', and bare '<p>Alternate I <ph>(date)</ph>'. Body paragraphs that
+    merely mention an alternate (e.g. '(2) Alternate I (Dec 2023)') flatten with a leading label or
+    checkbox, so they don't start with 'Alternate' and are correctly rejected."""
+    if el.tag != "p":
+        return None
+    m = ALT_OPENER.match(X.flatten_p(el, ""))      # url unused by flatten_p; "" is safe
+    return m.group(1).upper() if m else None
+
+def find_end_and_alt(conbody):
+    """Return (end_marker_text, end_marker_el, alt_section_el) — '', None, None when absent.
+    The marker is the literal '(End of clause)'/'(End of provision)' text; the alternate section is
+    the first trailing <section> that is either outputclass='Alternate' or holds an alternate opener."""
+    children = list(conbody)
+    end_text, end_el, end_idx = "", None, -1
+    for i, ch in enumerate(children):
+        if ch.tag == "p" and (ch.get("outputclass") or "") in END_MARKER:
+            end_text, end_el, end_idx = END_MARKER[ch.get("outputclass")], ch, i
+            break
+    alt = None
+    for ch in (children[end_idx + 1:] if end_idx >= 0 else children):
+        if ch.tag == "section" and (ch.get("outputclass") == "Alternate"
+                                    or any(_opener_roman(p) for p in ch)):
+            alt = ch
+            break
+    return end_text, end_el, alt
+
+def _images_in(nodes):
+    out = []
+    for ch in nodes:
+        for im in ch.iter("image"):
+            iid = X.img_id(im.get("href") or "")
+            if iid not in out:
+                out.append(iid)
+    return out
+
+def build_alternates(section, sec_num, url, change_of):
+    """Split the alternate <section> into one record per alternate. Each opener <p> starts a span
+    that runs until the next opener (so multi-paragraph substitute/add alternates stay intact).
+    Stores literal text + parsed {id, date, prescribed_by, reserved} and its own refs/images/changes
+    — no attempt to reconstruct the resolved clause (faithful, lossless)."""
+    if section is None:
+        return []
+    spans, cur = [], None
+    for ch in section:
+        if ch.tag not in ALT_BLOCKS:
+            continue
+        roman = _opener_roman(ch)
+        if roman:
+            cur = {"id": roman, "nodes": [ch]}
+            spans.append(cur)
+        elif cur is not None:
+            cur["nodes"].append(ch)
+    alts = []
+    for sp in spans:
+        nodes = sp["nodes"]
+        opener = X.flatten_p(nodes[0], url)
+        lead = opener.split(".", 1)[0]                  # "Alternate I (Feb 2000)" — date lives here
+        dm, pm = ALT_DATE.search(lead), PRESCRIBED.search(opener)
+        date = X.norm(f"{dm.group(1)} {dm.group(2)}") if dm else ""    # normalize "(Sept1989)" spacing
+        ps = [p for ch in nodes for p in ch.iter("p")]
+        alts.append({
+            "id": sp["id"],
+            "date": date,
+            "prescribed_by": pm.group(1).replace(" ", "") if pm else "",
+            "reserved": "reserved" in opener.lower(),
+            "cross_references": X.collect_refs(ps, sec_num, url),
+            "external_references": X.collect_external_refs(ps),
+            "images": _images_in(nodes),
+            "changes": [change_of[id(d)] for ch in nodes for d in ch.iter() if id(d) in change_of],
+            "text": "\n".join(X.flatten_nodes(nodes, url)),
+        })
+    return alts
+
 TOPIC_TAGS = {"concept", "task", "reference", "topic"}      # DITA topic-type roots
 BODY_TAGS  = {"conbody", "taskbody", "refbody", "body"}      # their bodies
 
@@ -98,7 +186,8 @@ def build(path, far, cfg):
                              "fac": ph.get("rev") or m.get("fac", ""),
                              "case_number": m.get("case_number", ""), "why": m.get("why", "")}
 
-    def row(number, typ, tokens, ps, text, el):
+    def row(number, typ, tokens, ps, text, el, exclude=None):
+        exclude = exclude or set()                             # element ids to drop (the alternate subtree)
         r = {"citation": f"{reg}-{number}", "regulation": reg,
              "source_version": cfg.get("source_version", ""),   # FAR edition (ditamap rev)
              "pipeline_version": cfg.get("pipeline_version", ""),  # producing commit (git short SHA)
@@ -107,14 +196,31 @@ def build(path, far, cfg):
         r["url"] = url
         r["cross_references"] = X.collect_refs(ps, sec_num, url)
         r["external_references"] = X.collect_external_refs(ps)
-        r["images"] = X.collect_images(el)                     # tables are inlined as HTML in `text`
-        r["changes"] = [change_of[id(d)] for d in el.iter() if id(d) in change_of]  # rev-marked spans within this chunk
+        imgs = []                                              # tables are inlined as HTML in `text`
+        for ch in el.iter():
+            if ch.tag == "image" and id(ch) not in exclude:
+                iid = X.img_id(ch.get("href") or "")
+                if iid not in imgs:
+                    imgs.append(iid)
+        r["images"] = imgs
+        r["changes"] = [change_of[id(d)] for d in el.iter()    # rev-marked spans within this chunk
+                        if id(d) in change_of and id(d) not in exclude]
+        r["end_marker"] = ""                                   # set on the unit row only (clause/provision terminator)
+        r["alternates"] = []                                   # set on the unit row only
         r["text"] = text
         return r
 
-    unit_text = X.flatten_section(conbody, url)
+    # Alternates + end marker live after the basic clause; pull them out so they don't leak into the
+    # unit's text / refs / images / changes (which scan the whole conbody).
+    end_marker, end_el, alt_section = find_end_and_alt(conbody)
+    alt_exclude = {id(e) for e in alt_section.iter()} if alt_section is not None else set()
+    skip_text = alt_exclude | ({id(end_el)} if end_el is not None else set())
+    base_ps = [p for p in conbody.iter("p") if id(p) not in alt_exclude]
+    unit_text = X.flatten_section(conbody, url, skip_ids=skip_text)
     rows = [row(sec_num, "subsection" if "-" in sec_num else "section", [],
-                list(conbody.iter("p")), unit_text, conbody)]
+                base_ps, unit_text, conbody, exclude=alt_exclude)]
+    rows[0]["end_marker"] = end_marker
+    rows[0]["alternates"] = build_alternates(alt_section, sec_num, url, change_of)
 
     def walk(ol, toks):
         for li in ol.findall("./li"):

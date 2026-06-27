@@ -141,10 +141,14 @@ def flatten_p(p, url):
     body = norm("".join(parts))
     return f"{label} {body}".strip() if label else body
 
-def flatten_block(el, url):
-    """Flatten a block container (conbody or li) child-by-child, in document order."""
+def flatten_nodes(nodes, url, skip_ids=None):
+    """Flatten an explicit sequence of block nodes child-by-child, in document order.
+    skip_ids: optional set of id(element) to omit — e.g. the end-of-clause marker <p> or an
+    alternate <section> that's extracted separately and must not pollute the basic-clause text."""
     out = []
-    for ch in el:
+    for ch in nodes:
+        if skip_ids and id(ch) in skip_ids:
+            continue
         if ch.tag == "p":
             t = flatten_p(ch, url)
             if t:
@@ -162,11 +166,15 @@ def flatten_block(el, url):
                 out.append(image_token(img))
     return out
 
+def flatten_block(el, url, skip_ids=None):
+    """Flatten a block container (conbody or li) child-by-child, in document order."""
+    return flatten_nodes(list(el), url, skip_ids)
+
 def flatten_li(li, url):
     return " ".join(flatten_block(li, url))
 
-def flatten_section(conbody, url):
-    return "\n".join(flatten_block(conbody, url))
+def flatten_section(conbody, url, skip_ids=None):
+    return "\n".join(flatten_block(conbody, url, skip_ids))
 
 # ---------- evidence context ----------
 def render_scope(ps):

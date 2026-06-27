@@ -31,6 +31,27 @@ configured bottom level. Every chunk carries its identity, its text, and the ref
   plain-language `description` live in a separate downstream store keyed by that id** (not duplicated on
   every chunk that uses the image); the id is the image's filename.
 - (A paragraph chunk inherits any table/image inside it, just as it inherits that text.)
+- `end_marker` — on the unit (`section`/`subsection`) chunk: the clause/provision terminator, canonicalized
+  to `"(End of clause)"` or `"(End of provision)"` (normalized from the source `@outputclass`, since the raw
+  text varies in casing/parens). `""` on ordinary regulatory sections that have no terminator — so a non-empty
+  value also marks the chunk as a clause/provision. Always `""` on paragraph chunks. The marker is **stripped
+  from `text`** (it carries no retrieval signal and is uniformly present); re-insert it as a delimiter at
+  prompt-assembly time if wanted.
+- `alternates` — on the unit chunk: the clause's own **Alternates** (variant versions that follow the
+  terminator), `[]` when there are none. The alternate text is **pulled out of the basic clause** — it does not
+  appear in the unit's `text`, `cross_references`, `external_references`, `images`, or `changes`; each alternate
+  carries its own. Always `[]` on paragraph chunks. Each entry:
+  - `id` — the Roman numeral (`"I"`, `"II"`, …).
+  - `date` — the alternate's effective date as written, space-normalized (`"Feb 2000"`); `""` if none.
+  - `prescribed_by` — the FAR section that prescribes it, parsed from "As prescribed in …" (`"12.301(b)(4)(i)"`);
+    `""` for older alternates that use conditional phrasing instead ("If a cost contract…", "When a
+    time-and-materials contract is contemplated…").
+  - `reserved` — `true` for an `Alternate I [Reserved]` placeholder.
+  - `text` — the alternate's verbatim text (the literal "Alternate I (date). …" with any substitute/added
+    paragraphs). It is **stored as-is, not reconstructed** — the delete/substitute/add instructions are not
+    applied against the basic clause.
+  - `cross_references` / `external_references` / `images` / `changes` — same shape as the chunk-level fields,
+    but scoped to this alternate.
 
 **`cross_references`** (internal, FAR → FAR) — each entry:
 - `target` — the cited FAR citation, bare (`"5.202(a)(2)"`, `"subpart 9.1"`). Ranges are pre-expanded
