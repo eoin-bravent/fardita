@@ -67,7 +67,11 @@ up the chunk with `citation == X` and `alternate == N`.
   (`"1"` for *"52.204-30 Alternate I"*). `target` stays the base clause; `(target, alternate)` is the edge, so
   a reference to a clause and to its Alternate are **distinct**. Resolve it to the matching
   `(citation, alternate)` chunk.
-- `mentions` — each occurrence, with its `kind` and `evidence` (the surrounding source sentence).
+- `mentions` — each occurrence of the reference: `evidence` (the surrounding source sentence) and a
+  per-occurrence `kind` — `explicit` (that mention was a tagged `<xref>`) or `inferred` (resolved from
+  prose / a range). `confidence` above is the roll-up of these (`explicit` if any mention is).
+  *(This mention-level `kind` is distinct from the chunk-level `kind` = clause/provision/"" — same word,
+  different level.)*
 - `status` — how it was verified: `corroborated` (parser and LLM agreed), `parser_only`, `human_approved`,
   or `auto_accepted` (accepted by an `--auto-accept` run — judge verdict or parser∪LLM union — without a human pass; still auditable).
 
