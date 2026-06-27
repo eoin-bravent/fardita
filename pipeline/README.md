@@ -107,6 +107,12 @@ python pipeline.py apply --decisions decisions.json  # (manual path: feed an exp
   **whole files only**, so the parser still does all intra-file paragraph decomposition. If the map is
   absent (or `ditamap: ""`), the run falls back to scanning `input_dir`. The manifest records which was
   used as `file_source` (`ditamap` / `folder` / `explicit`).
+- **Change track (`<REG>_changelog.json`).** Parallel to chunking and **deterministic** — `run` also
+  parses `LSATable.dita` (the FAC's official "List of Sections Affected") into structured entries: the
+  amended section + paragraph(s), a plain-language description ("Amend 22.1503 by removing '$102,280'
+  and adding '$105,767'"), the FAR case number, and the Federal Register link. No LLM/reconcile (the
+  table is explicit structured data — there's nothing fuzzy to cross-check). It's the input for the
+  FAC-change tools (amendatory-instruction generation, change summaries). Skip with `--no-changelog`.
 - **Version stamp.** **Every chunk** carries its own provenance — **`source_version`** (the FAR edition,
   read verbatim from the ditamap's `rev`, e.g. `FAC 2026-01 March 13, 2026`) and **`pipeline_version`**
   (this repo's git short SHA — explains output changes when the FAR itself didn't move). Stamping per
@@ -336,6 +342,7 @@ in one in-memory map keyed by row, so they **persist across pages and reloads** 
 |------|------|
 | `<REG>_chunks.json` | the chunks (pristine, parser-only) — each row carries `source_version` + `pipeline_version`, plus `cross_references` (internal), `external_references`, and `images` (deduped id list; inline `[IMAGE: id]` token in `text`). Tables are inlined as HTML directly in `text`. |
 | `<REG>_manifest.json` | every file **seen**, **processed**, and **skipped** (with reasons); plus `file_source` (ditamap/folder/explicit) and `chunked_at` (the run timestamp — per-chunk versions live on the chunks) |
+| `<REG>_changelog.json` | **change track**: this FAC's List of Sections Affected, parsed from `LSATable.dita` — one entry per amended section (`section`, `citation`, `paragraphs`, plain-language `description`, `case_number`, `federal_register_url`), each stamped with `source_version` + `pipeline_version`. Written by `run` unless `--no-changelog`. |
 | `<REG>_ledger.json` | the per-unit master list: every atomic target tagged `status` (corroborated / parser_explicit / parser_inferred / llm_only), with parser/llm/judge evidence — drives the review page and `apply` |
 | `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |
 | `<REG>_addrmap.json` | cached whole-corpus address map (so `--files` subset runs validate cross-file targets) |

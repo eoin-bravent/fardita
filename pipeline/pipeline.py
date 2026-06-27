@@ -12,7 +12,7 @@ Secret: GEMINI_API_KEY in the environment (never written to config or logs).
 import os, sys, json, time, glob, argparse, subprocess, datetime
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import chunker, reconcile, review, gemini_audit
+import chunker, reconcile, review, gemini_audit, changelog
 import extract_json as X                          # parse_external (for human-corrected external citations)
 
 DITA_DEFAULT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -20,6 +20,7 @@ DEFAULTS = {
     "regulation": "FAR",
     "input_dir": DITA_DEFAULT,
     "ditamap": "FAR.ditamap",                            # authoritative file list + version stamp; "" -> folder scan
+    "lsa_file": "LSATable.dita",                          # change track: List of Sections Affected (this FAC's changes)
     "bottom_level": "paragraph",
     "url_template": "https://www.acquisition.gov/far/{num}",
     "output_dir": os.path.join(HERE, "out"),
@@ -229,6 +230,14 @@ def cmd_run(cfg, args):
     print(f"  rows: {len(rows)}   processed {manifest['processed_count']}"
           f"   skipped {manifest['skipped_count']}   (files via {manifest['file_source']})")
     print(f"  version: source={stamp['source_version']}   pipeline={stamp['pipeline_version']}")
+
+    # change track (parallel to chunking, deterministic): parse the LSA "what changed this FAC" table
+    if not getattr(args, "no_changelog", False):
+        lsa_path = os.path.join(cfg["input_dir"], cfg.get("lsa_file") or "LSATable.dita")
+        entries = changelog.parse_lsa(lsa_path, reg, stamp["source_version"], stamp["pipeline_version"])
+        json.dump(entries, open(os.path.join(out, f"{reg}_changelog.json"), "w", encoding="utf-8"),
+                  indent=2, ensure_ascii=False)
+        print(f"  changelog: {len(entries)} LSA change entries -> {reg}_changelog.json")
 
     if args.no_llm and not args.mock_llm:                 # parser-only: just chunks + manifest
         print("  parser-only (--no-llm): wrote chunks + manifest; skipped audit / reconcile / review")
@@ -485,6 +494,8 @@ def main():
     r.add_argument("--files", nargs="+", metavar="FILE",
                    help="run only these .dita files (names like 5.101 or paths) instead of the whole folder")
     r.add_argument("--mock-llm"); r.add_argument("--no-llm", action="store_true")
+    r.add_argument("--no-changelog", dest="no_changelog", action="store_true",
+                   help="skip parsing the LSA change table (<REG>_changelog.json); on by default")
     r.add_argument("--auto-accept", dest="auto_accept", action="store_true",
                    help="hands-off: skip human review and write verified.json directly. "
                         "With --judge, applies the judge's verdicts; otherwise the parser+LLM union "
