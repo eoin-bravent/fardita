@@ -9,7 +9,7 @@
 Config: pipeline.config.json (regulation, input_dir, bottom_level, gemini model/reasoning, …).
 Secret: GEMINI_API_KEY in the environment (never written to config or logs).
 """
-import os, sys, json, time, glob, argparse, subprocess, datetime
+import os, sys, json, time, glob, argparse, subprocess, datetime, threading
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import chunker, reconcile, review, gemini_audit, changelog
@@ -254,9 +254,10 @@ def cmd_run(cfg, args):
         return
 
     # LLM path: each call gets the prompt + the ENTIRE raw .dita file for that unit
-    units = [(r["citation"], open(sources[r["citation"]], encoding="utf-8").read())
+    units = [(r["citation"], chunker.strip_alternates(open(sources[r["citation"]], encoding="utf-8").read()))
              for r in rows if r["type"] in ("section", "subsection")
-             and not r.get("alternate") and r["citation"] in sources]   # base units only; alternates share the file
+             and not r.get("alternate") and r["citation"] in sources]   # base units only; strip the
+    # Alternate section so the file-level audit doesn't spill alternate-text refs onto the base clause.
     if args.limit:
         units = units[:args.limit]
     gemini_audit.TRACKER.reset()
@@ -467,25 +468,31 @@ def cmd_review(cfg, args):
         def do_POST(self):
             if self.path.rstrip("/") != "/apply":
                 self.send_error(404); return
+            ok, ndec = False, 0
             try:
                 n = int(self.headers.get("Content-Length", 0))
                 decisions = json.loads(self.rfile.read(n) or b"[]")
+                ndec = len(decisions)
                 dpath = os.path.join(out, f"{reg}_decisions.json")
                 json.dump(decisions, open(dpath, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
                 cmd_apply(cfg, argparse.Namespace(decisions=[dpath]))
-                body, code = json.dumps({"ok": True, "decisions": len(decisions),
-                                         "verified": os.path.join(out, f"{reg}_verified.json")}), 200
+                body, code, ok = json.dumps({"ok": True, "decisions": ndec,
+                                             "verified": os.path.join(out, f"{reg}_verified.json")}), 200, True
             except Exception as e:                          # noqa: BLE001
                 body, code = json.dumps({"ok": False, "error": str(e)}), 500
             self.send_response(code); self.send_header("Content-Type", "application/json")
             self.end_headers(); self.wfile.write(body.encode())
+            if ok:                                          # job done — stop serving (shutdown() must run off the serve thread)
+                print(f"\nSaved & applied {ndec} decision(s) -> out/{reg}_verified.json.  Done.")
+                threading.Thread(target=self.server.shutdown, daemon=True).start()
 
     class Server(socketserver.TCPServer):
         allow_reuse_address = True
 
     url = f"http://127.0.0.1:{port}/{page}"
     with Server(("127.0.0.1", port), Handler) as srv:
-        print(f"review: {url}\n  review, then click 'Save & Apply' -> writes out/{reg}_verified.json.  Ctrl+C to stop.")
+        print(f"review: {url}\n  review, then click 'Save & Apply' -> writes out/{reg}_verified.json "
+              f"and stops the server.  (Ctrl+C to stop without applying.)")
         try:
             webbrowser.open(url)
             srv.serve_forever()

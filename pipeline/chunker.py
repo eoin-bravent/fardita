@@ -66,6 +66,20 @@ def find_end_and_alt(conbody):
             break
     return end_text, end_el, alt
 
+# The trailing Alternate <section>: either outputclass="Alternate" (105 files) or a plain <section>
+# whose content opens with the [Alt] Start marker (5 files). No nested <section>, so `.*?</section>`
+# stops at its own close.
+ALT_SECTION_RE = re.compile(
+    r'<section\b[^>]*\boutputclass="Alternate".*?</section>'
+    r'|<section\b[^>]*>\s*<\?FM MARKER \[Alt\] Start.*?</section>', re.S)
+
+def strip_alternates(raw):
+    """Remove the trailing Alternate <section> from a clause's raw DITA. Alternates are their own
+    (parser-only) chunks, so the base-unit LLM audit must NOT see their text — otherwise it reports
+    references that live inside the alternate substitute text and mis-attributes them to the base
+    clause (often tagged with the containing alternate's number). No-op when there's no alternate."""
+    return ALT_SECTION_RE.sub("", raw, count=1)
+
 _ROMAN = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
 def roman_to_arabic(r):
     """'I'->'1', 'IV'->'4', 'V'->'5'. Returns the input unchanged if it isn't roman."""

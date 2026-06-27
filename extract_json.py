@@ -338,11 +338,12 @@ def collect_refs(ps, sec_num, url):
         lit = f'<xref href="{href}">{text[s:e]}</xref>'                    # splice the raw markup back in
         ctx = ("…" if a > 0 else "") + norm(text[a:s] + lit + text[e:b]) + ("…" if b < len(text) else "")
         alt = ""                                                          # clause-Alternate qualifier, if adjacent
-        m = ALT_OF.search(text[max(0, s - 80):s])                         # "Alternate I … of" right before the anchor
+        before = norm(text[max(0, s - 250):s])                            # widen + collapse DITA whitespace so a
+        m = ALT_OF.search(before)                                         # multi-line "Alternate II (date) of" still matches
         if m:
             alt = m.group(1).upper()
         else:
-            after = text[endref:endref + 160]                             # "…, with Alternate I" within the same item
+            after = norm(text[endref:endref + 250])                       # "…, with Alternate I" within the same item
             cut = after.find(". ")                                        # don't borrow the next clause's alternate
             m = ALT_WITH.search(after if cut < 0 else after[:cut])
             if m:
