@@ -9,8 +9,10 @@ Reuses the proven helpers in ../extract_json.py but generalizes:
 """
 import os, re, sys, json
 import xml.etree.ElementTree as ET
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))            # own dir, for changelog
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import extract_json as X       # reuse norm/tok, flatten_*, collect_refs, components, href_to_citation
+import changelog               # change track: recover [CaseNumber]/[Why] markers ET drops
 
 # Level ladder.  Indices 0..3 come from the citation number; 4+ from the (a)(1)(i)… chain.
 PARA_LEVELS = ["paragraph", "subparagraph",
@@ -85,6 +87,17 @@ def build(path, far, cfg):
     bottom = cfg["bottom_depth"]
     field_levels = PARA_LEVELS[:bottom]        # decomposition fields run part..bottom
 
+    # change track: pair each rev-marked span (this PI-free parse, document order) with its
+    # [CaseNumber]/[Why] markers (recovered by a PI-preserving parse, same document order).
+    rev_meta = changelog.extract_rev_changes(path)
+    rev_phs = [el for el in c.iter() if el.get("rev")]
+    change_of = {}
+    for i, ph in enumerate(rev_phs):
+        m = rev_meta[i] if i < len(rev_meta) else {}
+        change_of[id(ph)] = {"text": X.norm("".join(ph.itertext())),
+                             "fac": ph.get("rev") or m.get("fac", ""),
+                             "case_number": m.get("case_number", ""), "why": m.get("why", "")}
+
     def row(number, typ, tokens, ps, text, el):
         r = {"citation": f"{reg}-{number}", "regulation": reg,
              "source_version": cfg.get("source_version", ""),   # FAR edition (ditamap rev)
@@ -95,6 +108,7 @@ def build(path, far, cfg):
         r["cross_references"] = X.collect_refs(ps, sec_num, url)
         r["external_references"] = X.collect_external_refs(ps)
         r["images"] = X.collect_images(el)                     # tables are inlined as HTML in `text`
+        r["changes"] = [change_of[id(d)] for d in el.iter() if id(d) in change_of]  # rev-marked spans within this chunk
         r["text"] = text
         return r
 

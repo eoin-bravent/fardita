@@ -20,6 +20,37 @@ def _text(el):
     """Whitespace-collapsed text of an element (all descendants)."""
     return " ".join("".join(el.itertext()).split())
 
+def extract_rev_changes(path):
+    """PI-preserving parse → document-ordered marker metadata for each rev-marked element:
+    [{fac, case_number, why}, ...], one per `rev` span in document order.
+
+    ElementTree's default parse DROPS the <?FM MARKER [CaseNumber]/[Why]?> processing
+    instructions, so we re-parse with insert_pis=True (the XML parser enforces the PI's `?>`
+    boundary per spec, so each marker's text is captured complete). The changed *text* itself is
+    NOT taken here — insert_pis would fold marker text into the flattened content — so the chunker
+    reads the span text from its own (PI-free) parse and aligns to this list by document order.
+    Returns [] if there are no rev spans or the file can't be parsed."""
+    try:
+        raw = re.sub(r"<!DOCTYPE.*?>", "", open(path, encoding="utf-8").read(), flags=re.S)
+        if "rev=" not in raw:                              # fast skip — almost no files carry rev
+            return []
+        root = ET.fromstring(raw, parser=ET.XMLParser(target=ET.TreeBuilder(insert_pis=True)))
+    except (ET.ParseError, OSError):
+        return []
+    items = []
+    for el in root.iter():
+        if not el.get("rev"):
+            continue
+        case_number, why = "", ""
+        for pi in el.iter():
+            if pi.tag is ET.PI and pi.text:               # the marker PIs live inside the rev span
+                if "[CaseNumber]" in pi.text:
+                    case_number = pi.text.split("[CaseNumber]", 1)[1].strip()
+                elif "[Why]" in pi.text:
+                    why = " ".join(pi.text.split("[Why]", 1)[1].split())
+        items.append({"fac": el.get("rev") or "", "case_number": case_number, "why": why})
+    return items
+
 def parse_lsa(path, regulation="FAR", source_version="", pipeline_version=""):
     """Parse an LSA table file -> list of change entries. Returns [] if the file is absent,
     unparseable, or has no LSA table. Each entry:

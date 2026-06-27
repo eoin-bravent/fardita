@@ -238,6 +238,16 @@ def cmd_run(cfg, args):
         json.dump(entries, open(os.path.join(out, f"{reg}_changelog.json"), "w", encoding="utf-8"),
                   indent=2, ensure_ascii=False)
         print(f"  changelog: {len(entries)} LSA change entries -> {reg}_changelog.json")
+        # validate the per-chunk change track: each span's `why` should be contained in its
+        # section's LSA description (the fragments add up to the whole) — alarms on any truncation.
+        nchg = sum(len(r.get("changes", [])) for r in rows)
+        if nchg:
+            desc = {e["citation"]: " ".join((e["description"] or "").split()) for e in entries}
+            whys = [(r["citation"].split("(")[0], " ".join(ch["why"].split()))
+                    for r in rows for ch in r["changes"] if ch.get("why")]   # spans WITH a why (some have none, e.g. table cells)
+            ok = sum(1 for sec, w in whys if w in desc.get(sec, ""))
+            print(f"  change track: {nchg} rev-span change-item(s), {len(whys)} with a why; "
+                  f"whys in LSA description {ok}/{len(whys)} [{'OK' if ok == len(whys) else 'MISMATCH'}]")
 
     if args.no_llm and not args.mock_llm:                 # parser-only: just chunks + manifest
         print("  parser-only (--no-llm): wrote chunks + manifest; skipped audit / reconcile / review")

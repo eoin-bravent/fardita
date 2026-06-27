@@ -11,6 +11,13 @@ configured bottom level. Every chunk carries its identity, its text, and the ref
   (e.g. `"FAC 2026-01 March 13, 2026"` — Federal Acquisition Circular number + effective date).
 - `pipeline_version` — the git short SHA of the code that produced the chunk (e.g. `"e3e4eee"`).
   Together these two are the chunk's provenance; the run timestamp lives in `<REG>_manifest.json` (`chunked_at`).
+- `changes` — **change track**: a list of the `rev`-marked spans (this FAC's edits) that fall inside this
+  chunk; `[]` when nothing changed. Each item: `text` (the exact changed words — find it in `text` to
+  redline), `fac` (the FAC, from the `rev` attribute), `case_number` and `why` (from the inline
+  `[CaseNumber]`/`[Why]` markers next to the span; `why` may be empty for spans the source doesn't
+  describe individually, e.g. table-cell edits). A change appears on **every chunk that contains it**
+  (the section chunk and the specific paragraph). The complete section-level description lives in
+  `<REG>_changelog.json`; `changes` carries the span-level detail.
 - decomposed address — `part`, `subpart`, `section`, `subsection`, `paragraph`, … (the citation broken into levels).
 - `url` — the source page on acquisition.gov.
 - `text` — the chunk's text.
