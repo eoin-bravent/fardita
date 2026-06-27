@@ -306,6 +306,12 @@ def _group_refs(refs):
             out[index[t]]["confidence"] = "explicit"
     return out
 
+# "…Alternate I (date) of <CLAUSE>"  and  "<CLAUSE> …, with Alternate I" — a reference to a clause
+# variant. Detected per anchor; the trailing " Alternate <roman>" is split back off as a distinct
+# (base clause, alternate) edge downstream (reconcile.split_alternate), same as the LLM path emits.
+ALT_OF   = re.compile(r"\bAlternate\s+([IVXLCDM]+)\s*(?:\([^)]*\)\s*)?of\s*$", re.I)
+ALT_WITH = re.compile(r"\bwith\s+Alternate\s+([IVXLCDM]+)\b", re.I)
+
 def collect_refs(ps, sec_num, url):
     text, xpos = render_scope(ps)
     refs = []
@@ -319,10 +325,18 @@ def collect_refs(ps, sec_num, url):
         a, b = max(0, s - WB), min(len(text), endref + WA)
         lit = f'<xref href="{href}">{text[s:e]}</xref>'                    # splice the raw markup back in
         ctx = ("…" if a > 0 else "") + norm(text[a:s] + lit + text[e:b]) + ("…" if b < len(text) else "")
-        if q:
-            refs.append({"kind": "inferred", "target": base + q.group(1), "evidence": ctx})
+        alt = ""                                                          # clause-Alternate qualifier, if adjacent
+        m = ALT_OF.search(text[max(0, s - 80):s])                         # "Alternate I … of" right before the anchor
+        if m:
+            alt = m.group(1).upper()
         else:
-            refs.append({"kind": "explicit", "target": base, "evidence": ctx})
+            after = text[endref:endref + 160]                             # "…, with Alternate I" within the same item
+            cut = after.find(". ")                                        # don't borrow the next clause's alternate
+            m = ALT_WITH.search(after if cut < 0 else after[:cut])
+            if m:
+                alt = m.group(1).upper()
+        target = base + (q.group(1) if q else "") + (f" Alternate {alt}" if alt else "")
+        refs.append({"kind": "inferred" if q else "explicit", "target": target, "evidence": ctx})
     refs.extend(_range_refs(text, sec_num))                                # ranges -> explicit members
     for m in re.finditer(r"paragraphs?\s+(\([a-z0-9]+\)(?:\([a-z0-9]+\))*)\s+of this section", text):
         refs.append({"kind": "inferred", "target": sec_num + m.group(1),
