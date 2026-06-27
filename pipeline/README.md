@@ -307,6 +307,13 @@ default the disagreements + added; tick **Corroborated** / **Parser-only (explic
 agreements; **hide decided** to focus). The **Show** filter bar stays pinned at the top while you scroll
 (the token/cost banner scrolls away).
 
+**Pagination.** A full-corpus ledger is 10k+ rows, so the page is **paginated** — it renders one page
+at a time (≤12 units, broken at FAR part boundaries, labeled by citation range) with a sticky
+**◀ Prev / Next ▶** bar, a **Jump** dropdown, and a live per-page progress count. Only the current
+page's rows are built (in time-boxed batches), so it stays responsive at any scale. All decisions live
+in one in-memory map keyed by row, so they **persist across pages and reloads** and a single
+**Save & Apply** writes them all — paging is purely a view over the one decision set; your place is remembered.
+
 **Two ways to finish:**
 - **Served (one click):** `python pipeline.py review` serves the page on `localhost` and opens it. Click
   **Save & Apply ▶** — your decisions are written to `out/<REG>_decisions.json` and `apply` runs
