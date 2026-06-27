@@ -80,7 +80,8 @@ python pipeline.py run --judge                      # also run the LLM judge to 
 python pipeline.py run --auto-accept                 # hands-off: skip human review, write verified.json directly
 python pipeline.py run --judge --auto-accept         # hands-off, but apply the judge's verdict on each disagreement
 python pipeline.py run --concurrency 16              # parallel LLM calls (default 8; 1 = sequential)
-python pipeline.py review                            # serve the review page; "Save & Apply" writes verified.json in one click
+python pipeline.py review                            # serve the review page; "Save & Apply" writes verified.json then stops the server
+python pipeline.py review --port 9000                # serve on a custom port (default 8765)
 python pipeline.py apply --decisions decisions.json  # (manual path: feed an exported decisions.json)
 ```
 - **`--no-llm`** is the parser-only switch — it stops after `chunks` + `manifest` (no API key, no
@@ -258,8 +259,15 @@ the chunk's level. Below `subparagraph` we use `subunit-depth-N` rather than inv
 - **`.env`** (copy from `.env.example`, gitignored) holds the secret + common defaults:
   `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_REASONING`, `GEMINI_THINKING_BUDGET`, `GEMINI_JUDGE`, and
   optional `PIPELINE_REGULATION` / `PIPELINE_INPUT_DIR` / `PIPELINE_BOTTOM_LEVEL` / `PIPELINE_OUTPUT_DIR`.
-- **CLI overrides** (on both `run` and `apply`): `--model --reasoning/--no-reasoning --judge/--no-judge
-  --thinking-budget --regulation --input-dir --bottom-level --output-dir --config`.
+- **CLI overrides** (highest precedence; on both `run` and `apply` unless noted):
+  - `--regulation` — regulation label + output filename prefix (default `FAR`).
+  - `--input-dir` — DITA source folder (see *Source & versioning*).
+  - `--output-dir` — where all outputs land (default `out`); give each backend its own to keep runs side by side.
+  - `--bottom-level` — deepest paragraph level to chunk to.
+  - `--provider` — LLM backend, `usai` or `vertex` (see *LLM setup*).
+  - `--model`, `--reasoning`/`--no-reasoning`, `--thinking-budget` — LLM model + reasoning controls.
+  - `--judge`/`--no-judge` — toggle the LLM reconciliation pass (`run` only).
+  - `--config` — path to an alternate `pipeline.config.json`.
 - Real environment variables beat `.env`; `.env` beats the JSON; JSON beats defaults.
 
 ## LLM setup
