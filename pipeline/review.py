@@ -23,6 +23,12 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  #banner{padding:8px 20px;background:#eef2f4;border-bottom:1px solid #d9d6cc;font:12px/1.5 ui-monospace,monospace;color:#2a3a4a}
  .filt{padding:8px 20px;background:#fff;border-bottom:1px solid #ddd;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
  .filt label{display:flex;gap:5px;align-items:center}
+ .pagenav{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:7px 20px;background:#0e7c8b;color:#fff;font-size:13px}
+ .pagenav .navbtn{background:#0b5e6a;color:#fff;padding:5px 12px}
+ .pagenav .navbtn:disabled{opacity:.45;cursor:default}
+ .pagenav .navinfo{font-family:ui-monospace,monospace}
+ .pagenav .navjump{margin-left:auto;display:flex;gap:6px;align-items:center}
+ .pagenav select{font:inherit;padding:3px 6px;border-radius:5px}
  .unit{margin:16px 20px}
  .uh{font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #102032;margin-bottom:6px}
  .ucount{font:11px ui-monospace,monospace;color:#6a7c8c;margin-left:8px;font-weight:400}
@@ -72,6 +78,7 @@ PAGE = r"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>__TITLE__</ti
  <label title="References to other government documents (U.S.C., CFR, E.O., Pub. L., OMB…)."><input type=checkbox class=sf value=external onchange=fltAnchored()> External</label>
  &nbsp;|&nbsp; <label title="Hide rows you have already chosen Accept / Reject / Manual on."><input type=checkbox id=hideDone onchange=applyHideDone()> hide reviewed</label>
 </div>
+<div id="pagenav" class="pagenav"></div>
 </div>
 <div id="banner"></div>
 <div id="list"></div>
@@ -87,6 +94,30 @@ const DEC = {};                                   // rowKey -> {choice, value:[]
 function rowKey(it){ return it.unit+'|'+(it.scope||'internal')+'|'+it.target+'|'+(it.locator||''); }
 function activeStatuses(){ return new Set([...document.querySelectorAll('.f:checked')].map(x=>x.value)); }
 function activeScopes(){ return new Set([...document.querySelectorAll('.sf:checked')].map(x=>x.value)); }
+// ---- pagination: review a bounded slice of units (within one part) at a time ----
+const PER_PAGE = 12;                              // max units (≈ .dita files) per page
+let PAGE = 0, PAGES = [], WORK = [];
+function partOf(unit){ const m=unitBase(unit).match(/^(\d+)/); return m?m[1]:'?'; }
+function computePages(work){                      // group the visible-unit work-list into pages (break at part boundary)
+ const pages=[]; let cur=null;
+ work.forEach((w,idx)=>{ const part=partOf(w[0]);
+   if(!cur || cur.part!==part || (idx-cur.start)>=PER_PAGE){ cur={start:idx,end:idx+1,part,first:unitBase(w[0]),last:unitBase(w[0])}; pages.push(cur); }
+   else { cur.end=idx+1; cur.last=unitBase(w[0]); } });
+ pages.forEach(p=>{ p.label=(p.first===p.last)?p.first:(p.first+' – '+p.last); });
+ return pages;
+}
+function renderNav(){
+ const nav=document.getElementById('pagenav'); if(!nav) return;
+ if(!PAGES.length){ nav.innerHTML='<span class=navinfo>No rows match the current filters.</span>'; return; }
+ const pg=PAGES[PAGE]; let flagged=0, done=0;
+ for(let k=pg.start;k<pg.end;k++) WORK[k][2].forEach(i=>{ const it=Q[i]; if(NEEDS.has(it.status)){ flagged++; const d=DEC[rowKey(it)]; if(d?d.choice:defChoice(it)) done++; } });
+ const opts=PAGES.map((p,i)=>`<option value="${i}"${i===PAGE?' selected':''}>Part ${p.part}: ${esc(p.label)}</option>`).join('');
+ nav.innerHTML=`<button class=navbtn ${PAGE<=0?'disabled':''} onclick="gotoPage(${PAGE-1})">◀ Prev</button>`+
+   `<span class=navinfo>Page <b>${PAGE+1}</b> / ${PAGES.length} · Part ${pg.part}: ${esc(pg.label)} · <b>${flagged}</b> flagged, ${done} reviewed</span>`+
+   `<button class=navbtn ${PAGE>=PAGES.length-1?'disabled':''} onclick="gotoPage(${PAGE+1})">Next ▶</button>`+
+   `<label class=navjump>Jump: <select onchange="gotoPage(+this.value)">${opts}</select></label>`;
+}
+function gotoPage(i){ if(i<0||i>=PAGES.length||i===PAGE) return; PAGE=i; try{localStorage.setItem(KEY+':page',String(PAGE));}catch(e){} render(); window.scrollTo(0,0); }
 function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 function fmt(n){return (n||0).toLocaleString();}
 function xrefHtml(s){return esc(s).replace(/&lt;xref href=&quot;([^&]*?)&quot;&gt;(.*?)&lt;\/xref&gt;/g,
@@ -210,12 +241,16 @@ function render(){
    vis.sort((i,j)=>{const sa=Q[i].scope==='external'?1:0, sb=Q[j].scope==='external'?1:0; return sa-sb || citCmp(Q[i].target,Q[j].target);});
    work.push([unit,idx,vis]);
  });
+ WORK=work; PAGES=computePages(work);             // paginate the visible units
+ if(PAGE>=PAGES.length) PAGE=Math.max(0, PAGES.length-1);
+ renderNav();
+ const pg=PAGES[PAGE], slice = pg ? work.slice(pg.start, pg.end) : [];
  let wi=0;
  (function step(){                                // build in time-boxed batches so large filters never block
    if(myTok!==_renderTok) return;
    const t0=performance.now();
-   while(wi<work.length && performance.now()-t0<40){
-     const [unit,idx,vis]=work[wi++];
+   while(wi<slice.length && performance.now()-t0<40){
+     const [unit,idx,vis]=slice[wi++];
      const sec=document.createElement('div'); sec.className='unit';
      const byStatus={}; idx.forEach(i=>{const it=Q[i]; (byStatus[it.status]=byStatus[it.status]||[]).push(it.scope==='external'?(it.citation||it.target):it.target);});
      const url=unitUrl(unit);
@@ -229,7 +264,7 @@ function render(){
      add.querySelector('.addbtn').onclick=()=>addRefs(unit, add.querySelector('.addin'));
      sec.appendChild(add); list.appendChild(sec);
    }
-   if(wi<work.length) setTimeout(step,0);
+   if(wi<slice.length) setTimeout(step,0);
    else { applyHideDone(); updateMeta(); }
  })();
 }
@@ -254,7 +289,7 @@ function applyHideDone(){                          // hide already-decided rows 
  const hide=document.getElementById('hideDone').checked;
  document.querySelectorAll('.item').forEach(d=>{ const i=d.dataset.i; const picked=d.querySelector(`input[name=c${i}]:checked`);
    d.classList.toggle('done',!!picked); d.style.display=(hide&&picked)?'none':''; });
- updateMeta();
+ updateMeta(); renderNav();                        // keep the per-page "reviewed" count live as you decide
 }
 function updateMeta(){                             // counts over ALL rows (decisions from DEC), independent of rendering
  let rTot=0, rDone=0;
@@ -268,6 +303,9 @@ function collect(){                                // build decisions.json from 
    const dec=DEC[rowKey(it)];
    const choice = dec ? dec.choice : defChoice(it);
    if(!choice) return;
+   // skip no-op accepts: a parser ref (corroborated/parser_explicit/parser_inferred) is kept by apply
+   // regardless — only llm_only/added need an explicit accept; reject/manual always matter.
+   if(choice==='accept' && it.status!=='llm_only' && it.status!=='added') return;
    const base={unit:it.unit, target:it.target, status:it.status, choice, scope:it.scope||'internal', locator:it.locator||''};
    if(choice==='manual' && it.scope==='external'){
      const ed=(dec&&dec.edit)||{document:it.node_label||'', section:it.locator||'', ref_type:it.ref_type||'other'};
@@ -348,6 +386,7 @@ document.addEventListener('click',e=>{           // click a header count chip ->
 });
 banner();
 (function init(){
+  try{ PAGE=parseInt(localStorage.getItem(KEY+':page'),10)||0; }catch(e){}
   let raw=null; try{ raw=localStorage.getItem(KEY); }catch(e){}
   if(raw){ try{ const p=JSON.parse(raw);
       if(Array.isArray(p)){ applyDecisions(p); return; }      // legacy decisions-list format
