@@ -68,21 +68,40 @@ Two things make it cheap to run again and again:
   (or `0` to hide the dollar figure).
 
 ## Commands
+Three subcommands — **`run`**, **`review`**, **`apply`** — plus shared override flags that work on all three.
 ```
-python pipeline.py run                              # full: chunk + Gemini audit + review page
-python pipeline.py run --no-llm                     # PARSER ONLY: chunks + manifest, no audit/reconcile/review
-python pipeline.py run --files 5.101 5.203 6.302-2  # run only these .dita files (names or paths)
-python pipeline.py run --input-dir /path/to/dita    # run a different folder
-python pipeline.py run --mock-llm refs.json         # drive reconcile/review from a canned LLM file
-python pipeline.py run --limit 50                   # audit only the first 50 units (cheap smoke test)
-python pipeline.py run --dump-payload 5.203         # print the exact prompt + raw .dita for one unit
-python pipeline.py run --judge                      # also run the LLM judge to pre-fill review recs
-python pipeline.py run --auto-accept                 # hands-off: skip human review, write verified.json directly
-python pipeline.py run --judge --auto-accept         # hands-off, but apply the judge's verdict on each disagreement
-python pipeline.py run --concurrency 16              # parallel LLM calls (default 8; 1 = sequential)
-python pipeline.py review                            # serve the review page; "Save & Apply" writes verified.json then stops the server
-python pipeline.py review --port 9000                # serve on a custom port (default 8765)
-python pipeline.py apply --decisions decisions.json  # (manual path: feed an exported decisions.json)
+# ---- run: chunk -> LLM audit -> reconcile -> review page ----
+python pipeline.py run                                # full: chunk + LLM audit + reconcile + review page
+python pipeline.py run --no-llm                       # PARSER ONLY: chunks + manifest (no API key; no audit/reconcile/review)
+python pipeline.py run --files 5.101 5.203 6.302-2    # only these .dita files (names or paths) instead of the ditamap
+python pipeline.py run --limit 50                     # audit only the first 50 units (cheap smoke test)
+python pipeline.py run --judge                        # also run the LLM judge to pre-fill review recommendations
+python pipeline.py run --auto-accept                  # hands-off: skip review, write verified.json (parser+LLM union)
+python pipeline.py run --judge --auto-accept          # hands-off, applying the judge's verdict on each disagreement
+python pipeline.py run --concurrency 16               # parallel LLM calls (default 8; 1 = sequential)
+python pipeline.py run --no-changelog                 # skip parsing the LSA change table (on by default)
+python pipeline.py run --mock-llm refs.json           # drive reconcile/review from a canned LLM-output file
+python pipeline.py run --dump-payload 5.203           # print the exact prompt + raw .dita for one unit, then exit
+
+# ---- review: serve the review page ----
+python pipeline.py review                             # serve; "Save & Apply" writes verified.json, then stops the server
+python pipeline.py review --port 9000                 # serve on a custom port (default 8765)
+
+# ---- apply: apply exported decisions (manual path) ----
+python pipeline.py apply --decisions decisions.json   # feed one decisions.json
+python pipeline.py apply --decisions a.json b.json    # merge several; later files win per (unit, target, alternate)
+
+# ---- shared override flags (any subcommand; highest precedence — see "Configuration precedence") ----
+python pipeline.py run --regulation FAR               # regulation label + output filename prefix (default FAR)
+python pipeline.py run --input-dir /path/to/dita      # DITA source folder
+python pipeline.py run --output-dir out_vertex        # where outputs land (default out)
+python pipeline.py run --bottom-level subparagraph    # deepest paragraph level to chunk
+python pipeline.py run --provider vertex              # LLM backend: usai (default) or vertex
+python pipeline.py run --model gemini-2.5-pro         # LLM model id
+python pipeline.py run --reasoning   /  --no-reasoning   # toggle model reasoning
+python pipeline.py run --thinking-budget 8000         # reasoning token budget
+python pipeline.py run --no-judge                     # disable the judge / reconciliation pass
+python pipeline.py run --config my.config.json        # use an alternate pipeline.config.json
 ```
 - **`--no-llm`** is the parser-only switch — it stops after `chunks` + `manifest` (no API key, no
   review page). **`--files`** picks specific files; otherwise the file set comes from the **ditamap**
@@ -281,15 +300,9 @@ the chunk's level. Below `subparagraph` we use `subunit-depth-N` rather than inv
 - **`.env`** (copy from `.env.example`, gitignored) holds the secret + common defaults:
   `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_REASONING`, `GEMINI_THINKING_BUDGET`, `GEMINI_JUDGE`, and
   optional `PIPELINE_REGULATION` / `PIPELINE_INPUT_DIR` / `PIPELINE_BOTTOM_LEVEL` / `PIPELINE_OUTPUT_DIR`.
-- **CLI overrides** (highest precedence; on both `run` and `apply` unless noted):
-  - `--regulation` — regulation label + output filename prefix (default `FAR`).
-  - `--input-dir` — DITA source folder (see *Source & versioning*).
-  - `--output-dir` — where all outputs land (default `out`); give each backend its own to keep runs side by side.
-  - `--bottom-level` — deepest paragraph level to chunk to.
-  - `--provider` — LLM backend, `usai` or `vertex` (see *LLM setup*).
-  - `--model`, `--reasoning`/`--no-reasoning`, `--thinking-budget` — LLM model + reasoning controls.
-  - `--judge`/`--no-judge` — toggle the LLM reconciliation pass (`run` only).
-  - `--config` — path to an alternate `pipeline.config.json`.
+- **CLI override flags** beat everything — `--regulation --input-dir --output-dir --bottom-level
+  --provider --model --reasoning/--no-reasoning --thinking-budget --judge/--no-judge --concurrency
+  --config` (work on `run`/`review`/`apply`; one-line descriptions in **[Commands](#commands)**).
 - Real environment variables beat `.env`; `.env` beats the JSON; JSON beats defaults.
 
 ## LLM setup
