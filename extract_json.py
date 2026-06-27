@@ -149,7 +149,7 @@ def flatten_block(el, url):
             t = flatten_p(ch, url)
             if t:
                 out.append(t)
-        elif ch.tag == "ol":
+        elif ch.tag in ("ol", "ul"):                 # ul = bulleted list (e.g. definition lists); flatten like ol
             for li in ch.findall("./li"):
                 t = flatten_li(li, url)
                 if t:
