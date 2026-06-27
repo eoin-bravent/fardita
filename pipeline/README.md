@@ -118,17 +118,36 @@ python pipeline.py apply --decisions decisions.json  # (manual path: feed an exp
   `<REG>_manifest.json` (a per-row timestamp would be noise). `<REG>_token_usage.json` also keeps a
   run-level `version` block for the banner/cost report.
 
-## Row identity
-Each row's `citation` is prefixed with the regulation — `FAR-5.101`, `FAR-6.302-2(a)` — and carries
-a `regulation` field, so IDs stay unique across regulation sets (FAR vs DFARS vs AFARS). A
-cross-reference `target` stays **bare** (`5.202(a)(2)`) since it's within the same regulation;
-reconcile strips the prefix when matching.
+## Output record
+`verified.json` (and `chunks.json`) is a plain **array of chunk records**. A record's identity is the
+pair **`(citation, alternate)`** described by three independent axes: **`type`** (structural level, FAR
+1.105-2: section / subsection / paragraph / …), **`instrument`** (functional: `clause` / `provision` /
+`""` for an ordinary regulatory section), and **`alternate`** (variant: `""` for the base text, or an
+arabic id `"1"`/`"2"`/… for a clause Alternate). A clause and its Alternates **share one `citation`** and
+appear as **separate sibling records** distinguished by `alternate`. A full record:
+```json
+{
+  "citation": "FAR-52.247-64", "regulation": "FAR",
+  "type": "subsection", "instrument": "clause", "alternate": "",
+  "part": "52", "subpart": "2", "section": "47", "subsection": "64", "paragraph": "", "subparagraph": "",
+  "source_version": "FAC 2026-01 March 13, 2026", "pipeline_version": "013d84a",
+  "url": "https://www.acquisition.gov/far/52.247-64",
+  "date": "Nov 2021", "prescribed_by": "47.507(a)", "reserved": false, "end_marker": "(End of clause)",
+  "text": "(a) … the basic clause body …",
+  "cross_references":   [ { "target": "52.247-64", "alternate": "1", "confidence": "explicit", "mentions": [ … ], "status": "corroborated" } ],
+  "external_references":[ { "ref_type": "usc", "target": "usc:46/55305", "locator": "", "citation": "46 U.S.C. 55305", "mentions": [ … ], "status": "corroborated" } ],
+  "images": [], "changes": []
+}
+```
+Each `citation` is prefixed with the regulation (`FAR-5.101`, `FAR-6.302-2(a)`) so IDs stay unique across
+regulation sets (FAR vs DFARS vs AFARS); a cross-reference `target` stays **bare** (`5.202(a)(2)`) since
+it's within the same regulation. **Full field-by-field reference: [`VERIFIED_FORMAT.md`](VERIFIED_FORMAT.md).**
 
 ## Cross-references
 Each chunk's `cross_references` is a list **grouped by `target`** (one entry per distinct cited
 citation); every textual occurrence is kept as a mention:
 ```json
-{ "target": "5.207(c)", "confidence": "inferred",
+{ "target": "5.207(c)", "alternate": "", "confidence": "inferred",
   "mentions": [ {"kind": "inferred", "evidence": "…requirements of <xref href=\"5.207.dita#FAR_5_207\">5.207</xref>(c). The notice…"},
                 {"kind": "inferred", "evidence": "…"} ] }
 ```
@@ -137,6 +156,9 @@ citation); every textual occurrence is kept as a mention:
   else `inferred`.
 - `evidence` (per mention) shows the source sentence with the raw `<xref>` markup inline, windowed past
   the reference. (Same field name as the LLM/ledger evidence, for alignment.)
+- `alternate` — `""` for a normal reference, or an arabic id when the reference is to a clause **Alternate**
+  ("Alternate I of 52.204-30" or "… with Alternate I" → `target: "52.204-30", alternate: "1"`). The
+  base clause and each Alternate are kept as **distinct** edges, keyed by `(target, alternate)`.
 - **Ranges are expanded into atomic members** — `5.203(a) through (d)` becomes four references
   `5.203(a)`, `5.203(b)`, `5.203(c)`, `5.203(d)` (no `(a)-(d)` spans anywhere). All members share the
   range's `evidence`. The enumerator handles letters / digits / romans / numeric subsection dashes and
