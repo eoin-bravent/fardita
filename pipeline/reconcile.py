@@ -29,6 +29,17 @@ def norm_cit(s):
         return "part " + s.split()[-1]
     return s.replace(" ", "")
 
+ALT_RE = re.compile(r"\s*Alternate\s*([IVX]+)\s*$", re.I)
+def split_alternate(target):
+    """Pull a trailing 'Alternate <roman>' qualifier off a citation -> (citation, alternate).
+    A FAR Alternate (I/II/…) is a clause *variant*: the cross-reference edge target is the BASE
+    clause, the alternate qualifies it. Handles 'X Alternate I', 'X AlternateI', and the
+    space-stripped 'XAlternateI'; alternate is '' when none. This keeps an alternate reference from
+    becoming an invalid mangled citation, and lets it corroborate the base-clause edge."""
+    s = (target or "").strip()
+    m = ALT_RE.search(s)
+    return (s[:m.start()].rstrip(), m.group(1).upper()) if m else (s, "")
+
 def section_root(c):
     m = re.match(r"(\d+\.\d+(?:-\d+)?)", c or "")    # leading citation number
     return m.group(1) if m else (c or "")
@@ -134,21 +145,29 @@ def reconcile(rows, llm_by_cit, addr_map):
         self_cit = norm_cit(strip_agency(cit))             # exact self-reference (e.g. 5.101 -> 5.101 / "this section")
 
         # ----- internal references (FAR -> FAR) -----
-        parser_map = {}                                    # norm target -> {kind, evidence}
+        parser_map = {}                                    # base norm target -> {kind, evidence, alternate}
         for cr in u["cross_references"]:
-            t = norm_cit(cr["target"])
-            if t and t != self_cit and t not in parser_map:
-                parser_map[t] = {"kind": cr.get("confidence", "inferred"), "evidence": cr_evidence(cr)}
-        llm_map = {}                                       # norm target -> {evidence, validation}
+            base, alt = split_alternate(cr["target"])      # 'X Alternate I' -> ('X','I'); edge keys on base X
+            t = norm_cit(base)
+            if t and t != self_cit:
+                e = parser_map.setdefault(t, {"kind": cr.get("confidence", "inferred"),
+                                              "evidence": cr_evidence(cr), "alternate": ""})
+                if alt and not e["alternate"]:
+                    e["alternate"] = alt
+        llm_map = {}                                       # base norm target -> {evidence, validation, alternate}
         for ref in llm_by_cit.get(cit, []):
             if ref.get("scope") == "external":
                 continue
             raw = ref.get("target", "")
             if not raw:
                 continue
-            t, status = validate(raw, addr_map)
-            if t and t != self_cit and t not in llm_map:
-                llm_map[t] = {"evidence": ref.get("evidence", ""), "validation": status}
+            base, alt = split_alternate(raw)               # an alternate ref validates as its base clause
+            t, status = validate(base, addr_map)
+            if t and t != self_cit:
+                e = llm_map.setdefault(t, {"evidence": ref.get("evidence", ""),
+                                           "validation": status, "alternate": ""})
+                if alt and not e["alternate"]:
+                    e["alternate"] = alt
         for t in sorted(set(parser_map) | set(llm_map), key=cit_sort_key):
             p, l = parser_map.get(t), llm_map.get(t)
             if p and l:
@@ -160,6 +179,7 @@ def reconcile(rows, llm_by_cit, addr_map):
             stats[status] += 1
             ledger.append({
                 "unit": cit, "url": u["url"], "scope": "internal", "target": t, "status": status,
+                "alternate": (l and l["alternate"]) or (p and p["alternate"]) or "",  # FAR clause variant (I/II/…)
                 "validation": l["validation"] if l else validate(t, addr_map)[1],
                 "parser": {"kind": p["kind"], "evidence": p["evidence"]} if p else None,
                 "llm": {"evidence": l["evidence"]} if l else None,

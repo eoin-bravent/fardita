@@ -333,14 +333,18 @@ def cmd_apply(cfg, args):
     lpath = os.path.join(out, f"{reg}_ledger.json")
     ledger = json.load(open(lpath, encoding="utf-8")) if os.path.exists(lpath) else []
     int_conf, ext_conf, ext_index = {}, {}, {}            # corroborated sets + external-item index
+    int_alt = {}                                          # (unit, base target) -> clause Alternate qualifier
     for it in ledger:
         if it.get("scope", "internal") == "external":
             ekey = (it["unit"], it["target"], it.get("locator", ""))
             ext_index[ekey] = it
             if it["status"] == "corroborated":
                 ext_conf.setdefault(it["unit"], set()).add((it["target"], it.get("locator", "")))
-        elif it["status"] == "corroborated":
-            int_conf.setdefault(it["unit"], set()).add(reconcile.norm_cit(it["target"]))
+        else:
+            if it.get("alternate"):
+                int_alt[(it["unit"], reconcile.norm_cit(it["target"]))] = it["alternate"]
+            if it["status"] == "corroborated":
+                int_conf.setdefault(it["unit"], set()).add(reconcile.norm_cit(it["target"]))
 
     # merge one or more decisions files; later files win per (unit, scope, target, locator)
     merged = {}
@@ -369,6 +373,8 @@ def cmd_apply(cfg, args):
                 removed += 1
                 continue
             cr["status"] = "corroborated" if t in iconf else "parser_only"
+            if (r["citation"], t) in int_alt:                  # clause Alternate qualifier (FAR variant)
+                cr["alternate"] = int_alt[(r["citation"], t)]
             kept.append(cr)
         r["cross_references"] = kept
         econf = ext_conf.get(r["citation"], set())
@@ -400,10 +406,13 @@ def cmd_apply(cfg, args):
         for tgt in tgts:
             if any(reconcile.norm_cit(c["target"]) == reconcile.norm_cit(tgt) for c in u["cross_references"]):
                 continue
-            u["cross_references"].append({
-                "target": tgt, "confidence": "inferred",
-                "mentions": [{"kind": "inferred", "evidence": evidence}],
-                "status": acc_status})
+            newref = {"target": tgt, "confidence": "inferred",
+                      "mentions": [{"kind": "inferred", "evidence": evidence}],
+                      "status": acc_status}
+            alt = int_alt.get((d["unit"], reconcile.norm_cit(tgt)), "")
+            if alt:                                            # carry the clause Alternate qualifier
+                newref["alternate"] = alt
+            u["cross_references"].append(newref)
             added += 1
     for d in ext_dec:                                     # external: accepted llm-only + manual corrections
         u = by_cit.get(d["unit"])

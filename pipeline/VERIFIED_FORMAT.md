@@ -36,6 +36,8 @@ configured bottom level. Every chunk carries its identity, its text, and the ref
 - `target` — the cited FAR citation, bare (`"5.202(a)(2)"`, `"subpart 9.1"`). Ranges are pre-expanded
   into individual members, so each target is atomic.
 - `confidence` — `explicit` (came from a tagged `<xref>` link) or `inferred` (resolved from prose / a range).
+- `alternate` — present only when the reference is to a clause **Alternate** (a FAR variant): the `target`
+  stays the base clause and `alternate` holds the variant, e.g. `"I"` for *"52.204-30 Alternate I"*.
 - `mentions` — each occurrence, with its `kind` and `evidence` (the surrounding source sentence).
 - `status` — how it was verified: `corroborated` (parser and LLM agreed), `parser_only`, `human_approved`,
   or `auto_accepted` (accepted by an `--auto-accept` run — judge verdict or parser∪LLM union — without a human pass; still auditable).
