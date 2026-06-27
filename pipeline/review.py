@@ -91,7 +91,7 @@ const q = s => document.querySelector(s);
 // Decisions live HERE, keyed by row, not in the DOM — so we can render only the rows that match
 // the current filter (a full-corpus ledger is 10k+ rows; building them all at once hangs the page).
 const DEC = {};                                   // rowKey -> {choice, value:[], edit:{}}
-function rowKey(it){ return it.unit+'|'+(it.scope||'internal')+'|'+it.target+'|'+(it.locator||''); }
+function rowKey(it){ return it.unit+'|'+(it.scope||'internal')+'|'+it.target+'|'+(it.locator||'')+'|'+(it.alternate||''); }
 function activeStatuses(){ return new Set([...document.querySelectorAll('.f:checked')].map(x=>x.value)); }
 function activeScopes(){ return new Set([...document.querySelectorAll('.sf:checked')].map(x=>x.value)); }
 // ---- pagination: review a bounded slice of units (within one part) at a time ----
@@ -307,7 +307,7 @@ function collect(){                                // build decisions.json from 
    // skip no-op accepts: a parser ref (corroborated/parser_explicit/parser_inferred) is kept by apply
    // regardless — only llm_only/added need an explicit accept; reject/manual always matter.
    if(choice==='accept' && it.status!=='llm_only' && it.status!=='added') return;
-   const base={unit:it.unit, target:it.target, status:it.status, choice, scope:it.scope||'internal', locator:it.locator||''};
+   const base={unit:it.unit, target:it.target, status:it.status, choice, scope:it.scope||'internal', locator:it.locator||'', alternate:it.alternate||''};
    if(choice==='manual' && it.scope==='external'){
      const ed=(dec&&dec.edit)||{document:it.node_label||'', section:it.locator||'', ref_type:it.ref_type||'other'};
      out.push({...base, value:[], edit:ed});

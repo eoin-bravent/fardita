@@ -255,7 +255,8 @@ def cmd_run(cfg, args):
 
     # LLM path: each call gets the prompt + the ENTIRE raw .dita file for that unit
     units = [(r["citation"], open(sources[r["citation"]], encoding="utf-8").read())
-             for r in rows if r["type"] in ("section", "subsection") and r["citation"] in sources]
+             for r in rows if r["type"] in ("section", "subsection")
+             and not r.get("alternate") and r["citation"] in sources]   # base units only; alternates share the file
     if args.limit:
         units = units[:args.limit]
     gemini_audit.TRACKER.reset()
@@ -333,48 +334,50 @@ def cmd_apply(cfg, args):
     lpath = os.path.join(out, f"{reg}_ledger.json")
     ledger = json.load(open(lpath, encoding="utf-8")) if os.path.exists(lpath) else []
     int_conf, ext_conf, ext_index = {}, {}, {}            # corroborated sets + external-item index
-    int_alt = {}                                          # (unit, base target) -> clause Alternate qualifier
     for it in ledger:
         if it.get("scope", "internal") == "external":
             ekey = (it["unit"], it["target"], it.get("locator", ""))
             ext_index[ekey] = it
             if it["status"] == "corroborated":
                 ext_conf.setdefault(it["unit"], set()).add((it["target"], it.get("locator", "")))
-        else:
-            if it.get("alternate"):
-                int_alt[(it["unit"], reconcile.norm_cit(it["target"]))] = it["alternate"]
-            if it["status"] == "corroborated":
-                int_conf.setdefault(it["unit"], set()).add(reconcile.norm_cit(it["target"]))
+        elif it["status"] == "corroborated":              # keyed by (target, alternate): base + each variant distinct
+            int_conf.setdefault(it["unit"], set()).add((reconcile.norm_cit(it["target"]), it.get("alternate", "")))
 
-    # merge one or more decisions files; later files win per (unit, scope, target, locator)
+    # merge one or more decisions files; later files win per (unit, scope, target, alternate|locator)
     merged = {}
     for p in (args.decisions or []):
         for d in json.load(open(p, encoding="utf-8")):
             sc = d.get("scope", "internal")
-            tk = d["target"] if sc == "external" else reconcile.norm_cit(d.get("target", ""))
-            merged[(d["unit"], sc, tk, d.get("locator", ""))] = d
+            if sc == "external":
+                merged[(d["unit"], sc, d["target"], d.get("locator", ""))] = d
+            else:                                          # internal: variant distinguishes base from each alternate
+                merged[(d["unit"], sc, reconcile.norm_cit(d.get("target", "")), d.get("alternate", ""))] = d
     decisions = list(merged.values())
     int_dec = [d for d in decisions if d.get("scope", "internal") != "external"]
     ext_dec = [d for d in decisions if d.get("scope") == "external"]
     # reject removes a ref; manual replaces it with corrected citation(s) -> both drop the original
-    int_replaced = {(d["unit"], reconcile.norm_cit(d["target"])) for d in int_dec if d["choice"] in ("reject", "manual")}
+    int_replaced = {(d["unit"], reconcile.norm_cit(d["target"]), d.get("alternate", "")) for d in int_dec if d["choice"] in ("reject", "manual")}
     ext_replaced = {(d["unit"], d["target"], d.get("locator", "")) for d in ext_dec if d["choice"] in ("reject", "manual")}
 
     # 1) tag existing (parser) refs with status; drop any the human rejected/replaced
     removed = 0
     by_cit = {}
     for r in rows:
-        by_cit[r["citation"]] = r
+        by_cit[(r["citation"], r.get("alternate", ""))] = r    # flat alternate rows share the base citation
+        if r.get("alternate"):                                 # alternate chunk: own refs are parser-only (not reconciled)
+            for cr in r["cross_references"]:
+                cr.setdefault("status", "parser_only")
+            for cr in r.get("external_references", []):
+                cr.setdefault("status", "parser_only")
+            continue
         iconf = int_conf.get(r["citation"], set())
         kept = []
         for cr in r["cross_references"]:
-            t = reconcile.norm_cit(cr["target"])
-            if (r["citation"], t) in int_replaced:
+            t, a = reconcile.norm_cit(cr["target"]), cr.get("alternate", "")
+            if (r["citation"], t, a) in int_replaced:
                 removed += 1
                 continue
-            cr["status"] = "corroborated" if t in iconf else "parser_only"
-            if (r["citation"], t) in int_alt:                  # clause Alternate qualifier (FAR variant)
-                cr["alternate"] = int_alt[(r["citation"], t)]
+            cr["status"] = "corroborated" if (t, a) in iconf else "parser_only"   # parser already carries `alternate`
             kept.append(cr)
         r["cross_references"] = kept
         econf = ext_conf.get(r["citation"], set())
@@ -398,24 +401,22 @@ def cmd_apply(cfg, args):
             tgts = [d["target"]]
         else:
             continue
-        u = by_cit.get(d["unit"])
+        u = by_cit.get((d["unit"], ""))                       # decisions are for base units (alternate '')
         if not u:
             continue
         acc_status = "auto_accepted" if d.get("by") == "auto" else "human_approved"
         evidence = "(auto-accept)" if d.get("by") == "auto" else "(human review)"
+        a = d.get("alternate", "")                            # the variant this decision concerns ('' = base)
         for tgt in tgts:
-            if any(reconcile.norm_cit(c["target"]) == reconcile.norm_cit(tgt) for c in u["cross_references"]):
+            if any(reconcile.norm_cit(c["target"]) == reconcile.norm_cit(tgt)
+                   and c.get("alternate", "") == a for c in u["cross_references"]):
                 continue
-            newref = {"target": tgt, "confidence": "inferred",
-                      "mentions": [{"kind": "inferred", "evidence": evidence}],
-                      "status": acc_status}
-            alt = int_alt.get((d["unit"], reconcile.norm_cit(tgt)), "")
-            if alt:                                            # carry the clause Alternate qualifier
-                newref["alternate"] = alt
-            u["cross_references"].append(newref)
+            u["cross_references"].append({"target": tgt, "alternate": a, "confidence": "inferred",
+                                          "mentions": [{"kind": "inferred", "evidence": evidence}],
+                                          "status": acc_status})
             added += 1
     for d in ext_dec:                                     # external: accepted llm-only + manual corrections
-        u = by_cit.get(d["unit"])
+        u = by_cit.get((d["unit"], ""))                       # decisions are for base units (alternate '')
         if not u:
             continue
         if d["choice"] == "accept" and d.get("status") == "llm_only":

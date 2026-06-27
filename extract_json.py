@@ -293,24 +293,36 @@ def _range_refs(text, sec_num):
 
 # ---------- cross references ----------
 def _group_refs(refs):
-    """Group per-occurrence refs by single `target` -> {target, confidence, mentions:[{kind,context}]}.
+    """Group per-occurrence refs by (target, alternate) -> {target, alternate, confidence, mentions}.
+    Keyed by (target, alternate) so a reference to a clause and to its Alternate stay DISTINCT edges
+    (e.g. '52.247-64' vs '52.247-64' alternate '1'). `alternate` is '' for the base clause.
     confidence = 'explicit' if any mention is an explicit <xref> link, else 'inferred'."""
     out, index = [], {}
     for r in refs:
-        t = r["target"]
-        if t not in index:
-            index[t] = len(out)
-            out.append({"target": t, "confidence": r["kind"], "mentions": []})
-        out[index[t]]["mentions"].append({"kind": r["kind"], "evidence": r["evidence"]})
+        key = (r["target"], r.get("alternate", ""))
+        if key not in index:
+            index[key] = len(out)
+            out.append({"target": r["target"], "alternate": r.get("alternate", ""),
+                        "confidence": r["kind"], "mentions": []})
+        out[index[key]]["mentions"].append({"kind": r["kind"], "evidence": r["evidence"]})
         if r["kind"] == "explicit":
-            out[index[t]]["confidence"] = "explicit"
+            out[index[key]]["confidence"] = "explicit"
     return out
 
 # "…Alternate I (date) of <CLAUSE>"  and  "<CLAUSE> …, with Alternate I" — a reference to a clause
-# variant. Detected per anchor; the trailing " Alternate <roman>" is split back off as a distinct
-# (base clause, alternate) edge downstream (reconcile.split_alternate), same as the LLM path emits.
+# variant. Detected per anchor and carried as a separate `alternate` field (arabic), distinct from
+# the base-clause edge; '' when the reference is to the base clause.
 ALT_OF   = re.compile(r"\bAlternate\s+([IVXLCDM]+)\s*(?:\([^)]*\)\s*)?of\s*$", re.I)
 ALT_WITH = re.compile(r"\bwith\s+Alternate\s+([IVXLCDM]+)\b", re.I)
+_ROMAN_ALT = {"i": 1, "v": 5, "x": 10, "l": 50, "c": 100, "d": 500, "m": 1000}
+def _alt_arabic(roman):
+    """'I'->'1', 'IV'->'4'; '' for empty/non-roman."""
+    s, total, prev = (roman or "").lower(), 0, 0
+    for ch in reversed(s):
+        v = _ROMAN_ALT.get(ch, 0)
+        total += -v if v < prev else v
+        prev = max(prev, v)
+    return str(total) if total else ""
 
 def collect_refs(ps, sec_num, url):
     text, xpos = render_scope(ps)
@@ -335,8 +347,9 @@ def collect_refs(ps, sec_num, url):
             m = ALT_WITH.search(after if cut < 0 else after[:cut])
             if m:
                 alt = m.group(1).upper()
-        target = base + (q.group(1) if q else "") + (f" Alternate {alt}" if alt else "")
-        refs.append({"kind": "inferred" if q else "explicit", "target": target, "evidence": ctx})
+        target = base + (q.group(1) if q else "")
+        refs.append({"kind": "inferred" if q else "explicit", "target": target,
+                     "alternate": _alt_arabic(alt), "evidence": ctx})
     refs.extend(_range_refs(text, sec_num))                                # ranges -> explicit members
     for m in re.finditer(r"paragraphs?\s+(\([a-z0-9]+\)(?:\([a-z0-9]+\))*)\s+of this section", text):
         refs.append({"kind": "inferred", "target": sec_num + m.group(1),

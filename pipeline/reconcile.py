@@ -40,6 +40,21 @@ def split_alternate(target):
     m = ALT_RE.search(s)
     return (s[:m.start()].rstrip(), m.group(1).upper()) if m else (s, "")
 
+_ROMAN_A = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
+def alt_arabic(roman):
+    """Normalize an alternate id to an arabic string: 'I'->'1', 'IV'->'4'; '' for empty/non-roman.
+    Already-arabic input passes through ('1'->'1'). Keeps parser (arabic) and LLM (roman) edges on
+    one key so they corroborate."""
+    s = (roman or "").strip()
+    if s.isdigit():
+        return s
+    total, prev = 0, 0
+    for ch in reversed(s.upper()):
+        v = _ROMAN_A.get(ch, 0)
+        total += -v if v < prev else v
+        prev = max(prev, v)
+    return str(total) if total else ""
+
 def section_root(c):
     m = re.match(r"(\d+\.\d+(?:-\d+)?)", c or "")    # leading citation number
     return m.group(1) if m else (c or "")
@@ -122,7 +137,8 @@ def auto_decisions(ledger, judge_on):
         if not it.get("needs_review"):                     # corroborated / parser_explicit already trusted
             continue
         base = {"unit": it["unit"], "scope": it.get("scope", "internal"), "target": it["target"],
-                "locator": it.get("locator", ""), "status": it["status"], "by": "auto"}
+                "locator": it.get("locator", ""), "alternate": it.get("alternate", ""),
+                "status": it["status"], "by": "auto"}
         j = it.get("judge") or {}
         choice = j.get("choice") if judge_on else None
         if choice in ("accept", "reject"):
@@ -139,37 +155,40 @@ def reconcile(rows, llm_by_cit, addr_map):
     Returns (ledger, stats). Internal + external refs reconciled per unit; items tagged `scope`."""
     ledger = []
     stats = {"corroborated": 0, "parser_explicit": 0, "parser_inferred": 0, "llm_only": 0}
-    units = [r for r in rows if r["type"] in ("section", "subsection")]
+    # Only BASE units go through reconcile. Flat alternate rows share their base's citation and would
+    # collide here; their own (parser-found) refs are tagged parser_only by `apply`.
+    units = [r for r in rows if r["type"] in ("section", "subsection") and not r.get("alternate")]
     for u in units:
         cit = u["citation"]
         self_cit = norm_cit(strip_agency(cit))             # exact self-reference (e.g. 5.101 -> 5.101 / "this section")
 
         # ----- internal references (FAR -> FAR) -----
-        parser_map = {}                                    # base norm target -> {kind, evidence, alternate}
+        # Key by (base citation, alternate): a reference to a clause Alternate is a DISTINCT edge from
+        # a reference to the base clause, so "52.204-30" and its Alternate 1 reconcile separately.
+        # Alternate ids are normalized to arabic so the parser (arabic field) and LLM (roman in target)
+        # land on the same key.
+        parser_map = {}                                    # (base norm target, alternate) -> {kind, evidence}
         for cr in u["cross_references"]:
-            base, alt = split_alternate(cr["target"])      # 'X Alternate I' -> ('X','I'); edge keys on base X
-            t = norm_cit(base)
+            t = norm_cit(cr["target"])                     # parser carries the variant in `alternate`, not the target
+            alt = alt_arabic(cr.get("alternate", ""))
             if t and t != self_cit:
-                e = parser_map.setdefault(t, {"kind": cr.get("confidence", "inferred"),
-                                              "evidence": cr_evidence(cr), "alternate": ""})
-                if alt and not e["alternate"]:
-                    e["alternate"] = alt
-        llm_map = {}                                       # base norm target -> {evidence, validation, alternate}
+                parser_map.setdefault((t, alt), {"kind": cr.get("confidence", "inferred"),
+                                                 "evidence": cr_evidence(cr)})
+        llm_map = {}                                       # (base norm target, alternate) -> {evidence, validation}
         for ref in llm_by_cit.get(cit, []):
             if ref.get("scope") == "external":
                 continue
             raw = ref.get("target", "")
             if not raw:
                 continue
-            base, alt = split_alternate(raw)               # an alternate ref validates as its base clause
+            base, roman = split_alternate(raw)             # LLM may emit 'X Alternate I' in the target …
+            alt = alt_arabic(ref.get("alternate", "") or roman)   # … or a separate `alternate` field
             t, status = validate(base, addr_map)
             if t and t != self_cit:
-                e = llm_map.setdefault(t, {"evidence": ref.get("evidence", ""),
-                                           "validation": status, "alternate": ""})
-                if alt and not e["alternate"]:
-                    e["alternate"] = alt
-        for t in sorted(set(parser_map) | set(llm_map), key=cit_sort_key):
-            p, l = parser_map.get(t), llm_map.get(t)
+                llm_map.setdefault((t, alt), {"evidence": ref.get("evidence", ""), "validation": status})
+        for key in sorted(set(parser_map) | set(llm_map), key=lambda k: (cit_sort_key(k[0]), k[1])):
+            t, alt = key
+            p, l = parser_map.get(key), llm_map.get(key)
             if p and l:
                 status = "corroborated"
             elif p:
@@ -179,7 +198,7 @@ def reconcile(rows, llm_by_cit, addr_map):
             stats[status] += 1
             ledger.append({
                 "unit": cit, "url": u["url"], "scope": "internal", "target": t, "status": status,
-                "alternate": (l and l["alternate"]) or (p and p["alternate"]) or "",  # FAR clause variant (I/II/…)
+                "alternate": alt,                          # FAR clause variant (arabic '1'/'2'/…); '' for the base clause
                 "validation": l["validation"] if l else validate(t, addr_map)[1],
                 "parser": {"kind": p["kind"], "evidence": p["evidence"]} if p else None,
                 "llm": {"evidence": l["evidence"]} if l else None,
