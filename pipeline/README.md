@@ -107,17 +107,8 @@ python pipeline.py apply --decisions decisions.json  # (manual path: feed an exp
   **whole files only**, so the parser still does all intra-file paragraph decomposition. If the map is
   absent (or `ditamap: ""`), the run falls back to scanning `input_dir`. The manifest records which was
   used as `file_source` (`ditamap` / `folder` / `explicit`).
-- **Change track (`<REG>_changelog.json`).** Parallel to chunking and **deterministic** — `run` also
-  parses `LSATable.dita` (the FAC's official "List of Sections Affected") into structured entries: the
-  amended section + paragraph(s), a plain-language description ("Amend 22.1503 by removing '$102,280'
-  and adding '$105,767'"), the FAR case number, and the Federal Register link. No LLM/reconcile (the
-  table is explicit structured data — there's nothing fuzzy to cross-check). It's the input for the
-  FAC-change tools (amendatory-instruction generation, change summaries). Skip with `--no-changelog`.
-  In addition, each **chunk** carries a `changes` list (`[]` when unchanged): the `rev`-marked spans
-  inside it — `text` (the exact changed words), `fac`, and `case_number`/`why` from the inline
-  `[CaseNumber]`/`[Why]` markers (recovered with a PI-preserving parse, since ElementTree drops PIs).
-  A change is listed on every containing chunk (section + paragraph). A build-time check confirms each
-  span's `why` is contained in its section's LSA description, so any truncation would alarm.
+- **Change tracking.** `run` also records what each FAC changed — a section-level `<REG>_changelog.json`
+  plus per-chunk `changes` spans. See **[Change tracking](#change-tracking-what-each-fac-changed)** below.
 - **Version stamp.** **Every chunk** carries its own provenance — **`source_version`** (the FAR edition,
   read verbatim from the ditamap's `rev`, e.g. `FAC 2026-01 March 13, 2026`) and **`pipeline_version`**
   (this repo's git short SHA — explains output changes when the FAR itself didn't move). Stamping per
@@ -182,6 +173,64 @@ internal vs external on the review page).
 - **Editing**: on the review page, an external row's **Manual** option gives two fields — **Document**
   (the node, e.g. `Small Business Act` or `41 U.S.C. 1303`) and **Section** (the locator, e.g. `8(a)`) —
   so you correct the document and the section independently; `apply` rebuilds the canonical edge.
+
+## Change tracking (what each FAC changed)
+The FAR is republished as **Federal Acquisition Circulars (FACs)**. Each `run` captures what the current
+FAC changed, at **two granularities** — produced **deterministically** (no LLM / reconcile): the change
+data is *explicit markup*, so there's exactly one correct reading. (Contrast the cross-reference work,
+where the two-finder + judge machinery exists precisely because finding refs in prose is ambiguous.)
+
+**1. Section-level — `<REG>_changelog.json` (the "what changed" product).**
+Parsed from **`LSATable.dita`**, the FAR's own **List of Sections Affected** — a clean DITA table the
+publisher ships with each FAC. One entry per amended section:
+```json
+{ "section": "25.1101", "citation": "FAR-25.1101", "paragraphs": ["(b)(1)(iii)","(b)(2)(iii)"],
+  "description": "Amend section 25.1101 by— a. Removing from paragraph (b)(1)(iii) “$102,280” and adding “$105,767” in its place; and b. …",
+  "case_number": "FAR Case 2025-007",
+  "federal_register_url": "https://www.federalregister.gov/d/2026-04912/p-amd-6",
+  "source_version": "FAC 2026-01 March 13, 2026", "pipeline_version": "<sha>" }
+```
+This is the **change-first** view ("what changed across the FAR this edition?") and the input for the
+FAC tools (amendatory-instruction generation, change summaries). Skip it with `--no-changelog`.
+
+**2. Span-level — the `changes` list on each chunk (the "what changed *here*" detail).**
+Inside the amended clause files, the changed words are wrapped in `<ph rev="FAC …">` track-change tags,
+with `<?FM MARKER [CaseNumber]?>` / `<?FM MARKER [Why]?>` processing instructions next to them. Each
+chunk carries the spans that fall inside it (`[]` when unchanged):
+```json
+"changes": [
+  { "text": "$105,767,", "fac": "FAC 2026-01 March 13, 2026", "case_number": "FAR Case 2025-007",
+    "why": "b. Removing from paragraph (b)(2)(iii) “$102,280” and adding “$105,767” in its place." }
+]
+```
+- `text` / `fac` come from the chunker's normal parse (the exact changed words + the `rev` attribute).
+- `case_number` / `why` come from those inline markers — but **ElementTree silently drops processing
+  instructions**, so they're recovered with a **separate PI-preserving parse** (`insert_pis`, which
+  honors the PI's `?>` boundary per the XML spec) and aligned to the chunker's PI-free spans **by
+  document order**. The markers are *not* read from the main parse because `insert_pis` would fold their
+  text into the flattened chunk `text` — so the two parses are kept separate (verified: chunk `text` is
+  byte-identical with and without).
+- A change is listed on **every containing chunk** — the section chunk *and* the specific paragraph —
+  the same inheritance as `text`/refs. So whichever level you retrieve, you see the relevant change.
+
+**How the two compare / complement:**
+| | `changelog.json` (section) | chunk `changes` (span) |
+|---|---|---|
+| source | `LSATable.dita` (LSA table) | `rev` attribute + `[CaseNumber]`/`[Why]` PIs in the clause |
+| grain | one entry per amended **section** | one item per changed **span**, on every containing chunk |
+| description | **complete** amendatory instruction | the span's **fragment** of that instruction (the `why`) |
+| extras | `federal_register_url` (section-level) | exact changed `text` + position (for redline/highlight) |
+| serves | change-first ("what changed this FAC") | content-first ("what changed in *this* clause") |
+
+They're complementary, not duplicates — and they cross-check: the per-span `why` fragments are
+*contained in* the section's full `description` (the parts add up to the whole). `run` asserts exactly
+that at build time (`whys in LSA description M/M [OK]`), so any truncation or misalignment would alarm.
+Some spans have an **empty `why`** (e.g. a table revision the source describes once but `rev`-marks per
+cell) — expected, not a failure.
+
+**Scope.** A single FAR export carries only the **current** FAC's `rev` marks (older ones drop out each
+release), so this is "changed in *this* edition." Accumulating history across FACs is the job of the
+(planned) scheduled-update automation, which ingests successive editions into a versioned store.
 
 ## Configuration — `pipeline.config.json`
 | key | meaning | default |
