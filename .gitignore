@@ -20,3 +20,4 @@ Thumbs.db
 
 # personal presentation/demo script (local only)
 pipeline/demo_fields.py
+pipeline/demo_script.md
