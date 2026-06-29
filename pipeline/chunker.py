@@ -50,13 +50,20 @@ def _opener_roman(el):
 
 def find_end_and_alt(conbody):
     """Return (end_marker_text, end_marker_el, alt_section_el) — '', None, None when absent.
-    The marker is the literal '(End of clause)'/'(End of provision)' text; the alternate section is
-    the first trailing <section> that is either outputclass='Alternate' or holds an alternate opener."""
+    The marker is canonicalized to '(End of clause)'/'(End of provision)'. Detection is by @outputclass
+    OR the literal text, but the canonical value is taken from the TEXT — the source occasionally mis-tags
+    @outputclass (e.g. outputclass='Endofclause' over text '(End of provision)'), and the text is right.
+    The alternate section is the first trailing <section> that is outputclass='Alternate' or holds an opener."""
     children = list(conbody)
     end_text, end_el, end_idx = "", None, -1
     for i, ch in enumerate(children):
-        if ch.tag == "p" and (ch.get("outputclass") or "") in END_MARKER:
-            end_text, end_el, end_idx = END_MARKER[ch.get("outputclass")], ch, i
+        if ch.tag != "p":
+            continue
+        low = X.norm("".join(ch.itertext())).lower()
+        if (ch.get("outputclass") or "") in END_MARKER or "end of clause" in low or "end of provision" in low:
+            end_text = ("(End of provision)" if "provision" in low else
+                        "(End of clause)" if "clause" in low else END_MARKER.get(ch.get("outputclass"), ""))
+            end_el, end_idx = ch, i
             break
     alt = None
     for ch in (children[end_idx + 1:] if end_idx >= 0 else children):

@@ -78,8 +78,8 @@ def image_token(im):
 
 def table_to_html(t):
     """Render a CALS <table> as clean minimal HTML (caption + colspan), inlined in the chunk text."""
-    title = t.find("./title")
-    cap = _esc(norm("".join(title.itertext()))) if title is not None else ""
+    # caption = the table's <title> + its <desc> (a subtitle/condition note, e.g. "[For the … when 52.219-9 is used]")
+    cap = _esc(norm(" ".join("".join(e.itertext()) for e in (t.find("./title"), t.find("./desc")) if e is not None)))
     tg = t.find(".//tgroup")
     if tg is None:
         return f"<table>{f'<caption>{cap}</caption>' if cap else ''}</table>"
@@ -149,7 +149,7 @@ def flatten_nodes(nodes, url, skip_ids=None):
     for ch in nodes:
         if skip_ids and id(ch) in skip_ids:
             continue
-        if ch.tag == "p":
+        if ch.tag in ("p", "desc"):                  # desc = standalone description text (e.g. a fill-in note)
             t = flatten_p(ch, url)
             if t:
                 out.append(t)

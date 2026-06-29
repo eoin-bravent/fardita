@@ -40,7 +40,8 @@ A chunk's identity is the pair **`(citation, alternate)`**. Three independent ax
   every chunk that uses the image); the id is the image's filename.
 - (A paragraph chunk inherits any table/image inside it, just as it inherits that text.)
 - `end_marker` — on the **base** clause/provision chunk: the terminator, canonicalized to `"(End of clause)"`
-  or `"(End of provision)"` (from the source `@outputclass`, whose raw text varies in casing/parens). `""` on
+  or `"(End of provision)"` (from the marker **text** — the source occasionally mis-tags `@outputclass`, so the
+  literal "clause"/"provision" wins; `instrument` follows the same signal). `""` on
   ordinary regulatory sections, paragraphs, and Alternate chunks. The marker is **stripped from `text`** (no
   retrieval signal, uniformly present); re-insert it as a delimiter at prompt-assembly time if wanted.
 - `date` — effective date of this clause version, as written and space-normalized (`"Nov 2021"`). Populated on
