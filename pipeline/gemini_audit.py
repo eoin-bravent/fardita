@@ -199,12 +199,17 @@ def _call(system_text, user_text, schema, cfg, retries=4):
                 data = json.load(resp)
             content = data["choices"][0]["message"]["content"]
             return _extract_json(content), _usage_from_usai(data)
-        except urllib.error.HTTPError as e:
+        except urllib.error.HTTPError as e:            # HTTPError is a subclass of URLError — catch it first
             if e.code in (429, 500, 503) and attempt < retries - 1:
                 time.sleep(2 ** attempt * 2)            # backoff for rate limit / transient
                 continue
             body = e.read().decode("utf-8", "replace")[:600]
             raise RuntimeError(f"USAi HTTP {e.code}: {body}") from None
+        except (urllib.error.URLError, TimeoutError) as e:   # connect/read timeout or conn reset: retry, then give up
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt * 2)
+                continue
+            raise RuntimeError(f"USAi request failed after {retries} attempts: {e}") from None
     return [], None
 
 def _cached(cache_dir, name, h, fn):
@@ -264,11 +269,16 @@ def run_audit(units, cfg, cache_dir, call, provider_tag="", progress=True):
             return res
         return cit, _cached(cache_dir, cit.replace("/", "_"), h, fn)
     with ThreadPoolExecutor(max_workers=_concurrency(cfg)) as ex:
-        futs = [ex.submit(work, cit, text) for cit, text in units]
+        futs = {ex.submit(work, cit, text): cit for cit, text in units}
         for done, f in enumerate(as_completed(futs), 1):
-            cit, res = f.result()
-            out[cit] = res
-            if progress and (done % 25 == 0 or done == n):
+            cit = futs[f]
+            try:
+                _, res = f.result()
+                out[cit] = res
+            except Exception as e:                     # one unit's failure must NOT abort the whole run
+                out[cit] = []                          # cache untouched -> a later re-run retries just this unit
+                print(f"    WARNING: audit failed for {cit} — {type(e).__name__}: {e}; leaving it parser-only")
+            if progress and (done % 10 == 0 or done == n):
                 print(f"    audited {done}/{n}")
     return out
 
@@ -293,7 +303,11 @@ def run_judge(jobs, cfg, cache_dir, call, provider_tag="", progress=True):
     with ThreadPoolExecutor(max_workers=_concurrency(cfg)) as ex:
         futs = {ex.submit(_judge_one, u, r, d, cfg, cache_dir, call, provider_tag): u for u, r, d in jobs}
         for done, f in enumerate(as_completed(futs), 1):
-            out[futs[f]] = f.result()
+            try:
+                out[futs[f]] = f.result()
+            except Exception as e:                     # a failed judge call leaves that unit's refs unchanged
+                out[futs[f]] = {}
+                print(f"    WARNING: judge failed for {futs[f]} — {type(e).__name__}: {e}; skipping")
             if progress and (done % 10 == 0 or done == n):
                 print(f"    judged {done}/{n}")
     return out

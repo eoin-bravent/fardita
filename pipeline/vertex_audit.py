@@ -64,7 +64,8 @@ def _is_transient(e):
     if code in (429, 500, 502, 503, 504):
         return True
     s = str(e).upper()
-    return any(t in s for t in ("RESOURCE_EXHAUSTED", "UNAVAILABLE", "DEADLINE", "503", "429"))
+    return any(t in s for t in ("RESOURCE_EXHAUSTED", "UNAVAILABLE", "DEADLINE",
+                                "TIMEOUT", "TIMED OUT", "CONNECTION RESET", "503", "429"))
 
 
 def _usage_from_vertex(resp):
