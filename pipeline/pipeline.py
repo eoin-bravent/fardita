@@ -160,7 +160,7 @@ def _corpus_address_map(cfg, out, reg):
             return set(c["map"])
     full = dict(cfg); full.pop("files", None)             # chunk the whole folder, not just --files
     print(f"  building corpus address map ({n_files} files)…")
-    crows, _, _ = chunker.run_chunker(full)
+    crows, _, _ = chunker.run_chunker(full, progress=True)
     m = reconcile.build_address_map(crows)
     json.dump({"n_files": n_files, "map": sorted(m)}, open(p, "w", encoding="utf-8"))
     return m
@@ -207,7 +207,7 @@ def cmd_run(cfg, args):
     stamp = version_stamp(cfg)                            # which FAR edition + pipeline build
     cfg["source_version"], cfg["pipeline_version"] = stamp["source_version"], stamp["pipeline_version"]
     print("chunking…")
-    rows, manifest, sources = chunker.run_chunker(cfg)    # each chunk carries source_version + pipeline_version
+    rows, manifest, sources = chunker.run_chunker(cfg, progress=True)   # each chunk carries source_version + pipeline_version
     manifest["chunked_at"] = _now()                       # run-level provenance (the versions live on each chunk)
     t["chunk"] = time.perf_counter() - t0
 

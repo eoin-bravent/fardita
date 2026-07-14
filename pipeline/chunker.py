@@ -344,14 +344,19 @@ def _resolve_files(cfg):
                    for f in os.listdir(cfg["input_dir"]) if f.endswith(".dita"))
     return paths, False, [], "folder"
 
-def run_chunker(cfg):
-    """Resolve the file set (shared by the LLM stage), chunk, return (rows, manifest, sources)."""
+def run_chunker(cfg, progress=False):
+    """Resolve the file set (shared by the LLM stage), chunk, return (rows, manifest, sources).
+    progress=True prints a heartbeat every 100 files — chunking is otherwise one silent blocking pass,
+    which on a slow/networked input_dir can look frozen for minutes."""
     paths, explicit, missing, file_source = _resolve_files(cfg)
     rows, processed, skipped = [], [], []
     sources = {}                               # {unit_citation: .dita file path} — for the raw-file LLM pass
     for f in missing:
         skipped.append({"file": f, "reason": "not found"})
-    for path in paths:
+    n = len(paths)
+    for i, path in enumerate(paths, 1):
+        if progress and (i % 100 == 0 or i == n):
+            print(f"  chunked {i}/{n} files…", flush=True)
         far = os.path.splitext(os.path.basename(path))[0]
         if not explicit and not NUMERIC.match(far):   # name filter only applies when scanning a folder
             skipped.append({"file": far, "reason": "non-numeric (part/subpart/cover/matrix/…)"})
