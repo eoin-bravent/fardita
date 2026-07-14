@@ -266,7 +266,7 @@ def run_audit(units, cfg, cache_dir, call, provider_tag="", progress=True):
             res, usage = call(sys_t, text, AUDIT_SCHEMA, cfg)
             if usage:
                 TRACKER.record("audit", cit, usage)
-            return res
+            return [r for r in res if isinstance(r, dict)] if isinstance(res, list) else []  # keep the cache clean
         return cit, _cached(cache_dir, cit.replace("/", "_"), h, fn)
     with ThreadPoolExecutor(max_workers=_concurrency(cfg)) as ex:
         futs = {ex.submit(work, cit, text): cit for cit, text in units}

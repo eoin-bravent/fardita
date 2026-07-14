@@ -155,6 +155,11 @@ def reconcile(rows, llm_by_cit, addr_map):
     Returns (ledger, stats). Internal + external refs reconciled per unit; items tagged `scope`."""
     ledger = []
     stats = {"corroborated": 0, "parser_explicit": 0, "parser_inferred": 0, "llm_only": 0}
+    # The LLM output for a unit can be malformed (truncated / oddly-shaped JSON — e.g. a bare string or
+    # a list with a stray element). Coerce each unit's refs to a list of dicts so one bad result can't
+    # crash reconcile; that unit just contributes fewer LLM refs (its parser refs are unaffected).
+    llm_by_cit = {c: [r for r in (v if isinstance(v, list) else []) if isinstance(r, dict)]
+                  for c, v in (llm_by_cit or {}).items()}
     # Only BASE units go through reconcile. Flat alternate rows share their base's citation and would
     # collide here; their own (parser-found) refs are tagged parser_only by `apply`.
     units = [r for r in rows if r["type"] in ("section", "subsection") and not r.get("alternate")]
