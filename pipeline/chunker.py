@@ -7,7 +7,7 @@ Reuses the proven helpers in ../extract_json.py but generalizes:
   * carry a `regulation` field (FAR / DFARS / …);
   * scan a configurable input folder and emit a manifest of processed + skipped files.
 """
-import os, re, sys, json
+import os, re, sys, json, glob
 import xml.etree.ElementTree as ET
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))            # own dir, for changelog
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -207,6 +207,32 @@ def title_text(title_el):
     t = X.norm("".join(parts))
     return t[:-1].rstrip() if t.endswith(".") else t                   # FAR titles end in a period; drop it
 
+def _file_title(path):
+    """The heading of a Part_*/Subpart_* file, minus its 'Part 32 - ' / 'Subpart 32.5 - ' prefix."""
+    try:
+        raw = re.sub(r"<!DOCTYPE.*?>", "", open(path, encoding="utf-8").read(), flags=re.S)
+        t = next((e for e in ET.fromstring(raw).iter() if e.tag == "title"), None)
+    except (ET.ParseError, OSError):
+        return ""
+    if t is None:
+        return ""
+    full = re.sub(r"^(?:Part|Subpart)\s+[\d.]+\s*[-–—]\s*", "", X.norm("".join(t.itertext())))
+    return full[:-1].rstrip() if full.endswith(".") else full
+
+def hierarchy_titles(input_dir):
+    """{part_num: title} and {'part.subpart': title} from the Part_*/Subpart_* files (which the chunker
+    otherwise skips). Section/subsection titles come free from the units themselves — see run_chunker."""
+    part, subpart = {}, {}
+    for p in glob.glob(os.path.join(input_dir, "Part_*.dita")):
+        m = re.match(r"Part_(\d+)", os.path.basename(p))
+        if m:
+            part[m.group(1)] = _file_title(p)
+    for p in glob.glob(os.path.join(input_dir, "Subpart_*.dita")):
+        m = re.match(r"Subpart_([\d.]+?)\.dita$", os.path.basename(p))
+        if m:
+            subpart[m.group(1)] = _file_title(p)
+    return part, subpart
+
 def decompose(sec_num, tokens, field_levels):
     base = X.components(sec_num)                # part / subpart / section / subsection (bare)
     d = {k: base[k] for k in ("part", "subpart", "section", "subsection")}
@@ -257,7 +283,8 @@ def build(path, far, cfg):
              "type": typ,                                       # structural level (FAR 1.105-2)
              "instrument": instrument,                          # functional: clause / provision / ''
              "alternate": alternate,                            # variant: '' (base) or '1'..'5'
-             "title": sec_title}                                # section/clause heading (shared by the file's chunks)
+             "part_title": "", "subpart_title": "",             # hierarchy breadcrumb: this file's own level is
+             "section_title": "", "subsection_title": ""}       # set below; the ancestry is filled in run_chunker
         r.update(decompose(sec_num, tokens, field_levels))
         r["url"] = url
         r["cross_references"] = X.collect_refs(ps, sec_num, url)
@@ -319,6 +346,9 @@ def build(path, far, cfg):
         for ol in conbody.findall("./ol"):
             walk(ol, [])
 
+    own = "subsection_title" if "-" in sec_num else "section_title"   # this file's own level (dash => subsection)
+    for r in rows:
+        r[own] = sec_title
     if len(rows) == 1 and len(unit_text) < MIN_TEXT:
         return None, "near-empty"
     return rows, None
@@ -389,6 +419,20 @@ def run_chunker(cfg, progress=False):
         else:
             skipped.append({"file": far, "reason": reason})
     rows.sort(key=sort_key)
+
+    # Title breadcrumb: fill each chunk's part/subpart titles (from the Part_*/Subpart_* files) and its
+    # parent section_title (harvested from the section units we just chunked; build() already set each
+    # chunk's own section_title/subsection_title). Section/subsection titles need the parent to be in the
+    # run — true for a full run; a --files subset may leave section_title '' when the parent isn't included.
+    part_titles, subpart_titles = hierarchy_titles(cfg["input_dir"])
+    sec_of = lambda r: f'{r["part"]}.{r["subpart"]}{r["section"]}'
+    section_titles = {sec_of(r): r["section_title"] for r in rows if r["section_title"]}
+    for r in rows:
+        r["part_title"] = part_titles.get(r["part"], "")
+        r["subpart_title"] = subpart_titles.get(f'{r["part"]}.{r["subpart"]}', "")
+        if not r["section_title"]:                 # subsection/paragraph rows inherit their section's title
+            r["section_title"] = section_titles.get(sec_of(r), "")
+
     manifest = {"regulation": cfg["regulation"], "input_dir": os.path.abspath(cfg["input_dir"]),
                 "file_source": file_source, "bottom_level": cfg["bottom_level"], "files_seen": len(paths),
                 "processed_count": len(processed), "skipped_count": len(skipped),

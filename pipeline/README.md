@@ -148,7 +148,8 @@ appear as **separate sibling records** distinguished by `alternate`. A full reco
 {
   "citation": "FAR-52.247-64", "regulation": "FAR",
   "type": "subsection", "instrument": "clause", "alternate": "",
-  "title": "Preference for Privately Owned U.S.-Flag Commercial Vessels",
+  "part_title": "Solicitation Provisions and Contract Clauses", "subpart_title": "Text of Provisions and Clauses",
+  "section_title": "", "subsection_title": "Preference for Privately Owned U.S.-Flag Commercial Vessels",
   "part": "52", "subpart": "2", "section": "47", "subsection": "64", "paragraph": "", "subparagraph": "",
   "source_version": "FAC 2026-01 March 13, 2026", "pipeline_version": "013d84a",
   "url": "https://www.acquisition.gov/far/52.247-64",

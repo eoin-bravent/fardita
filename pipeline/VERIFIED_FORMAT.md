@@ -15,9 +15,14 @@ A chunk's identity is the pair **`(citation, alternate)`**. Three independent ax
   and its Alternates **share one citation**, distinguished by `alternate` (an Alternate is its own flat
   chunk, e.g. `citation:"FAR-52.247-64", alternate:"1"`, with `type` inherited from the base).
 - `regulation` / `type` / `instrument` / `alternate` — `"FAR"` plus the three identity axes above.
-- `title` — the section/clause heading (the DITA `<title>` minus its leading number and trailing period),
-  e.g. `"Establishing alternate liquidation rates"`. Shared by every chunk from the file: a paragraph
-  carries its section's title, an alternate carries its clause's title. `""` if the source has no title.
+- `part_title` / `subpart_title` / `section_title` / `subsection_title` — the **title breadcrumb**: the
+  heading at each level of the chunk's hierarchy (leading number + trailing period stripped), so any chunk
+  can reconstruct its full path — e.g. for `32.503-10`: *Contract Financing › Progress Payments Based on
+  Costs › Postaward matters › Establishing alternate liquidation rates*. Each level is `""` when it has no
+  title (Part-52 clauses have no `section_title`; a section has no `subsection_title`; paragraphs inherit
+  their section/subsection titles). Part/subpart titles come from the `Part_*`/`Subpart_*` files; section
+  and subsection titles from the units themselves (so a `--files` subset may leave `section_title` empty if
+  the parent section isn't in the run — a full run has them all).
 - `source_version` — the FAR edition the chunk came from, verbatim from the DITA map's `rev`
   (e.g. `"FAC 2026-01 March 13, 2026"` — Federal Acquisition Circular number + effective date).
 - `pipeline_version` — the git short SHA of the code that produced the chunk (e.g. `"e3e4eee"`).
