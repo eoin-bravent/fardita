@@ -15,6 +15,9 @@ A chunk's identity is the pair **`(citation, alternate)`**. Three independent ax
   and its Alternates **share one citation**, distinguished by `alternate` (an Alternate is its own flat
   chunk, e.g. `citation:"FAR-52.247-64", alternate:"1"`, with `type` inherited from the base).
 - `regulation` / `type` / `instrument` / `alternate` — `"FAR"` plus the three identity axes above.
+- `title` — the section/clause heading (the DITA `<title>` minus its leading number and trailing period),
+  e.g. `"Establishing alternate liquidation rates"`. Shared by every chunk from the file: a paragraph
+  carries its section's title, an alternate carries its clause's title. `""` if the source has no title.
 - `source_version` — the FAR edition the chunk came from, verbatim from the DITA map's `rev`
   (e.g. `"FAC 2026-01 March 13, 2026"` — Federal Acquisition Circular number + effective date).
 - `pipeline_version` — the git short SHA of the code that produced the chunk (e.g. `"e3e4eee"`).

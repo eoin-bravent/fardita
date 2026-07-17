@@ -193,6 +193,20 @@ def parse_ditamap(path):
             seen.add(href); files.append(href)
     return rev, files
 
+def title_text(title_el):
+    """The section/clause heading, minus its leading autonumber and trailing period:
+    '<ph autonumber>32.503-10</ph> Establishing alternate liquidation rates.' -> 'Establishing
+    alternate liquidation rates'. '' when there's no title."""
+    if title_el is None:
+        return ""
+    parts = [title_el.text or ""]
+    for ch in title_el:
+        if not (ch.tag == "ph" and ch.get("props") == "autonumber"):   # skip the number, keep the words
+            parts.append("".join(ch.itertext()))
+        parts.append(ch.tail or "")
+    t = X.norm("".join(parts))
+    return t[:-1].rstrip() if t.endswith(".") else t                   # FAR titles end in a period; drop it
+
 def decompose(sec_num, tokens, field_levels):
     base = X.components(sec_num)                # part / subpart / section / subsection (bare)
     d = {k: base[k] for k in ("part", "subpart", "section", "subsection")}
@@ -208,6 +222,7 @@ def build(path, far, cfg):
     title = c.find("./title")
     num_ph = title.find(".//ph[@props='autonumber']") if title is not None else None
     sec_num = X.norm(num_ph.text) if num_ph is not None else far
+    sec_title = title_text(title)              # the heading, shared by every chunk from this file
     conbody = next((el for el in c.iter() if _is_kind(el, BODY_TAGS, "topic/body")), None)
     if conbody is None:
         return None, "no body (conbody/taskbody/refbody/body)"
@@ -241,7 +256,8 @@ def build(path, far, cfg):
              "pipeline_version": cfg.get("pipeline_version", ""),  # producing commit (git short SHA)
              "type": typ,                                       # structural level (FAR 1.105-2)
              "instrument": instrument,                          # functional: clause / provision / ''
-             "alternate": alternate}                            # variant: '' (base) or '1'..'5'
+             "alternate": alternate,                            # variant: '' (base) or '1'..'5'
+             "title": sec_title}                                # section/clause heading (shared by the file's chunks)
         r.update(decompose(sec_num, tokens, field_levels))
         r["url"] = url
         r["cross_references"] = X.collect_refs(ps, sec_num, url)
