@@ -1,5 +1,35 @@
 # FAR ingestion pipeline (chunk → LLM audit → human review → verified)
 
+> **Fleet mode (all agencies):** `orchestrator.py` runs the whole archive→store pipeline per
+> agency (download → survey → backfill → audit → optional LLM), `dashboard.py` serves a web
+> GUI over it (`python dashboard.py` → http://localhost:8642), `nightly.py` (+
+> `.github/workflows/nightly.yml`) keeps every store current from the GSA GitHub repos, and
+> `data/agencies.json` is the registry of all ~34 regulations. Stores live in `stores/<AGENCY>/`,
+> archives in `archive/<AGENCY>/` (downloader: `download_acquisition_archives.py`).
+
+## What's in this folder
+
+**The app** — `orchestrator.py` (pipeline engine), `dashboard.py` (web GUI), `nightly.py`
+(GitHub updater), `download_acquisition_archives.py` (archive fetcher).
+**Parsing & stores** — `store.py` (SCD-2 versioned store + merge engine), `chunker.py` +
+`extract_json.py` (canon DITA chunker), `changelog.py` (LSA/rev change track),
+`archive_adapter.py` (per-era archive parsers + seam/collapse/hints),
+`backfill_archives.py` (oldest-first era driver).
+**Verification** — `corpus_audit.py` (text-conservation proof), `verify_store.py`
+(invariants + as-of checks), `store_coverage.py` / `verify_coverage.py` (git-history
+completeness audits).
+**LLM reference flow** — `pipeline.py` (run/audit/review/apply/update/replay/export),
+`gemini_audit.py` / `vertex_audit.py` (backends), `reconcile.py`, `review.py`, `update.py`.
+**Config & data** — `pipeline.config.json` (main config, stays at the package root);
+`data/` = checked-in inputs: `agencies.json` (regulation registry) and the authoritative
+edition dates (`archive_dates.json` for FAR, `afars_dates.json`, one file per regulation);
+`.env.example`, `requirements-vertex.txt`.
+**Docs** — this file; `demo_fields.py` (runnable field guide). Deeper references live in
+`../docs/`: `ARCHIVE_ERAS.md` (parser eras + validation), `VERIFIED_FORMAT.md` (output schema).
+Everything else is regenerable scratch and gitignored: `cache/` (era surveys `*_eras.json` +
+structure hints, rebuilt by `survey` / `derive-hints`), `out/` (run scratch + LLM cache),
+`store_*` backups. The data lives in `../stores/<AGENCY>/`.
+
 Turns the FAR (a regulation published as DITA XML) into a verified map of its cross-references.
 A parser and an LLM each find the references, a person resolves the disagreements in a browser,
 and the result is a dataset where every reference is tagged with where it came from. Built for the
@@ -7,18 +37,24 @@ FAR, but the `regulation` setting makes it reusable for DFARS / AFARS / etc. Pur
 for the default path.
 
 ## Workflow
-1. **`run`** — chunk the regulation, find its references two ways (the deterministic **parser** and a
-   blind **LLM audit**), reconcile them, and write the review page. Add `--judge` to have the LLM
-   pre-fill a recommendation for each disagreement.
-2. **`review`** — serve the page in a browser; accept / reject / fix the flagged references, then click
-   **Save & Apply** — that writes your decisions and builds the verified dataset in one click.
-3. **result** — `out/<REG>_verified.json`: every reference tagged with where it came from and a status.
+Everything lands in the **versioned store** (`store/` — every version of every chunk across FAC
+editions; see "Versioned store" below). The flow:
+
+1. **`update`** (or `replay` for history) — ingest the GSA repo's current edition into the store.
+2. **`audit`** — LLM-audit ONLY the units whose current store rows lack verified refs (after a new
+   FAC that's exactly its changed sections; the first ever run is the whole corpus). Add `--judge`
+   to have the LLM pre-fill a recommendation per disagreement.
+3. **`review`** — accept / reject / fix the flagged references in a browser; **Save & Apply**
+   writes your decisions onto the store's current rows.
+4. **`export`** — flat JSON of the rows in force on any date, when a downstream consumer needs one.
 
 ```
-run:   chunk ─► parser refs + LLM audit ─► reconcile ─► [optional judge] ─► review page
-review: you accept/reject/fix in the browser ─► Save & Apply ─► <REG>_verified.json
+update: git pull ─► chunk ─► merge into versioned store (effective_from/to, current)
+audit:  store's unverified units ─► parser refs + blind LLM audit ─► reconcile ─► [judge] ─► review page
+review: you accept/reject/fix in the browser ─► Save & Apply ─► statuses onto store rows
 ```
-(`apply --decisions <file>` is the manual alternative to Save & Apply — feed it an exported decisions.json.)
+(`apply --decisions <file>` is the manual alternative to Save & Apply. `run` remains as the
+parser-only chunking tool: `run --no-llm` writes `out/<REG>_chunks.json` + manifest.)
 
 ## How it works (in plain language)
 The pipeline finds every reference in the FAR **two independent ways and compares them**, then asks a
@@ -39,9 +75,9 @@ person to settle the disagreements.
    made-up citations get caught.
 4. **Review.** You open a web page and look only at the flagged ones — Accept / Reject / Fix each. An
    optional "judge" LLM pass can pre-fill a suggestion for each to speed this up.
-5. **Done.** The output is `<REG>_verified.json` — every reference tagged with where it came from and
-   whether a human approved it. References to *other* documents (U.S.C., CFR, executive orders, etc.) are
-   kept in a separate list.
+5. **Done.** Every reference on the store's current rows is tagged with where it came from and
+   whether a human approved it (`refs_verified_from` records the edition it was verified against).
+   References to *other* documents (U.S.C., CFR, executive orders, etc.) are kept in a separate list.
 
 Two things make it cheap to run again and again:
 - **It remembers (caching).** The LLM's answer for each section is saved, so re-running only re-asks for
@@ -162,7 +198,7 @@ appear as **separate sibling records** distinguished by `alternate`. A full reco
 ```
 Each `citation` is prefixed with the regulation (`FAR-5.101`, `FAR-6.302-2(a)`) so IDs stay unique across
 regulation sets (FAR vs DFARS vs AFARS); a cross-reference `target` stays **bare** (`5.202(a)(2)`) since
-it's within the same regulation. **Full field-by-field reference: [`VERIFIED_FORMAT.md`](VERIFIED_FORMAT.md).**
+it's within the same regulation. **Full field-by-field reference: [`VERIFIED_FORMAT.md`](../docs/VERIFIED_FORMAT.md).**
 
 ## Cross-references
 Each chunk's `cross_references` is a list **grouped by `target`** (one entry per distinct cited
@@ -274,7 +310,184 @@ cell) — expected, not a failure.
 
 **Scope.** A single FAR export carries only the **current** FAC's `rev` marks (older ones drop out each
 release), so this is "changed in *this* edition." Accumulating history across FACs is the job of the
-(planned) scheduled-update automation, which ingests successive editions into a versioned store.
+versioned store — see the next section.
+
+## Versioned store (`update` / `replay` — history across FACs, no LLM)
+
+The versioned store (`store/`, see `store.py`) retains **every version of every chunk** across FAC
+editions, SCD-Type-2 style. Each row is the standard chunk record plus:
+
+| field | meaning |
+|---|---|
+| `effective_from` / `effective_to` | **legal** effective dates, half-open `[from, to)`; `effective_to: null` = still in force. In force on date X ⇔ `effective_from <= X < effective_to`. Consecutive versions share the boundary date (no gaps, no −1 day). |
+| `current` | `true` iff `effective_to` is null (denormalized for cheap filtering) |
+| `content_hash` | change detector over text + structure + titles + clause meta; deliberately **excludes** `changes[]` (rev marks drop out each FAC) and cross/external refs (verified statuses survive unchanged chunks untouched) |
+| `ingested_at`, `source`, `source_commit` | observation provenance (`gsa-github` \| `acquisition-gov-archive` \| `manual`; commit SHA) |
+| `last_seen_version` / `last_seen_date` | most recent ingested edition confirming this exact content |
+
+Identity is `(citation, alternate)`; a version is `(citation, alternate, effective_from)`. A chunk
+untouched by a FAC keeps its single row spanning editions — the store grows only by deltas.
+
+**One merge operation, three uses.** `Store.merge_snapshot()` reconciles a complete edition snapshot
+at effective date D into the store, whether D lands **after** (daily update), **before** (archive
+backfill — identical text extends a row's floor backward; differing text inserts a closed row), or
+**between** known editions. It's idempotent and order-independent. Mid-FAC **corrections (errata)** —
+content changed but same edition — are replaced **in place** (the legal timeline doesn't move); the
+superseded row is appended to `store/<REG>_errata.json` so nothing observed is lost, and the row's
+`refs_verified_from` stamp is **cleared** (the replacement carries parser-only refs for changed text,
+so the unit re-queues for the next `audit`; the errata log keeps the superseded row with its verified
+refs intact). Per-era **adapters** (the chunker is the GitHub-DITA one; `archive_adapter.py` provides
+the acquisition.gov-archive ones) produce standard chunk rows; the merge engine alone owns time.
+
+```bash
+# daily/scheduled: ingest the GSA clone's current state (new FAC -> new versions; same FAC -> errata)
+python pipeline.py update [--repo R] [--effective-date YYYY-MM-DD] [--force]
+
+# one-time / backfill: replay historical editions (settled commit per FAC) through the same path
+python pipeline.py replay --repo ../../GSA-Acquisition-FAR --since 2025-04 [--errata-check]
+
+# LLM audit driven by the store: only units whose current rows lack verified refs
+python pipeline.py audit [--judge] [--files 22.1503 …] [--auto-accept]
+
+# human review (unchanged UI); Save & Apply now writes decisions to the STORE
+python pipeline.py review          # or: python pipeline.py apply --decisions d.json
+
+# flat JSON of the rows in force on any date (replaces verified.json)
+python pipeline.py export [--as-of 2024-01-15] [--out path.json]
+
+# invariants + summary + as-of spot checks
+python verify_store.py --expect "FAR-22.1503(b)|2026-03-12|\$102,280" \
+                       --expect "FAR-22.1503(b)|2026-03-13|\$105,767"
+```
+
+**The store is the single source of truth — the LLM flow reads from and writes to it.**
+`audit` asserts the input tree matches the store's current rows (same edition per `state.json`,
+same content hashes — chunk-level, so GSA file quirks can't hide drift), then audits ONLY the
+units whose current rows lack `refs_verified_from` (or an explicit `--files` list). That queue is
+self-maintaining: a new FAC's `update` creates fresh version rows, which are born unverified,
+which puts exactly those units on the next `audit`'s queue — everything else is skipped (the
+`out/llm_cache/` gives a second, model-keyed skip layer). `apply` — whether from the review page,
+`--decisions`, or `--auto-accept` — tags statuses directly on the audited units' current store
+rows and stamps `refs_verified_from`; untouched units and historical versions are never modified.
+Because `content_hash` excludes references, verified refs ride through every future merge on
+unchanged chunks. Verification attaches to a *version*: a changed chunk's new row starts
+parser-only even when its predecessor was verified (text changes can add or remove references),
+and historical rows keep the refs they were verified with. `<REG>_verified.json` is retired;
+`export` produces flat snapshots for downstream consumers — for any date the store covers, not
+just the current edition. (The one-time migration of the pre-store `verified.json` onto store rows
+was done with a `store-apply` bridge, since removed.)
+
+`update` detects new-edition vs errata from the ditamap `rev`'s FAC id, parses the **legal effective
+date from the rev** ("FAC 2026-01 March 13, 2026" → `2026-03-13`; `ingested_at` records observation
+separately), chunks the full file set (`content_hash` makes unchanged chunks no-ops), merges, appends
+the FAC's LSA entries to **`store/<REG>_changelog.json`** (accumulated, keyed by `source_version` —
+the persistent "what did each FAC touch" index), and writes a two-way **LSA discrepancy report** to
+`store/reports/`. `replay` walks first-parent history and replays each FAC's **settled** (last) commit
+— interim rev text ("August XX") and mid-FAC churn fold in; `--errata-check` also pre-ingests an early
+commit of the final FAC so the settled pass exercises the errata path. `store/state.json` remembers the
+last processed commit, so `update` after `replay` continues seamlessly.
+
+Store files: `store/<REG>_store.json` (all version rows + edition registry), `<REG>_changelog.json`,
+`<REG>_errata.json`, `state.json`, `reports/`. Query in code: `Store.as_of(date, citation=…)`,
+`Store.current_rows()`, `Store.verify()` (gap/overlap/current-flag invariants).
+
+**Validated against the full usable GitHub history — FAC 2023-02 (March 2023) → FAC 2026-01 — 18
+editions, 14,245 rows, 1,696 multi-version chains.** Replay ran forward (2025-04 → 2026-01, with
+`--errata-check`) then BACKWARD (2023-02 → 2025-03 backfilled into the existing store), exercising
+every merge path: bootstrap, new-edition, errata (the FAC 2026-01 pre-publication correction to
+25.402 is in the errata log), extend-backward (~10k rows), mid-chain splits, deletions, reopenings.
+Invariants clean; re-merge idempotent (0 events); as-of queries return $102,280 through 2026-03-12
+and $105,767 from 2026-03-13 for FAR-22.1503(b). Earlier than FAC 2023-02 the ditamap carries no
+`rev`, so pre-2023 history comes from the acquisition.gov archives (see **acquisition.gov archive
+adapters** below). Two interim
+FACs (2024-02, 2024-04) left no parseable settled rev; their changes are captured but attributed to
+the next ingested edition's date (ingestable individually later via `update --effective-date`).
+
+### acquisition.gov archive adapters (`archive_adapter.py` — history before the GitHub repo)
+
+Extends the store earlier than the GitHub history using the downloaded acquisition.gov
+archives (`../archive_far/`). The archives span several HTML-generator eras; **`archive_adapter.py
+survey`** classifies every folder and **[`ARCHIVE_ERAS.md`](../docs/ARCHIVE_ERAS.md)** documents each.
+**All four HTML eras have parsers**: **ditaot** (2021-07 … 2025-06, DITA-OT XHTML, `FAR_Part_N.html`
+per part), **webworks-2005** (168 "FAC 2005-xx" folders, ~2005–2018, `Subpart 5_1.html` per subpart),
+**webworks-2001** (42 folders, ~2001–2005, `Subpart_5_1.html`, `Heading1`/`Body`/`Indented` +
+`<dl>/<dt>` markup), and **legacy** (52 folders, 1995–2002, class-less per-part plain HTML) — every
+parseable archive edition, FAC 1990-34 (1995) onward, can be chunked, seam-checked and backfilled.
+`chunk` auto-detects the era (override with `--era`); `backfill_archives.py --eras <era>[,<era>…]`
+drives any of them oldest-first (261 editions across the three pre-2019 eras).
+
+```bash
+# once: per-unit structure hints from the store itself (see below)
+python archive_adapter.py derive-hints --store-dir store --date 2023-03-16
+
+python archive_adapter.py survey ../archive_far                       # classify all folders -> archive_eras.json
+python archive_adapter.py meta  ../archive_far/2023-01_HTML_Files     # FAC label + authoritative date
+python archive_adapter.py chunk ../archive_far/2023-01_HTML_Files \
+       -o rows.json --hints-store-dir store                           # era auto-detected; hints as-of edition date
+python archive_adapter.py seam  rows.json --store-dir <COPY> --date 2023-03-16   # HASH_FIELDS diff
+python archive_adapter.py ingest rows.json --store-dir <COPY> \
+       --edition-dir ../archive_far/2023-01_HTML_Files [--collapse-cosmetic]   # date/version auto-filled
+```
+
+**Effective dates** for every edition (all eras) come from `archive_dates.json` — the authoritative
+published dates scraped from `acquisition.gov/archives`, keyed by folder name. `ingest --edition-dir`
+fills `--date`/`--source-version`/`--commit` from it automatically; no manual date entry.
+
+The **webworks-2005** parser reads structural depth from the FrameMaker `pBody`/`pIndentedN`
+classes (so it's largely self-sufficient; hints only reject a few mis-rendered nested items).
+Because it's a **different source lineage** than the DITA store, the same legal text renders with
+different typography (dashes, `U.S.C.` spacing, quotes), so a naive ingest would create a batch of
+rendering-only "versions" at the single 2005↔2021 seam. **`ingest --collapse-cosmetic`** solves this:
+it snaps chunks that differ from the store only cosmetically back onto the existing row (extend
+backward, no new version) and ingests real differences verbatim, writing an audit log of every
+collapse. Conservative by default (a differing clause `date`/`instrument`/etc. stays a real
+version). Validation and the seam mechanics are in [`ARCHIVE_ERAS.md`](../docs/ARCHIVE_ERAS.md).
+
+**Why hints.** The archive HTML is FrameMaker output: its `ListLn` classes encode VISUAL
+depth, while the chunker's line/row structure follows the DITA's STRUCTURAL nesting — and
+the FM→DITA conversion was irregular (ol-inside-p definitions, Runin items, li lists
+promoted/demoted a level, labels as literal text, spacing quirks like `(ii)Sold`).  Those
+distinctions are unrecoverable from the HTML alone, so `derive-hints` extracts each unit's
+line/row skeleton (ordered line heads, per-line row labels+heads, per-line nospace joints,
+end-marker string, breadcrumb titles) from the store's `as_of(date)` view; the parser then
+reconstructs lines by ordered matching against them. Units absent from the hints (sections
+dead before the store's history begins) fall back to class-based rules.
+
+**Seam test (mandatory before any real backfill).** FAC 2023-02 is in both sources:
+archive-parsed rows vs `store.as_of(2023-03-16)` agree on **all 11,629 identities with
+11,627 hash-identical** — the 2 residuals are `52.225-2`/(a), whose archive HTML has
+invalid nested `<p>` markup that no parser can render to byte parity. Cross-edition checks
+(hints as-of each edition): FAC 2023-06 ≈99.3%, FAC 2025-06 ≈99.7% (late residuals are
+real whitespace drift in the newer GitHub DITA, irrelevant to pre-2023 backfill).
+
+**Backfilled (validated on a store copy):** 9 pre-store editions — FAC 2022-01
+(2021-12-06), 2022-03 (2022-01-01), 2022-02 (2022-01-14), 2022-04 (2022-01-30), 2022-06
+(2022-05-26), 2022-07 (2022-08-10), 2022-08 (both its 2022-09-23 and 2022-10-28 states),
+2023-01 (2022-12-30) — merged oldest-first: **zero `changed`/`errata` at the 2023-02 seam**
+(the first ingest was 10,862 `extended_backward` + 589 closed historical versions + 3 new),
+per-FAC deltas of 2–22 sections thereafter, invariants clean, re-merge idempotent, current
+rows (and their verified refs) untouched. Notes: archive folder names lie (the `2021-07`
+folder is internally FAC 2022-01 — trust `LSATable.html`, never names); FAC 2019-01 …
+2021-06 are absent from the downloaded archives; LSA changelog accumulation from
+`LSATable.html` is not wired yet (skipped gracefully).
+
+**Completeness proof — `store_coverage.py`.** Two independent audits against git itself:
+
+```bash
+python store_coverage.py --repo ../../GSA-Acquisition-FAR             # file-level audit
+python store_coverage.py --repo ../../GSA-Acquisition-FAR --snapshot  # gold standard
+```
+
+The **file-level audit** takes `git diff --name-only` between each consecutive pair of settled
+commits and requires every changed section file to be accounted for: store version events at that
+edition (attributed by the citations the file actually produces — GSA filenames lie), proven
+markup-only (both blob versions re-chunked and content-hash-identical: rev marks dropping out,
+whitespace), an orphan (not referenced by the ditamap — GSA leaves stubs), or a rename (content
+moved between files, identity unchanged). The **snapshot audit** is the definitive one, immune to
+GSA's file-naming games (misnamed files like `42.200.dita` holding section 40.201, duplicate
+sources during the Part 40 renumbering): for every ingested edition it re-chunks the full published
+tree at the settled commit and requires the store's `as_of(effective_date)` view to be identical —
+same identities, same content hashes. **All 18 editions: 0 missing, 0 extra, 0 hash mismatches.**
 
 ## Configuration — `pipeline.config.json`
 | key | meaning | default |
@@ -285,6 +498,7 @@ release), so this is "changed in *this* edition." Accumulating history across FA
 | `bottom_level` | deepest chunk level: `section`/`subsection` (unit only) · `paragraph` · `subparagraph` · `subunit-depth-1…4` | `paragraph` |
 | `url_template` | source link, `{num}` filled with the citation | acquisition.gov/far/{num} |
 | `output_dir` | where outputs land | `out` |
+| `store_dir` | the versioned chunk store (see "Versioned store") | `store` |
 | `gemini.model` | model id (you set the highest available) | `gemini-2.5-pro` |
 | `gemini.reasoning` | thinking on/off (on recommended for ambiguous refs) | `true` |
 | `gemini.thinking_budget` | token budget (`-1` = dynamic) | `-1` |
@@ -446,7 +660,7 @@ in one in-memory map keyed by row, so they **persist across pages and reloads** 
 | `<REG>_token_usage.json` | per-run token usage (prompt/thinking/output/total by stage, per-unit), timing, status counts, cache hits |
 | `<REG>_addrmap.json` | cached whole-corpus address map (so `--files` subset runs validate cross-file targets) |
 | `<REG>_review.html` | the review page |
-| `<REG>_verified.json` | after `apply`: the final dataset — a plain array of chunks (each with `source_version` + `pipeline_version`) + verified refs (`cross_references` + `external_references`), every ref tagged with a flat `status` (`corroborated`/`parser_only`/`human_approved`/`auto_accepted`). **Field-by-field structure: [`VERIFIED_FORMAT.md`](VERIFIED_FORMAT.md).** |
+| `<REG>_verified.json` | after `apply`: the final dataset — a plain array of chunks (each with `source_version` + `pipeline_version`) + verified refs (`cross_references` + `external_references`), every ref tagged with a flat `status` (`corroborated`/`parser_only`/`human_approved`/`auto_accepted`). **Field-by-field structure: [`VERIFIED_FORMAT.md`](../docs/VERIFIED_FORMAT.md).** |
 | `llm_cache/` | cached raw LLM audit + judge responses |
 
 The reviewer's **`decisions.json`** is downloaded from the review page (not written to `output_dir`)

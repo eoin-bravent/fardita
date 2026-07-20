@@ -1,0 +1,30 @@
+name: nightly-regulation-update
+on:
+  schedule:
+    - cron: "17 6 * * *"        # 06:17 UTC daily
+  workflow_dispatch: {}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install lxml
+      - name: Pull GSA repos and merge into stores
+        run: python pipeline/nightly.py
+      - name: Upload summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-summary
+          path: stores/nightly_summary.json
+      - name: Commit updated stores
+        if: success()
+        run: |
+          git config user.name "nightly-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add stores/
+          git diff --cached --quiet || git commit -m "nightly: regulation updates $(date -u +%F)"
+          git push

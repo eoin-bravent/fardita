@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""One pipeline, two commands around the human review step:
+"""One pipeline around the versioned store (store/ -- see store.py):
 
-  python pipeline.py run    [--config C] [--mock-llm F | --no-llm] [--limit N]
-      resolve file set -> chunk -> manifest -> blind LLM audit -> reconcile -> review.html
-  python pipeline.py apply  [--config C] --decisions decisions.json
-      merge approved refs -> <regulation>_verified.json   (every ref tagged with a status)
+  python pipeline.py update | replay      ingest editions into the versioned store (update.py)
+  python pipeline.py audit  [--judge]     blind LLM audit of the store's unverified units -> review.html
+  python pipeline.py review               human review in the browser; Save & Apply -> store rows
+  python pipeline.py apply --decisions F  manual alternative to Save & Apply (writes to the store)
+  python pipeline.py export [--as-of D]   flat JSON of the rows in force on a date
+  python pipeline.py run [--no-llm]       parser-only chunking convenience -> out/<REG>_chunks.json
 
-Config: pipeline.config.json (regulation, input_dir, bottom_level, gemini model/reasoning, …).
+Config: pipeline.config.json (regulation, input_dir, store_dir, bottom_level, gemini model/…).
 Secret: GEMINI_API_KEY in the environment (never written to config or logs).
 """
 import os, sys, json, time, glob, argparse, subprocess, datetime, threading
@@ -24,6 +26,7 @@ DEFAULTS = {
     "bottom_level": "paragraph",
     "url_template": "https://www.acquisition.gov/far/{num}",
     "output_dir": os.path.join(HERE, "out"),
+    "store_dir": os.path.join(HERE, "store"),             # versioned chunk store (SCD-2; see store.py)
     # LLM backend: "usai" (default, stdlib REST) or "vertex" (Google Vertex AI via google-genai).
     "provider": "usai",
     "concurrency": 8,                                     # parallel LLM calls per run (1 = sequential)
@@ -102,7 +105,7 @@ def load_config(args):
     if os.environ.get("GEMINI_JUDGE"):
         cfg["gemini"]["judge"] = os.environ["GEMINI_JUDGE"].lower() in ("1", "true", "yes", "on")
     # CLI overlay (highest precedence)
-    for attr in ("regulation", "input_dir", "bottom_level", "output_dir", "provider", "concurrency"):
+    for attr in ("regulation", "input_dir", "bottom_level", "output_dir", "store_dir", "provider", "concurrency"):
         if getattr(args, attr, None) is not None:
             cfg[attr] = getattr(args, attr)
     if getattr(args, "model", None):
@@ -119,7 +122,7 @@ def load_config(args):
     if cfg["bottom_level"] not in chunker.LEVEL_DEPTH:
         sys.exit(f"bottom_level must be one of {list(chunker.LEVEL_DEPTH)}")
     cfg["bottom_depth"] = chunker.LEVEL_DEPTH[cfg["bottom_level"]]
-    for k in ("input_dir", "output_dir"):
+    for k in ("input_dir", "output_dir", "store_dir"):
         if not os.path.isabs(cfg[k]):
             cfg[k] = os.path.abspath(os.path.join(HERE, cfg[k]))
     os.makedirs(cfg["output_dir"], exist_ok=True)
@@ -327,11 +330,165 @@ def cmd_run(cfg, args):
         json.dump(decisions, open(dpath, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
         mode = "judge verdicts" if judge_on else "union (parser + LLM)"
         print(f"auto-accept [{mode}]: {len(decisions)} decision(s) -> applying…")
-        cmd_apply(cfg, argparse.Namespace(decisions=[dpath]))
+        cmd_apply(cfg, argparse.Namespace(decisions=[dpath], store_dir=None))
+
+def _unit_of(citation):
+    return citation.split("(")[0]
+
+
+def _load_store(cfg, args):
+    import store as store_mod
+    sdir = getattr(args, "store_dir", None) or cfg.get("store_dir") or os.path.join(HERE, "store")
+    return store_mod.Store(sdir, cfg["regulation"])
+
+
+def cmd_audit(cfg, args):
+    """Store-driven LLM audit (+ optional judge): audits ONLY the units whose current
+    store rows lack verified refs (or an explicit --files list), after asserting the
+    input tree is the same edition/content the store's current rows came from.
+    Writes the usual ledger + review page; `apply` then lands decisions on the store."""
+    import store as store_mod
+    out = cfg["output_dir"]; reg = cfg["regulation"]
+    st = _load_store(cfg, args)
+    if not st.rows:
+        sys.exit("store is empty — run `update` or `replay` first")
+    stamp = version_stamp(cfg)
+    cfg["source_version"], cfg["pipeline_version"] = stamp["source_version"], stamp["pipeline_version"]
+
+    state = st.load_state().get("gsa-github", {})
+    if state.get("last_rev") and stamp["source_version"] not in ("unknown", state["last_rev"]):
+        msg = (f"input_dir edition '{stamp['source_version']}' != store state "
+               f"'{state['last_rev']}' — run `update` first (or --force)")
+        if not getattr(args, "force", False):
+            sys.exit(msg)
+        print("WARNING: " + msg)
+
+    print("chunking (tree-vs-store consistency check + audit sources)…")
+    full = dict(cfg); full.pop("files", None)
+    rows, manifest, sources = chunker.run_chunker(full, progress=True)
+    snap = {}
+    for r in rows:
+        snap.setdefault((r["citation"], r.get("alternate", "")), store_mod.content_hash(r))
+    cur = {(r["citation"], r.get("alternate", "")): r["content_hash"] for r in st.current_rows()}
+    if snap != cur:
+        ndiff = len({k for k in set(snap) | set(cur) if snap.get(k) != cur.get(k)})
+        msg = (f"input tree differs from the store's current rows ({ndiff} identities) "
+               f"— run `update` first (or --force)")
+        if not getattr(args, "force", False):
+            sys.exit(msg)
+        print("WARNING: " + msg)
+
+    if cfg.get("files"):                                  # explicit queue
+        stems = [os.path.basename(f) for f in cfg["files"]]
+        stems = [s[:-5] if s.endswith(".dita") else s for s in stems]
+        want = {s if s.startswith(f"{reg}-") else f"{reg}-{s}" for s in stems}
+    else:                                                 # default queue: rows without verified refs
+        want = {_unit_of(r["citation"]) for r in st.current_rows()
+                if not r.get("refs_verified_from")}
+    units = [(r["citation"], chunker.strip_alternates(open(sources[r["citation"]], encoding="utf-8").read()))
+             for r in rows if r["type"] in ("section", "subsection")
+             and not r.get("alternate") and r["citation"] in sources
+             and r["citation"] in want]
+    if args.limit:
+        units = units[:args.limit]
+    if not units:
+        print("audit queue empty — every current row already carries verified refs "
+              "(use --files to force specific units)")
+        return
+    print(f"audit queue: {len(units)} unit(s)")
+
+    gemini_audit.TRACKER.reset()
+    t = {}; t0 = time.perf_counter()
+    if args.mock_llm:
+        llm, backend = json.load(open(args.mock_llm, encoding="utf-8")), None
+    else:
+        backend = _audit_backend(cfg)
+        print(f"auditing {len(units)} units with {cfg['gemini']['model']} via {cfg['provider']} "
+              f"(reasoning={cfg['gemini']['reasoning']}, concurrency={cfg['concurrency']})…")
+        llm = backend.audit(units, cfg, os.path.join(out, "llm_cache"))
+    t["audit"] = time.perf_counter() - t0
+
+    addr = reconcile.build_address_map(rows)              # full corpus: cross-file targets validate
+    queue_units = {u for u, _ in units}
+    rows_q = [r for r in rows if _unit_of(r["citation"]) in queue_units]
+    ledger, stats = reconcile.reconcile(rows_q, llm, addr)
+
+    t["judge"] = 0.0
+    if cfg["gemini"].get("judge") and backend is not None:
+        review_idx = [i for i, it in enumerate(ledger)
+                      if it["needs_review"] and it.get("scope") == "internal"]
+        if review_idx:
+            from collections import defaultdict
+            raw_by_cit = dict(units)
+            by_unit = defaultdict(list)
+            for i in review_idx:
+                by_unit[ledger[i]["unit"]].append(i)
+            jobs = [(ucit, raw_by_cit.get(ucit, ""),
+                     [{"n": i, "target": ledger[i]["target"], "alternate": ledger[i].get("alternate", ""),
+                       "source": "parser" if ledger[i]["status"] == "parser_inferred" else "llm",
+                       "evidence": (ledger[i]["parser"] or ledger[i]["llm"] or {}).get("evidence", "")}
+                      for i in idxs])
+                    for ucit, idxs in by_unit.items()]
+            print(f"judging {len(jobs)} units with disagreements (concurrency={cfg['concurrency']})…")
+            t1 = time.perf_counter()
+            recs_by_unit = backend.judge_all(jobs, cfg, os.path.join(out, "llm_cache"))
+            t["judge"] = time.perf_counter() - t1
+            for i in review_idx:
+                recs = recs_by_unit.get(ledger[i]["unit"], {})
+                if i in recs:
+                    ledger[i]["judge"] = {"choice": recs[i].get("choice"),
+                                          "value": recs[i].get("value", []),
+                                          "rationale": recs[i].get("rationale", "")}
+
+    t["total"] = time.perf_counter() - t0
+    summary = _run_summary(cfg, stats, t, gemini_audit.TRACKER.summary(), len(units), bool(args.mock_llm))
+    summary["version"] = stamp
+    json.dump(ledger, open(os.path.join(out, f"{reg}_ledger.json"), "w", encoding="utf-8"),
+              indent=2, ensure_ascii=False)
+    json.dump(summary, open(os.path.join(out, f"{reg}_token_usage.json"), "w", encoding="utf-8"),
+              indent=2, ensure_ascii=False)
+    review.write_review(ledger, os.path.join(out, f"{reg}_review.html"),
+                        f"{reg} cross-reference review", summary)
+    n_review = sum(1 for it in ledger if it["needs_review"])
+    print(f"  reconcile: {stats}")
+    _print_summary(summary)
+    print(f"  review page: {os.path.join(out, f'{reg}_review.html')}  "
+          f"({len(ledger)} refs, {n_review} need review)")
+
+    if getattr(args, "auto_accept", False):
+        judge_on = bool(cfg["gemini"].get("judge"))
+        decisions = reconcile.auto_decisions(ledger, judge_on)
+        dpath = os.path.join(out, f"{reg}_decisions.json")
+        json.dump(decisions, open(dpath, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+        print(f"auto-accept: {len(decisions)} decision(s) -> applying to store…")
+        cmd_apply(cfg, argparse.Namespace(decisions=[dpath],
+                                          store_dir=getattr(args, "store_dir", None)))
+
+
+def cmd_export(cfg, args):
+    """Flat JSON snapshot of the rows in force on a date (default: today) — the
+    store-first replacement for <REG>_verified.json, and it works for ANY date."""
+    st = _load_store(cfg, args)
+    date = getattr(args, "as_of", None) or datetime.date.today().isoformat()
+    rows = st.as_of(date)
+    if not rows:
+        sys.exit(f"no rows in force on {date} (store covers "
+                 f"{st.editions[0]['effective_date']} onward)" if st.editions else "store is empty")
+    rows.sort(key=chunker.sort_key)
+    path = getattr(args, "out_path", None) or os.path.join(
+        cfg["output_dir"], f"{cfg['regulation']}_asof_{date}.json")
+    json.dump(rows, open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+    print(f"exported {len(rows)} rows in force on {date} -> {path}")
+
 
 def cmd_apply(cfg, args):
+    """Apply the ledger's corroborations + review decisions DIRECTLY to the versioned
+    store's current rows (only the audited units are touched), then stamp
+    refs_verified_from.  The store is the single source of truth for verified refs."""
     out = cfg["output_dir"]; reg = cfg["regulation"]
-    rows = json.load(open(os.path.join(out, f"{reg}_chunks.json"), encoding="utf-8"))
+    st = _load_store(cfg, args)
+    if not st.rows:
+        sys.exit("store is empty — run `update` or `replay` first")
     lpath = os.path.join(out, f"{reg}_ledger.json")
     ledger = json.load(open(lpath, encoding="utf-8")) if os.path.exists(lpath) else []
     int_conf, ext_conf, ext_index = {}, {}, {}            # corroborated sets + external-item index
@@ -359,6 +516,11 @@ def cmd_apply(cfg, args):
     # reject removes a ref; manual replaces it with corrected citation(s) -> both drop the original
     int_replaced = {(d["unit"], reconcile.norm_cit(d["target"]), d.get("alternate", "")) for d in int_dec if d["choice"] in ("reject", "manual")}
     ext_replaced = {(d["unit"], d["target"], d.get("locator", "")) for d in ext_dec if d["choice"] in ("reject", "manual")}
+
+    # scope: only the audited units' CURRENT rows are touched; everything else in the
+    # store (other units, historical versions) is left exactly as it was
+    audited = {it["unit"] for it in ledger} | {d["unit"] for d in decisions}
+    rows = [r for r in st.current_rows() if _unit_of(r["citation"]) in audited]
 
     # 1) tag existing (parser) refs with status; drop any the human rejected/replaced
     removed = 0
@@ -444,11 +606,14 @@ def cmd_apply(cfg, args):
                 "status": acc_status})
             added += 1
 
-    path = os.path.join(out, f"{reg}_verified.json")
-    json.dump(rows, open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
-    sv = rows[0].get("source_version", "?") if rows else "?"   # version travels on each chunk
-    print(f"wrote {path}  (+{added} approved, -{removed} rejected/replaced, {len(decisions)} decisions; "
-          f"source={sv})")
+    stamp_v = version_stamp(cfg)["source_version"]
+    for r in rows:                                        # these units are now verified as of this edition
+        r["refs_verified_from"] = (r.get("last_seen_version")
+                                   or (stamp_v if stamp_v != "unknown" else r.get("source_version", "")))
+    st.save()
+    print(f"applied to store: {len(rows)} current rows across {len(audited)} unit(s) "
+          f"(+{added} approved, -{removed} rejected/replaced, {len(decisions)} decisions) "
+          f"-> {st.path}")
 
 def cmd_review(cfg, args):
     """Serve the review page on localhost. Its "Save & Apply" button POSTs decisions back here,
@@ -475,15 +640,15 @@ def cmd_review(cfg, args):
                 ndec = len(decisions)
                 dpath = os.path.join(out, f"{reg}_decisions.json")
                 json.dump(decisions, open(dpath, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
-                cmd_apply(cfg, argparse.Namespace(decisions=[dpath]))
+                cmd_apply(cfg, argparse.Namespace(decisions=[dpath], store_dir=None))
                 body, code, ok = json.dumps({"ok": True, "decisions": ndec,
-                                             "verified": os.path.join(out, f"{reg}_verified.json")}), 200, True
+                                             "applied_to": "versioned store"}), 200, True
             except Exception as e:                          # noqa: BLE001
                 body, code = json.dumps({"ok": False, "error": str(e)}), 500
             self.send_response(code); self.send_header("Content-Type", "application/json")
             self.end_headers(); self.wfile.write(body.encode())
             if ok:                                          # job done — stop serving (shutdown() must run off the serve thread)
-                print(f"\nSaved & applied {ndec} decision(s) -> out/{reg}_verified.json.  Done.")
+                print(f"\nSaved & applied {ndec} decision(s) to the versioned store.  Done.")
                 threading.Thread(target=self.server.shutdown, daemon=True).start()
 
     class Server(socketserver.TCPServer):
@@ -491,8 +656,8 @@ def cmd_review(cfg, args):
 
     url = f"http://127.0.0.1:{port}/{page}"
     with Server(("127.0.0.1", port), Handler) as srv:
-        print(f"review: {url}\n  review, then click 'Save & Apply' -> writes out/{reg}_verified.json "
-              f"and stops the server.  (Ctrl+C to stop without applying.)")
+        print(f"review: {url}\n  review, then click 'Save & Apply' -> applies decisions to the "
+              f"versioned store and stops the server.  (Ctrl+C to stop without applying.)")
         try:
             webbrowser.open(url)
             srv.serve_forever()
@@ -533,11 +698,49 @@ def main():
     a = sub.add_parser("apply"); add_overrides(a)
     a.add_argument("--decisions", nargs="+", required=True, metavar="FILE",
                    help="one or more decisions.json files; later files override earlier per (unit, target)")
+    a.add_argument("--store-dir", dest="store_dir")
     v = sub.add_parser("review"); add_overrides(v)
     v.add_argument("--port", type=int, help="localhost port for the review server (default 8765)")
+    u = sub.add_parser("update", help="ingest the GSA clone's current state into the versioned store (no LLM)")
+    add_overrides(u)
+    u.add_argument("--repo", help="path to the GSA-Acquisition-FAR clone (default: input_dir's repo)")
+    u.add_argument("--store-dir", dest="store_dir")
+    u.add_argument("--effective-date", dest="effective_date", metavar="YYYY-MM-DD",
+                   help="override the legal effective date (else parsed from the ditamap rev)")
+    u.add_argument("--force", action="store_true", help="re-ingest even if the commit was already processed")
+    pl = sub.add_parser("replay", help="replay historical FAC editions from the GSA repo into the store")
+    add_overrides(pl)
+    pl.add_argument("--repo", required=True, help="path to a GSA-Acquisition-FAR clone with history")
+    pl.add_argument("--store-dir", dest="store_dir")
+    pl.add_argument("--since", help="earliest FAC to replay, e.g. 2025-04 (default: all parseable)")
+    pl.add_argument("--branch", help="branch/ref to walk (default: origin/HEAD)")
+    pl.add_argument("--limit-editions", dest="limit_editions", type=int)
+    pl.add_argument("--errata-check", dest="errata_check", action="store_true",
+                    help="also ingest a pre-settled commit of the final edition to exercise the errata path")
+    au = sub.add_parser("audit",
+                        help="store-driven LLM audit: only units whose current rows lack verified refs (or --files)")
+    add_overrides(au)
+    au.add_argument("--files", nargs="+", metavar="FILE",
+                    help="audit only these units (e.g. 22.1503) instead of the store's queue")
+    au.add_argument("--store-dir", dest="store_dir")
+    au.add_argument("--mock-llm"); au.add_argument("--limit", type=int)
+    au.add_argument("--force", action="store_true",
+                    help="proceed even if the input tree doesn't match the store's current rows")
+    au.add_argument("--auto-accept", dest="auto_accept", action="store_true",
+                    help="skip human review: apply the parser+LLM union (or judge verdicts with --judge) to the store")
+    ex = sub.add_parser("export", help="flat JSON of the rows in force on a date (default today)")
+    add_overrides(ex)
+    ex.add_argument("--as-of", dest="as_of", metavar="YYYY-MM-DD")
+    ex.add_argument("--out", dest="out_path", metavar="PATH")
+    ex.add_argument("--store-dir", dest="store_dir")
     args = ap.parse_args()
     cfg = load_config(args)
-    {"run": cmd_run, "apply": cmd_apply, "review": cmd_review}[args.cmd](cfg, args)
+    if args.cmd in ("update", "replay"):
+        import update
+        {"update": update.cmd_update, "replay": update.cmd_replay}[args.cmd](cfg, args)
+        return
+    {"run": cmd_run, "apply": cmd_apply, "review": cmd_review,
+     "audit": cmd_audit, "export": cmd_export}[args.cmd](cfg, args)
 
 if __name__ == "__main__":
     main()

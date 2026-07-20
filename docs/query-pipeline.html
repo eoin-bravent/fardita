@@ -1,0 +1,763 @@
+<style>
+  :root{
+    --ground:#F3F1EA;--surface:#FFFFFF;--surface-2:#FBFAF6;
+    --ink:#102032;--ink-soft:#33485C;--muted:#6A7C8C;--faint:#92A2B0;
+    --line:#E0DCCF;--line-2:#CFCABB;
+    --accent:#9A6E1C;--accent-deep:#7A5613;--reg:#0E7C8B;--inv:#CE3A2C;--teal:#0E7C8B;--amber:#C77A0E;
+    --llm:#2E8A3B;--blue:#2C5C9C;--blue-deep:#21477A;--mem:#6E4FA6;
+    --disp:"Fraunces",Georgia,"Times New Roman",serif;
+    --mono:"IBM Plex Mono",ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+    --sans:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  .wrap{max-width:1180px;margin:0 auto;padding:60px 30px 92px;color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.65;background:var(--ground);}
+
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 14px;}
+  h1{font-family:var(--disp);font-size:clamp(32px,4.3vw,50px);line-height:1.05;letter-spacing:-.02em;font-weight:600;margin:0 0 14px;text-wrap:balance;}
+  .lede{font-size:18px;color:var(--ink-soft);max-width:66ch;margin:0 0 30px;line-height:1.62;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 10px;padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:14px;}
+  .contract{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:18px 22px;margin:0 0 56px;font-size:14px;color:var(--muted);line-height:1.7;}
+  .contract .contract-title{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+  .contract code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--accent-deep);}
+  .legend .li{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);font-family:var(--mono);}
+  .legend .li:not(:last-child){padding-right:12px;border-right:1px solid var(--line);}
+  .tag{font-family:var(--mono);font-size:12px;letter-spacing:.02em;padding:3px 8px;border-radius:6px;white-space:nowrap;font-weight:600;}
+  .tag.reg{color:var(--reg);background:color-mix(in srgb,var(--reg) 12%,white);border:1px solid color-mix(in srgb,var(--reg) 30%,white);}
+  .tag.inv{color:#B32519;background:color-mix(in srgb,var(--inv) 16%,white);border:1px solid color-mix(in srgb,var(--inv) 44%,white);}
+  .tag.gate{color:#9C5B04;background:color-mix(in srgb,var(--amber) 17%,white);border:1px solid color-mix(in srgb,var(--amber) 46%,white);}
+  .tag.llm{color:#256E2A;background:color-mix(in srgb,var(--llm) 17%,white);border:1px solid color-mix(in srgb,var(--llm) 44%,white);}
+  .tag.mem{color:#553B8F;background:color-mix(in srgb,var(--mem) 15%,white);border:1px solid color-mix(in srgb,var(--mem) 42%,white);}
+  .tag.v01{color:var(--muted);background:transparent;border:1px dashed var(--faint);}
+  .tag.par{color:var(--blue-deep);background:color-mix(in srgb,var(--blue) 12%,white);border:1px solid color-mix(in srgb,var(--blue) 34%,white);}
+
+  .sec-head{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:0 0 24px;padding-bottom:12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;}
+  .sec-head span{color:var(--ink);font-weight:600;}
+
+  /* ===== chain ===== */
+  .chain{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:30px 30px 14px;margin-bottom:52px;overflow-x:auto;}
+  .phase-row{display:flex;gap:22px;align-items:flex-start;}
+  .phase-node{position:relative;flex:0 0 40px;display:flex;justify-content:center;padding-top:2px;min-height:64px;}
+  .phase-node::before{content:"";position:absolute;top:6px;bottom:-14px;left:50%;transform:translateX(-50%);width:2px;background:var(--line);}
+  .phase-row:last-child .phase-node::before{display:none;}
+  .dot{position:relative;z-index:1;width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;font-family:var(--mono);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 5px var(--surface);}
+  .phase-body{padding-bottom:22px;min-width:0;}
+  .phase-name{font-weight:600;font-size:15px;letter-spacing:-.01em;margin-bottom:9px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .phase-name em{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:.02em;}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 4px;}
+  .node{font-family:var(--mono);font-size:12.5px;padding:5px 10px;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;color:var(--ink);white-space:nowrap;}
+  .node .n{color:var(--blue);font-weight:600;margin-right:4px;}
+  .node.sec{border-color:color-mix(in srgb,var(--inv) 40%,white);background:color-mix(in srgb,var(--inv) 7%,white);}
+  .node.gate{border-color:color-mix(in srgb,var(--amber) 50%,white);background:color-mix(in srgb,var(--amber) 13%,white);}
+  .arr{color:var(--faint);font-size:13px;padding:0 1px;}
+  .lanes{display:inline-flex;flex-direction:column;gap:5px;padding:8px 10px 8px 14px;border-left:2px solid var(--teal);background:color-mix(in srgb,var(--teal) 5%,white);border-radius:0 8px 8px 0;position:relative;}
+  .lanes .plabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-bottom:1px;}
+  .lanes .node{background:#fff;}
+  .lanes .node.opt{color:var(--muted);border-style:dashed;}
+
+  /* ===== detail ===== */
+  .phase-block{margin-bottom:40px;}
+  .pb-head{display:flex;align-items:center;gap:12px;margin:0 0 16px;}
+  .pb-letter{width:28px;height:28px;border-radius:7px;background:var(--blue);color:#fff;font-family:var(--mono);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .pb-head h3{margin:0;font-size:19px;font-weight:650;letter-spacing:-.01em;}
+  .pb-head .pb-sub{font-family:var(--mono);font-size:12.5px;color:var(--faint);letter-spacing:.02em;}
+
+  .cards{display:grid;grid-template-columns:1fr;gap:16px;align-items:start;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px 22px;display:flex;flex-direction:column;gap:14px;}
+  .card-top{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
+  .num{font-family:var(--mono);font-size:13px;font-weight:650;color:#fff;background:var(--blue);padding:3px 8px;border-radius:6px;flex:0 0 auto;}
+  .card-title{font-weight:650;font-size:17px;letter-spacing:-.01em;line-height:1.3;}
+  .card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:1px;}
+
+  .io-in{display:flex;gap:10px;align-items:flex-start;}
+  .io-key{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding-top:6px;flex:0 0 30px;}
+  .io-in .io-key{color:var(--teal);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-family:var(--mono);font-size:12.5px;padding:4px 9px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap;}
+  .io-in .chip{border-color:color-mix(in srgb,var(--teal) 24%,white);background:color-mix(in srgb,var(--teal) 6%,white);}
+  .io-in .chip.ext{color:var(--muted);border-style:dashed;background:transparent;}
+
+  .io-out{display:flex;gap:10px;align-items:flex-start;}
+  .io-out .io-key{color:var(--accent);}
+  .out-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+  .oname{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent-deep);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .oname .ext-note{font-weight:400;font-size:12px;color:var(--muted);}
+  pre.json{font-family:var(--mono);font-size:12.5px;line-height:1.72;background:#F4F6FB;border:1px solid #DCE2EC;border-radius:10px;padding:14px 17px;white-space:pre;overflow-x:auto;color:#33485C;margin:0;}
+  pre.json .k{color:#2C5C9C;}
+  pre.json .s{color:#0E7C8B;}
+  pre.json .n{color:#9A6E1C;}
+  pre.json .bl{color:#6D5296;}
+
+  .summary{font-size:15px;color:var(--ink-soft);margin:0 0 0 40px;line-height:1.68;max-width:none;}
+
+  .footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12.5px;color:var(--faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+
+  @media (max-width:640px){
+    .wrap{padding:40px 16px 64px;font-size:15.5px;}
+    .chain{padding:22px 18px 8px;}
+    .phase-row{gap:14px;}
+    .cards{grid-template-columns:1fr;}
+    .card{padding:18px 16px 20px;}
+    pre.json{font-size:12px;}
+    .summary{margin-left:0;font-size:14.5px;}
+  }
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">FARDITA · Query Orchestration · v0.1</p>
+  <h1>Regulatory RAG Query Pipeline</h1>
+  <p class="lede">A modular, typed pipeline for answering FAR/DFARS questions from authorized source material. Stages are intended to use stable contract boundaries; marked strategy slots show where the implementation can be swapped while keeping the same required input and output contract. Each stage shows its input references and one populated example of the object it produces.</p>
+
+  <div class="legend">
+    <span class="li"><span class="tag reg">swappable implementation</span> same required output contract; implementation can change</span>
+    <span class="li"><span class="tag inv">required control</span> must always run</span>
+    <span class="li"><span class="tag gate">must pass</span> answer cannot continue unless it succeeds</span>
+    <span class="li"><span class="tag llm">model call</span> invokes the LLM/model</span>
+    <span class="li"><span class="tag mem">uses memory provider</span> provider-backed conversation state</span>
+    <span class="li"><span class="tag par">runs in parallel</span> concurrent fan-out</span>
+    <span class="li"><span class="tag v01">initial scope</span> simplified behavior for the first build</span>
+  </div>
+
+  <div class="contract">
+    <div class="contract-title">Proposed stage contract pattern</div>
+    Every stage takes <code>StageInput&lt;T&gt;</code> = PipelineContext + typed payload, and returns <code>StageResult&lt;T&gt;</code> = typed output + trace (stage, version, latency, input/output counts, decision) + warnings + errors. The cards below show only the typed payload — the wrapper and trace are identical for every stage, and the traces feed the audit log and evaluation set.<br><br>
+    A <code>swappable implementation</code> tag does not mean the stage can disappear or return a different shape. The stage keeps a fixed responsibility and output contract while its internals change — the reranker, for instance, can start as a no-op and later become a cross-encoder or LLM reranker, but it must still return a ranked candidate set.<br><br>
+    Any <code>required control</code> or <code>must pass</code> stage can fail closed by returning a typed fallback such as <code>insufficient_evidence</code>, <code>blocked</code>, <code>clarification_required</code>, or <code>manual_fallback</code>.<br><br>
+    The object examples are representative contract sketches, not final API schemas: the stable decisions are the stage boundaries, required controls, and data-flow responsibilities; exact field names and validation rules remain subject to implementation review. Conversation and memory behavior is described on the stages that own it (2, 4, 21).
+  </div>
+
+  <!-- ============ THE CHAIN ============ -->
+  <div class="sec-head">The chain <span>10 phases · 21 stages</span></div>
+
+  <div class="chain">
+    <div class="phase-row"><div class="phase-node"><span class="dot">A</span></div><div class="phase-body">
+      <div class="phase-name">Admit <em>fail fast · no LLM</em></div>
+      <div class="flow"><span class="node"><span class="n">1</span>Capture</span><span class="arr">→</span><span class="node"><span class="n">2</span>Auth + Conversation Context</span><span class="arr">→</span><span class="node sec"><span class="n">3</span>Raw Input Pre-Screen</span></div>
+    </div></div>
+    <div class="phase-row"><div class="phase-node"><span class="dot">B</span></div><div class="phase-body">
+      <div class="phase-name">Understand <em>≤1 LLM touch · rules-first</em></div>
+      <div class="flow"><span class="node"><span class="n">4</span>Analyze + Route</span></div>
+    </div></div>
+    <div class="phase-row"><div class="phase-node"><span class="dot">C</span></div><div class="phase-body">
+      <div class="phase-name">Plan <em>keystone</em></div>
+      <div class="flow"><span class="node"><span class="n">5</span>Retrieval Plan</span></div>
+    </div></div>
+    <div class="phase-row"><div class="phase-node"><span class="dot">D</span></div><div class="phase-body">
+      <div class="phase-name">Derive queries</div>
+      <div class="flow"><span class="node"><span class="n">6</span>Query Rewriter</span></div>
+    </div></div>
+    <div class="phase-row"><div class="phase-node"><span class="dot">E</span></div><div class="phase-body">
+      <div class="phase-name">Retrieve <em>parallel fan-out</em></div>
+      <div class="flow"><span class="node"><span class="n">7</span>Lanes</span><span class="arr">→</span><span class="lanes"><span class="plabel">⇉ run in parallel</span><span class="node">exact_citation</span><span class="node">lexical</span><span class="node">vector</span><span class="node opt">historical (opt)</span></span></div>
+    </div></div>
+    <div class="phase-row"><div class="phase-node"><span class="dot">F</span></div><div class="phase-body">
+      <div class="phase-name">Assemble evidence</div>
+      <div class="flow"><span class="node sec"><span class="n">8</span>ACL / RLS #1</span><span class="arr">→</span><span class="node"><span class="n">9</span>Graph Expansion</span><span class="arr">→</span><span class="node sec"><span class="n">10</span>ACL / RLS #2</span><span class="arr">→</span><span class="node"><span class="n">11</span>Canonicalize</span></div>
+    </div></div>
+    <div class="phase-row"><div class="phase-node"><span class="dot">G</span></div><div class="phase-body">
+      <div class="phase-name">Order</div>
+      <div class="flow"><span class="node"><span class="n">12</span>Rank Fusion</span><span class="arr">→</span><span class="node"><span class="n">13</span>Rerank</span><span class="arr">→</span><span class="node"><span class="n">14</span>Authority / Recency Sort</span></div>
+    </div></div>
+    <div class="phase-row"><div class="phase-node"><span class="dot">H</span></div><div class="phase-body">
+      <div class="phase-name">Generate</div>
+      <div class="flow"><span class="node"><span class="n">15</span>Context Compose + Compact</span><span class="arr">→</span><span class="node"><span class="n">16</span>Prompt Generate</span><span class="arr">→</span><span class="node"><span class="n">17</span>LLM Answer</span></div>
+    </div></div>
+    <div class="phase-row"><div class="phase-node"><span class="dot">I</span></div><div class="phase-body">
+      <div class="phase-name">Verify + Return <em>must pass before answer</em></div>
+      <div class="flow"><span class="node sec"><span class="n">18</span>Output Guardrail</span><span class="arr">→</span><span class="node gate"><span class="n">19</span>Citation Verification</span><span class="arr">→</span><span class="node"><span class="n">20</span>Build Answer</span></div>
+    </div></div>
+    <div class="phase-row"><div class="phase-node"><span class="dot">J</span></div><div class="phase-body">
+      <div class="phase-name">Record</div>
+      <div class="flow"><span class="node"><span class="n">21</span>Audit + Conversation State</span></div>
+    </div></div>
+  </div>
+
+  <!-- ============ STAGE DETAIL ============ -->
+  <div class="sec-head">Stage detail <span>inputs → example output shape</span></div>
+
+  <!-- PHASE A -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">A</span><h3>Admit</h3><span class="pb-sub">fail fast · no LLM</span></div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="num">01</span><span class="card-title">Capture</span></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip ext">raw_query</span><span class="chip ext">user / session</span><span class="chip ext">channel</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">QueryRequest</div>
+<pre class="json">{
+  "request_id": "req_123",
+  "query_id": "q_456",
+  "session_id": "sess_789",
+  "conversation_id": "conv_321",
+  "turn_id": "turn_004",
+  "raw_query": "What does FAR 15.306 say about discussions and when does it apply?",
+  "requested_corpus_ids": [],
+  "source_channel": "web_ui",
+  "user_locale": "en-US",
+  "submitted_at": "2026-07-06T00:00:00Z"
+}</pre></div></div>
+        <p class="summary">Wraps the incoming request — query text, user, channel — into one traceable record and runs basic validation. It standardizes rather than interprets, so every later stage has a consistent, identified input.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">02</span><span class="card-title">Auth + Conversation Context Load</span></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">QueryRequest</span><span class="chip ext">identity</span><span class="chip ext">tenant</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">AuthConversationContext</div>
+<pre class="json">{
+  "user_id": "user_123",
+  "tenant_id": "tenant_a",
+  "roles": ["acquisition_user"],
+  "allowed_corpus_ids": ["FAR", "DFARS"],
+  "allowed_source_types": ["published_regulation", "approved_guidance"],
+  "can_access_historical": true,
+  "can_use_debug_traces": false,
+  "conversation_context": {
+    "mode": "session_only",
+    "provider": "configured_conversation_memory_provider",
+    "conversation_id": "conv_321",
+    "current_turn_id": "turn_004",
+    "recent_citations": ["FAR 15.306"],
+    "active_topic": "discussions",
+    "last_answer_id": "ans_122",
+    "pending_clarification": null,
+    "history_policy": "session-window-v0.1",
+    "recent_turns_summary": "User has been asking about FAR discussions and applicability."
+  }
+}</pre></div></div>
+        <p class="summary">Determines who is asking and what they may access — rule sets, document types, historical versions — and loads session-only conversation context through the configured memory provider (e.g. Spring AI ChatMemory, Bedrock Sessions, or LangGraph checkpointing). That context helps resolve follow-up questions but is never treated as permanent memory or as source evidence; persistent cross-session memory is deferred.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">03</span><span class="card-title">Raw Input Pre-Screen</span><div class="card-tags"><span class="tag inv">required control</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">QueryRequest</span><span class="chip">AuthConversationContext</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">SafetyDecision</div>
+<pre class="json">{
+  "decision": "allow",
+  "risk_flags": [],
+  "sanitized_query": "What does FAR 15.306 say about discussions...",
+  "reason_code": null,
+  "policy_version": "jguards-input-v0.1"
+}</pre></div></div>
+        <p class="summary">A non-LLM pre-screen on the raw query: injection, PII / secrets, length, off-domain. The first and cheapest safety layer, before any model — deeper checks come later, after normalization and routing.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PHASE B -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">B</span><h3>Understand</h3><span class="pb-sub">≤1 LLM touch · rules-first</span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top"><span class="num">04</span><span class="card-title">Analyze + Route</span><div class="card-tags"><span class="tag v01">rules-only now</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">QueryRequest</span><span class="chip">AuthConversationContext</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">QueryAnalysis <span class="ext-note">merges NormalizedQuery + RouteDecision</span></div>
+<pre class="json">{
+  "standalone_query": "What does FAR 15.306 say about discussions, and when does it apply?",
+  "conversation_mode": "follow_up",
+  "resolved_references": [
+    { "raw": "it", "resolved_to": "FAR 15.306", "source": "conversation_context" }
+  ],
+  "detected_references": [
+    { "raw": "FAR 15.306", "canonical": "FAR 15.306", "type": "regulatory_section", "corpus": "FAR" }
+  ],
+  "detected_corpus_ids": ["FAR"],
+  "detected_terms": ["discussions", "negotiated procurement"],
+  "time_mode": "current",
+  "primary_intent": "exact_citation",
+  "secondary_intents": ["procedural_explanation"],
+  "route": "exact_citation_plus_hybrid_retrieval",
+  "routing_confidence": "high",
+  "requires_decomposition": true,
+  "required_capabilities": ["exact_citation_lookup", "vector_search", "graph_expansion"]
+}</pre></div></div>
+        <p class="summary">Interprets the question — citations, terms, current-vs-historical intent, and whether the turn is a follow-up — then rewrites it as a standalone query and chooses how to handle it. If the corpus wasn't pre-set it's detected here; if too ambiguous to answer safely, it asks the user to clarify. Safety is layered: route-level policy can still block, clarify, or restrict the retrieval plan after normalization (say, a request that resolves to restricted historical content). QueryAnalysis is a convenience wrapper for the diagram — implementations may keep NormalizedQuery and RouteDecision as separate typed objects.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE C -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">C</span><h3>Plan</h3><span class="pb-sub">the modularity keystone</span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top"><span class="num">05</span><span class="card-title">Retrieval Plan</span></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">QueryAnalysis</span><span class="chip">AuthConversationContext</span><span class="chip ext">config</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">RetrievalPlan</div>
+<pre class="json">{
+  "retrieval_plan_id": "plan_001",
+  "rewrite_strategies": ["expansion"],
+  "lanes": [
+    { "lane": "exact_citation", "enabled": true, "top_k": 5 },
+    { "lane": "lexical", "enabled": true, "top_k": 25 },
+    { "lane": "vector", "enabled": true, "top_k": 25 }
+  ],
+  "filters": { "corpus_ids": ["FAR"], "current_only": true, "approved_sources_only": true },
+  "graph": { "enabled": true, "max_hops": 1, "placement": "post_initial_acl" },
+  "ranking": { "fusion_method": "weighted_rrf", "rerank": false, "max_candidates": 100 }
+}</pre></div></div>
+        <p class="summary">Produces an explicit plan for retrieval — which search methods run, how many results each returns, what to filter, and how to combine and rank. Later stages follow it, which is what makes search methods swappable.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE D -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">D</span><h3>Derive queries</h3></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top"><span class="num">06</span><span class="card-title">Query Rewriter</span><div class="card-tags"><span class="tag reg">swappable implementation</span><span class="tag v01">simple query expansion</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">QueryAnalysis</span><span class="chip">RetrievalPlan</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">DerivedQuerySet</div>
+<pre class="json">{
+  "parent_query_id": "q_456",
+  "derived": [
+    {
+      "id": "dq_1",
+      "text": "FAR 15.306 discussions",
+      "kind": "expansion",
+      "fan_in": "fuse",
+      "target_lane_hint": "lexical"
+    },
+    {
+      "id": "dq_2",
+      "text": "exchanges with offerors after receipt of proposals",
+      "kind": "expansion",
+      "fan_in": "fuse",
+      "target_lane_hint": "vector"
+    }
+  ]
+}</pre></div></div>
+        <p class="summary">Generates one or more search queries from the question using whichever rewrite algorithms the plan enabled — rephrasing (expansion), hypothetical-answer (HyDE), step-back, decomposition, and others; new ones plug in here as strategies. Separately, each derived query carries a <span style="font-family:var(--mono)">fan_in</span> flag for how its results are recombined — merged into one ranked pool, or kept apart and composed into a multi-part answer — which is a different axis from which algorithm produced it. v0.1 enables expansion only, run deterministically; model-assisted rewriting can be added later.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE E -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">E</span><h3>Retrieve</h3><span class="pb-sub">parallel fan-out</span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top"><span class="num">07</span><span class="card-title">Retrieval Lanes</span><div class="card-tags"><span class="tag reg">swappable implementation</span><span class="tag par">runs in parallel</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">DerivedQuerySet</span><span class="chip">RetrievalPlan</span><span class="chip">AuthConversationContext</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">RetrievalLaneResult[] <span class="ext-note">candidates: RawCandidate[]</span></div>
+<pre class="json">[
+  {
+    "lane": "vector",
+    "status": "success",
+    "candidates": [
+      {
+        "candidate_id": "cand_vec_001",
+        "content_item_id": "far_15_306",
+        "chunk_version_id": "chunk_001",
+        "source_id": "far_current",
+        "corpus_id": "FAR",
+        "citation": "FAR 15.306",
+        "metadata": {
+          "authority_tier": "primary_regulation",
+          "is_current": true,
+          "approval_status": "approved"
+        },
+        "retrieval": { "raw_rank": 3, "raw_score": 0.84, "match_type": "semantic" },
+        "authorization": { "visibility_status": "prefiltered_by_scope" }
+      }
+    ]
+  }
+]</pre></div></div>
+        <p class="summary">Runs the enabled search lanes concurrently — exact-citation, lexical, vector — each returning its own candidate list with a scope prefilter and enough provenance to preserve source, chunk, citation, and approval metadata downstream.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE F -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">F</span><h3>Assemble evidence</h3></div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="num">08</span><span class="card-title">ACL / RLS Filter #1</span><div class="card-tags"><span class="tag inv">required control</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">RetrievalLaneResult[]</span><span class="chip">AuthConversationContext</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">CandidateSet&lt;AuthorizedCandidate&gt; <span class="ext-note">+ filtered_candidates[]</span></div>
+<pre class="json">{
+  "candidate_set_id": "cset_authorized_001",
+  "candidate_type": "authorized",
+  "candidates": [
+    {
+      "chunk_version_id": "chunk_001",
+      "citation": "FAR 15.306",
+      "authorization": {
+        "visibility_status": "authorized",
+        "acl_policy_version": "acl-v0.1",
+        "authorized_reason": "role_has_corpus_access"
+      }
+    }
+  ],
+  "filtered_candidates": [
+    { "candidate_id": "cand_999", "filtered_reason": "not_authorized" }
+  ]
+}</pre></div></div>
+        <p class="summary">Removes candidates the user isn't authorized to see, before graph expansion runs.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">09</span><span class="card-title">Graph Expansion</span><div class="card-tags"><span class="tag reg">swappable implementation</span><span class="tag v01">optional shallow graph</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">CandidateSet&lt;AuthorizedCandidate&gt;</span><span class="chip">RetrievalPlan</span><span class="chip">AuthConversationContext</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">CandidateSet&lt;RawCandidate&gt; <span class="ext-note">graph-expanded · visibility: unknown</span></div>
+<pre class="json">{
+  "candidate_set_id": "cset_graph_001",
+  "candidate_type": "raw",
+  "candidates": [
+    {
+      "content_item_id": "far_15_3",
+      "chunk_version_id": "chunk_parent_001",
+      "source_id": "far_current",
+      "corpus_id": "FAR",
+      "citation": "FAR 15.3",
+      "metadata": {
+        "authority_tier": "primary_regulation",
+        "is_current": true,
+        "approval_status": "approved"
+      },
+      "retrieval": {
+        "lane": "graph_expansion",
+        "anchor_chunk_id": "chunk_001",
+        "edge_type": "parent",
+        "distance": 1
+      },
+      "authorization": { "visibility_status": "unknown" }
+    }
+  ]
+}</pre></div></div>
+        <p class="summary">Pulls related sections (parent / child / cross-reference) from authorized anchors, subject to the plan's filters.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">10</span><span class="card-title">ACL / RLS Filter #2</span><div class="card-tags"><span class="tag inv">required control</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">CandidateSet&lt;RawCandidate&gt;</span><span class="chip">AuthConversationContext</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">CandidateSet&lt;AuthorizedCandidate&gt; <span class="ext-note">same shape as #08</span></div>
+<pre class="json">{
+  "candidate_set_id": "cset_authorized_002",
+  "candidate_type": "authorized",
+  "candidates": [
+    {
+      "chunk_version_id": "chunk_parent_001",
+      "citation": "FAR 15.3",
+      "authorization": { "visibility_status": "authorized", "authorized_reason": "role_has_corpus_access" }
+    }
+  ],
+  "filtered_candidates": []
+}</pre></div></div>
+        <p class="summary">Re-applies authorization to the newly expanded candidates; nothing proceeds unless <span style="font-family:var(--mono)">visibility_status = authorized</span>.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">11</span><span class="card-title">Canonicalize</span></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">CandidateSet&lt;AuthorizedCandidate&gt;</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">CandidateSet&lt;CanonicalCandidate&gt; <span class="ext-note">+ duplicates_collapsed[]</span></div>
+<pre class="json">{
+  "candidate_set_id": "cset_canonical_001",
+  "candidate_type": "canonical",
+  "candidates": [
+    {
+      "canonical_candidate_id": "canon_001",
+      "content_item_id": "far_15_306",
+      "item_version_id": "far_15_306_current",
+      "chunk_version_id": "chunk_001",
+      "source_id": "far_current",
+      "citation": "FAR 15.306",
+      "metadata": {
+        "authority_tier": "primary_regulation",
+        "is_current": true,
+        "approval_status": "approved"
+      },
+      "authorization": { "visibility_status": "authorized" },
+      "lanes": ["exact_citation", "lexical", "vector"],
+      "raw_rank_by_lane": { "exact_citation": 1, "lexical": 3, "vector": 6 },
+      "raw_score_by_lane": { "exact_citation": 1.0, "lexical": 0.78, "vector": 0.84 }
+    }
+  ],
+  "duplicates_collapsed": [
+    { "kept": "chunk_001", "collapsed": ["rep_summary_001", "rep_hyde_001"] }
+  ]
+}</pre></div></div>
+        <p class="summary">Deduplicates candidates by passage: merges the same chunk found by multiple lanes into one entry retaining per-lane ranks and scores. No candidate may become canonical unless it has stable source, version, citation, and authorization metadata.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PHASE G -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">G</span><h3>Order</h3></div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="num">12</span><span class="card-title">Rank Fusion</span></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">CandidateSet&lt;CanonicalCandidate&gt;</span><span class="chip">RetrievalPlan</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">CandidateSet&lt;RankedCandidate&gt; <span class="ext-note">+ ranking_policy</span></div>
+<pre class="json">{
+  "candidate_set_id": "ranked_001",
+  "candidate_type": "ranked",
+  "ranking_policy": "weighted-rrf-v0.1",
+  "candidates": [
+    {
+      "canonical_candidate_id": "canon_001",
+      "chunk_version_id": "chunk_001",
+      "citation": "FAR 15.306",
+      "fused_rank": 1,
+      "fusion_score": 0.047,
+      "contributing_lanes": ["exact_citation", "lexical", "vector"]
+    }
+  ]
+}</pre></div></div>
+        <p class="summary">Combines the per-lane rankings into one order (weighted RRF) using rank position rather than raw scores; deterministic priority fallback.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">13</span><span class="card-title">Rerank</span><div class="card-tags"><span class="tag reg">swappable implementation</span><span class="tag v01">pass-through for now</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">CandidateSet&lt;RankedCandidate&gt;</span><span class="chip">QueryAnalysis</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">CandidateSet&lt;RankedCandidate&gt; <span class="ext-note">reranked</span></div>
+<pre class="json">{
+  "candidate_set_id": "ranked_reranked_001",
+  "candidate_type": "ranked",
+  "reranker_policy": "no-op-v0.1",
+  "candidates": [
+    {
+      "canonical_candidate_id": "canon_001",
+      "pre_rerank_rank": 1,
+      "post_rerank_rank": 1,
+      "rerank_score": null,
+      "rerank_reason": "no-op passthrough"
+    }
+  ]
+}</pre></div></div>
+        <p class="summary">An optional step that re-orders the top results by how directly they answer the question. It's a pass-through in v0.1; a model-based reranker can be added once its benefit can be measured.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">14</span><span class="card-title">Authority / Recency Sort</span></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">CandidateSet&lt;RankedCandidate&gt;</span><span class="chip">candidate.metadata</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">CandidateSet&lt;RankedCandidate&gt; <span class="ext-note">final</span></div>
+<pre class="json">{
+  "candidate_set_id": "ranked_final_001",
+  "candidate_type": "ranked",
+  "final_sort_policy": "authority-recency-citation-v0.1",
+  "candidates": [
+    {
+      "canonical_candidate_id": "canon_001",
+      "citation": "FAR 15.306",
+      "final_rank": 1,
+      "authority_tier": "primary_regulation",
+      "is_current": true,
+      "final_sort_reasons": ["exact citation match", "primary regulation", "current version"]
+    }
+  ]
+}</pre></div></div>
+        <p class="summary">Reorders by regulatory authority and currency rather than relevance alone — favoring the exact rule requested, primary regulations, and current text, while demoting outdated or unofficial material. Uses metadata already on each candidate.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PHASE H -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">H</span><h3>Generate</h3></div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="num">15</span><span class="card-title">Context Compose + Compact</span></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">CandidateSet&lt;RankedCandidate&gt;</span><span class="chip ext">token budget</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">ContextPackage</div>
+<pre class="json">{
+  "context_package_id": "ctx_123",
+  "selected_evidence": [
+    {
+      "chunk_version_id": "chunk_001",
+      "citation": "FAR 15.306",
+      "role": "controlling_text",
+      "text": "Full selected text loaded here...",
+      "token_count": 740,
+      "selected_reason": "exact citation, current primary regulation"
+    }
+  ],
+  "dropped_candidates": [
+    { "chunk_version_id": "chunk_010", "reason": "duplicate" }
+  ],
+  "token_budget": { "max_context_tokens": 8000, "used_context_tokens": 5200, "reserved_answer_tokens": 1500 },
+  "trust_boundary": { "retrieved_content_is_instruction": false, "delimiter_policy": "retrieved-evidence-v0.1" }
+}</pre></div></div>
+        <p class="summary">Assembles the final passages and trims them to the model's token budget, keeping controlling text whole and first and dropping duplicates and low-value extras. Rule-based, no model, and produces the only object the prompt is built from. Conversation context may be included only to clarify the current turn, not as regulatory source evidence.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">16</span><span class="card-title">Prompt Generate</span><div class="card-tags"><span class="tag reg">swappable implementation</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">ContextPackage</span><span class="chip">QueryAnalysis</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">PromptPackage</div>
+<pre class="json">{
+  "prompt_package_id": "prompt_123",
+  "prompt_template_id": "exact-citation-regulatory-v1",
+  "prompt_template_version": "1.0",
+  "model": "approved_model_name",
+  "messages": [
+    { "role": "system", "content": "Answer using only the provided evidence..." },
+    { "role": "user", "content": "Question: ...  Retrieved evidence: ..." }
+  ],
+  "expected_output_schema": "grounded_answer_v1",
+  "requires_citations": true
+}</pre></div></div>
+        <p class="summary">Builds model messages from an intent-selected template; the template is chosen by lookup, not a model. Evidence is delimited as data, and any conversation context is labeled separately from source evidence.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">17</span><span class="card-title">LLM Answer</span><div class="card-tags"><span class="tag llm">model call</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">PromptPackage</span><span class="chip ext">ModelInvocationConfig</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">ModelResponse</div>
+<pre class="json">{
+  "model_response_id": "model_resp_123",
+  "draft_answer": "FAR 15.306 addresses exchanges with offerors after receipt of proposals...",
+  "draft_citations": ["FAR 15.306"],
+  "model_metadata": {
+    "provider": "USAi",
+    "model": "approved_model_name",
+    "temperature": 0,
+    "input_tokens": 6200,
+    "output_tokens": 850,
+    "latency_ms": 7800,
+    "finish_reason": "stop"
+  }
+}</pre></div></div>
+        <p class="summary">Calls the language model using ModelInvocationConfig — approved model, temperature 0, timeout, one retry, token limits, and structured output — constrained to answer only from the provided evidence. Returns a draft answer with citations, not yet shown to the user.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PHASE I -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">I</span><h3>Verify + Return</h3><span class="pb-sub">must pass before answer</span></div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="num">18</span><span class="card-title">Output Guardrail</span><div class="card-tags"><span class="tag inv">required control</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">ModelResponse</span><span class="chip">ContextPackage</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">SafetyDecision <span class="ext-note">output policy</span></div>
+<pre class="json">{
+  "decision": "allow",
+  "risk_flags": [],
+  "requires_rewrite": false,
+  "requires_redaction": false,
+  "policy_version": "jguards-output-v0.1"
+}</pre></div></div>
+        <p class="summary">Safety check on the draft: prompt leakage, PII, prohibited phrasing, unsupported-authority language, and false claims that an action was performed; separate policy from the input screen. Full claim-support verification belongs to the citation verifier, not this safety screen.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">19</span><span class="card-title">Citation Verification</span><div class="card-tags"><span class="tag gate">must pass</span><span class="tag v01">checks citations only</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">ModelResponse</span><span class="chip">ContextPackage</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">VerificationReport</div>
+<pre class="json">{
+  "verification_result": "pass",
+  "verification_level": "citation_resolution",
+  "citations_checked": 1,
+  "resolved_citations": 1,
+  "authorized_citations": 1,
+  "claim_level_support_check": "deferred",
+  "invalid_citations": 0,
+  "citation_map": [
+    { "citation": "FAR 15.306", "supporting_chunks": ["chunk_001"] }
+  ],
+  "policy_version": "citation-verifier-v0.1"
+}</pre></div></div>
+        <p class="summary">Confirms every citation resolves to selected, authorized context; v0.1 checks resolution only (claim-level support is deferred), deterministic matching, no LLM; fails to insufficient-evidence.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="num">20</span><span class="card-title">Build Answer</span></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">ModelResponse</span><span class="chip">VerificationReport</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">FinalAnswer</div>
+<pre class="json">{
+  "answer_id": "ans_123",
+  "answer": "FAR 15.306 addresses exchanges with offerors after receipt of proposals...",
+  "citations": [
+    { "citation": "FAR 15.306", "source_id": "far_current", "chunk_version_id": "chunk_001", "content_item_id": "far_15_306" }
+  ],
+  "verification_status": "passed",
+  "answer_type": "grounded_regulatory_answer",
+  "limitations": []
+}</pre></div></div>
+        <p class="summary">Assembles the user-facing FinalAnswer — answer, citations, limitations — or an insufficient-evidence message; deterministic, no LLM.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PHASE J -->
+  <div class="phase-block">
+    <div class="pb-head"><span class="pb-letter">J</span><h3>Record</h3></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top"><span class="num">21</span><span class="card-title">Audit + Conversation State Update</span><div class="card-tags"><span class="tag mem">uses memory provider</span><span class="tag reg">swappable implementation</span></div></div>
+        <div class="io-in"><span class="io-key">in</span><div class="chips"><span class="chip">all stage outputs</span><span class="chip">FinalAnswer</span></div></div>
+        <div class="io-out"><span class="io-key">out</span><div class="out-body"><div class="oname">AuditTrace</div>
+<pre class="json">{
+  "request_id": "req_123",
+  "query_id": "q_456",
+  "tenant_id": "tenant_a",
+  "pipeline_version": "query-orchestration-v0.1",
+  "retrieval_plan_id": "plan_001",
+  "prompt_template_id": "exact-citation-regulatory-v1",
+  "selected_context_ids": ["chunk_001", "chunk_004"],
+  "input_tokens": 6200,
+  "output_tokens": 850,
+  "guardrail_input_decision": "allow",
+  "guardrail_output_decision": "allow",
+  "citation_verification": "passed",
+  "latency_ms": 8120
+}</pre>
+        <div class="oname" style="margin-top:4px;">ConversationStateUpdate <span class="ext-note">provider off (NoOp) or session-only, in initial scope</span></div>
+<pre class="json">{
+  "mode": "session_only",
+  "provider": "configured_conversation_memory_provider",
+  "conversation_id": "conv_321",
+  "last_turn_id": "turn_004",
+  "last_answer_id": "ans_123",
+  "recent_citations": ["FAR 15.306"],
+  "active_topic": "discussions",
+  "followup_context": "FAR 15.306 discussions and applicability",
+  "stored_items": [
+    "user_turn",
+    "assistant_answer",
+    "selected_citation_ids",
+    "rolling_session_summary"
+  ],
+  "persistent_cross_session_memory": "disabled"
+}</pre></div></div>
+        <p class="summary">Writes the audit trace (ids / versions / scores / decisions) and updates short-lived conversation state through the configured memory provider; memory failures do not fail the response. Persistent cross-session memory remains out of scope for the first build.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>query-orchestration-v0.1</span>
+    <span>initial build model call at stage 17 only · provider-backed session context, persistent memory deferred</span>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  var els=document.querySelectorAll('pre.json');
+  for(var i=0;i<els.length;i++){
+    var t=esc(els[i].textContent);
+    t=t.replace(/("(?:\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(?:\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?)/g,function(m){
+      var cls='n';
+      if(/^"/.test(m)){cls=/:\s*$/.test(m)?'k':'s';}
+      else if(/^(?:true|false|null)$/.test(m)){cls='bl';}
+      return '<span class="'+cls+'">'+m+'</span>';
+    });
+    els[i].innerHTML=t;
+  }
+})();
+</script>

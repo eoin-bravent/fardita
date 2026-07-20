@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graph Node &amp; Edge Types — FAR DITA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#102032; --ink-soft:#33485c; --mute:#6a7c8c; --faint:#92a2b0;
+  --paper:#F3F1EA; --paper-2:#FBFAF6; --panel:#FFFFFF;
+  --line:#E0DCCF; --line-2:#CFCABB;
+  --brass:#9A6E1C; --brass-bg:#F6EDD7; --brass-line:#E4CE97;
+  --signal:#0E7C8B; --signal-bg:#E2F0F1; --signal-line:#A9D5DA;
+  --disp:"Fraunces",Georgia,serif;
+  --body:"Public Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.shell{display:grid;grid-template-columns:280px 1fr;max-width:1280px;margin:0 auto}
+
+/* ===== side rail / TOC ===== */
+.rail{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+  padding:38px 26px;border-right:1px solid var(--line);background:var(--paper-2)}
+.rail .brand{display:flex;align-items:center;gap:11px;margin-bottom:30px}
+.rail .seal{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--brass);
+  display:grid;place-items:center;color:var(--brass);font-family:var(--mono);font-size:.56rem;
+  letter-spacing:.08em;position:relative;flex:0 0 auto}
+.rail .seal::after{content:"";position:absolute;inset:4px;border:1px dashed var(--brass-line);border-radius:50%}
+.rail .brand b{font-family:var(--disp);font-size:.96rem;font-weight:600;line-height:1.2;color:var(--ink)}
+.rail .brand small{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--mute);margin-top:3px}
+.toc{list-style:none;display:flex;flex-direction:column;gap:1px;border-top:1px solid var(--line);padding-top:14px}
+.toc a{display:flex;gap:11px;align-items:baseline;text-decoration:none;color:var(--ink-soft);
+  font-size:.86rem;padding:8px 10px;border-radius:7px;transition:.15s;border-left:2px solid transparent}
+.toc a:hover{background:var(--brass-bg);color:var(--ink)}
+.toc a.on{background:var(--brass-bg);color:var(--brass);border-left-color:var(--brass);font-weight:600}
+.toc a .n{font-family:var(--mono);font-size:.68rem;color:var(--brass);min-width:20px}
+.rail .meta{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:.66rem;line-height:1.9;color:var(--mute)}
+.rail .meta b{color:var(--ink-soft);font-weight:500}
+
+/* ===== main ===== */
+.main{padding:64px clamp(28px,5vw,84px) 120px;max-width:920px}
+
+/* header */
+.doc-head{margin-bottom:60px;padding-bottom:42px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--brass);margin-bottom:22px}
+h1{font-family:var(--disp);font-weight:600;font-size:clamp(2.3rem,5vw,3.7rem);line-height:1.04;
+  letter-spacing:-.02em;margin-bottom:22px}
+.standfirst{font-size:1.18rem;color:var(--ink-soft);font-weight:300;max-width:62ch;line-height:1.55}
+.head-chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:28px}
+.hchip{font-family:var(--mono);font-size:.7rem;letter-spacing:.03em;border:1px solid var(--line-2);
+  background:var(--panel);color:var(--ink-soft);padding:6px 12px;border-radius:100px}
+.hchip b{color:var(--signal);font-weight:600}
+
+/* sections */
+section{padding-top:54px;margin-top:30px;scroll-margin-top:24px}
+section+section{border-top:1px solid var(--line)}
+.sec-num{font-family:var(--mono);font-size:.74rem;letter-spacing:.14em;color:var(--brass);
+  text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.sec-num .ln{flex:1;height:1px;background:var(--line);max-width:160px}
+h2{font-family:var(--disp);font-weight:600;font-size:clamp(1.7rem,3.4vw,2.5rem);line-height:1.1;
+  letter-spacing:-.015em;margin-bottom:8px}
+h3{font-family:var(--body);font-weight:700;font-size:1.12rem;margin:30px 0 10px;letter-spacing:-.01em;color:var(--ink)}
+h4{font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--brass);margin:24px 0 10px;font-weight:600}
+.lede{font-family:var(--body);font-weight:400;font-size:1.08rem;line-height:1.45;
+  color:var(--ink-soft);margin:6px 0 14px;max-width:60ch}
+p{margin-bottom:14px;color:var(--ink-soft)}
+.main p strong{color:var(--ink);font-weight:600}
+em{color:var(--ink);font-style:italic}
+a.x{color:var(--signal);text-decoration:none;border-bottom:1px solid var(--signal-line)}
+
+/* spec strip */
+.specstrip{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 26px}
+.spec{font-family:var(--mono);font-size:.68rem;border:1px solid var(--line-2);border-radius:7px;
+  padding:7px 11px;background:var(--panel);color:var(--mute);letter-spacing:.02em}
+.spec b{color:var(--ink);font-weight:600}
+.spec.pri-h{background:var(--brass-bg);border-color:var(--brass-line);color:var(--brass)}
+.spec.pri-h b{color:var(--brass)}
+.spec.cx{background:var(--signal-bg);border-color:var(--signal-line);color:var(--signal)}
+.spec.cx b{color:var(--signal)}
+
+/* citation tab */
+.cite{font-family:var(--mono);font-size:.84em;background:var(--brass-bg);
+  border:1px solid var(--brass-line);color:var(--brass);padding:1px 7px;border-radius:5px;white-space:nowrap}
+code{font-family:var(--mono);font-size:.86em;background:var(--panel);border:1px solid var(--line);
+  padding:1px 6px;border-radius:4px;color:var(--ink)}
+
+/* code/data blocks */
+pre{font-family:var(--mono);font-size:.78rem;line-height:1.65;background:var(--ink);color:#cfe3e6;
+  border-radius:11px;padding:18px 20px;overflow-x:auto;margin:16px 0;border:1px solid #1d3346}
+pre .c{color:var(--brass-bg);opacity:.65}
+pre b{color:#7ee3ee;font-weight:500}
+pre .g{color:#e4ce97;font-weight:500}
+
+/* callout */
+.note{border-left:3px solid var(--signal);background:var(--signal-bg);border-radius:0 10px 10px 0;
+  padding:14px 18px;margin:18px 0;font-size:.92rem;color:var(--ink-soft)}
+.note b{color:var(--signal)}
+.rule{border-left:3px solid var(--brass);background:var(--brass-bg);border-radius:0 10px 10px 0;
+  padding:16px 20px;margin:18px 0;font-family:var(--body);font-size:1.12rem;line-height:1.5;color:var(--ink)}
+.rule b{color:var(--brass)}
+
+/* lists */
+.main ul,.main ol{margin:8px 0 18px;padding-left:4px;list-style:none}
+.main li{position:relative;padding-left:24px;margin-bottom:8px;color:var(--ink-soft)}
+.main li::before{content:"";position:absolute;left:4px;top:10px;width:6px;height:6px;border-radius:1px;
+  background:var(--brass);transform:rotate(45deg)}
+.main ol{counter-reset:li}
+.main ol li{counter-increment:li}
+.main ol li::before{content:counter(li);background:none;transform:none;font-family:var(--mono);
+  font-size:.72rem;color:var(--brass);top:2px;left:2px;width:auto;height:auto;font-weight:600}
+
+/* cards grid */
+.cards{display:grid;gap:14px;margin:18px 0}
+.cards.c2{grid-template-columns:1fr 1fr}
+.cardx{border:1px solid var(--line-2);border-radius:11px;padding:16px 18px;background:var(--panel)}
+.cardx .lab{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brass);margin-bottom:7px}
+.cardx h5{font-family:var(--body);font-weight:700;font-size:.98rem;margin-bottom:5px}
+.cardx p{font-size:.86rem;margin:0;color:var(--mute)}
+
+/* table */
+table.t{width:100%;border-collapse:collapse;margin:18px 0;font-size:.86rem}
+table.t th{text-align:left;font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--mute);font-weight:500;padding:10px 13px;border-bottom:2px solid var(--line-2);background:var(--paper-2)}
+table.t td{padding:12px 13px;border-bottom:1px solid var(--line);color:var(--ink-soft);vertical-align:top}
+table.t td:first-child{font-weight:600;color:var(--ink)}
+.pill{font-family:var(--mono);font-size:.64rem;padding:3px 8px;border-radius:5px;letter-spacing:.03em;white-space:nowrap}
+.pill.h{background:var(--brass-bg);color:var(--brass);border:1px solid var(--brass-line)}
+.pill.m{background:var(--signal-bg);color:var(--signal);border:1px solid var(--signal-line)}
+.pill.e{background:#ECEFE9;color:#5c7a4a;border:1px solid #cdddc0}
+
+.endbar{margin-top:60px;padding-top:30px;border-top:2px solid var(--ink);
+  font-family:var(--mono);font-size:.72rem;color:var(--mute);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media (max-width:880px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}
+  .toc{flex-direction:row;flex-wrap:wrap}
+  .toc a{font-size:.8rem;padding:6px 9px}
+  .cards.c2{grid-template-columns:1fr}
+  .rail .meta{display:none}
+}
+@media print{
+  .rail{display:none} .shell{grid-template-columns:1fr;max-width:none}
+  body{background:#fff} pre{background:#f4f4f0;color:#222;border-color:#ddd}
+  pre b,pre .g{color:#7a5a12}
+  /* force the design system's tinted fills, pills and table bands to render in print */
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .main{max-width:none;padding:0}
+  h2,h3,h4{page-break-after:avoid}
+  /* let tall tables flow across pages at row boundaries instead of jumping whole */
+  table.t{break-inside:auto} table.t tr{break-inside:avoid} table.t thead{display:table-header-group}
+  /* relax orphan/widow control so text and code blocks pack tight instead of shoving whole blocks to the next page */
+  p,li,.lede,.standfirst{orphans:2;widows:2} pre{orphans:1;widows:1}
+  /* ---- print density: tighten the on-screen airiness so the PDF isn't padded out ---- */
+  body{line-height:1.42}
+  .doc-head{margin-bottom:14px;padding-bottom:14px}
+  h1{font-size:2.3rem;margin-bottom:10px;line-height:1.02}
+  .standfirst{font-size:1.02rem;line-height:1.4}
+  .head-chips{margin-top:14px}
+  section{padding-top:9px;margin-top:0}
+  section:first-of-type{padding-top:6px}
+  h2{font-size:1.55rem}
+  h3{margin:18px 0 8px}
+  .lede{margin:2px 0 8px;line-height:1.35}
+  p{margin-bottom:8px}
+  .main ul,.main ol{margin:6px 0 12px}
+  .main li{margin-bottom:4px}
+  pre{margin:9px 0;padding:11px 15px;font-size:.74rem;line-height:1.4}
+  table.t{margin:11px 0;font-size:.82rem}
+  table.t td{padding:5px 12px}
+  table.t th{padding:7px 12px}
+  .note,.rule{margin:11px 0;padding:11px 15px}
+  .rule{font-size:1.05rem}
+}
+@page{margin:10mm 13mm}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ============ RAIL ============ -->
+  <aside class="rail">
+    <div class="brand">
+      <div class="seal">FAR</div>
+      <b>Graph Node &amp; Edge Types<small>FAR DITA · Schema</small></b>
+    </div>
+    <nav><ul class="toc" id="toc">
+      <li><a href="#gnet"><span class="n">01</span> Graph node &amp; edge types</a></li>
+      <li><a href="#nodes"><span class="n">02</span> Node types</a></li>
+      <li><a href="#edges"><span class="n">03</span> Edge types</a></li>
+      <li><a href="#hierarchy"><span class="n">04</span> Hierarchy relationships</a></li>
+      <li><a href="#inverse"><span class="n">05</span> Inverse relationships</a></li>
+      <li><a href="#rules"><span class="n">06</span> Implementation rules</a></li>
+    </ul></nav>
+    <div class="meta">
+      <div><b>Node types</b> · 11</div>
+      <div><b>Edge types</b> · 6</div>
+      <div><b>Rules</b> · 8</div>
+      <div><b>Direction</b> · canonical</div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <header class="doc-head">
+      <div class="eyebrow">FAR DITA · Graph Schema</div>
+      <h1>Graph node &amp; edge types</h1>
+      <p class="standfirst">The overall graph structure and edge storage model are defined in the general database schema. This document completes that design by defining the supported node and edge types, their meanings, and the canonical direction of each edge relationship.</p>
+      <div class="head-chips">
+        <span class="hchip"><b>11</b> node types</span>
+        <span class="hchip"><b>6</b> edge types</span>
+        <span class="hchip"><b>8</b> implementation rules</span>
+        <span class="hchip">controlled vocabularies</span>
+      </div>
+    </header>
+
+    <!-- 01 GRAPH NODE & EDGE TYPES -->
+    <section id="gnet">
+      <div class="sec-num"><span>01</span><span class="ln"></span></div>
+      <h2>Graph node &amp; edge types</h2>
+      <p class="lede">Controlled vocabularies</p>
+      <p>The graph should use documented, controlled vocabularies for both <code>nodes.node_type</code> and <code>edges.edge_type</code>.</p>
+      <ul>
+        <li><code>node_type</code> identifies what kind of FAR source object a node represents.</li>
+        <li><code>edge_type</code> identifies the meaning of a non-hierarchical relationship between two nodes.</li>
+        <li>FAR hierarchy should remain authoritative in <code>nodes.parent_id</code>.</li>
+        <li>Edge direction is represented by the existing ordered fields <code>from_node_id</code> and <code>to_node_id</code>; a separate direction column is not needed.</li>
+        <li>Each relationship should be stored once in its canonical direction. Reverse relationships should be derived by querying the same edge from the opposite endpoint rather than storing duplicate inverse edges.</li>
+      </ul>
+      <p>For example:</p>
+      <pre><b>from_node_id</b>: FAR_1_301_A_2
+<b>to_node_id</b>: FAR_1_105
+<b>edge_type</b>: <span class="g">references</span></pre>
+      <p>means:</p>
+      <pre>FAR 1.301(a)(2)
+→ <span class="g">references</span>
+→ FAR 1.105</pre>
+      <p>The reverse relationship, <em>“FAR 1.105 is referenced by FAR 1.301(a)(2),”</em> is derived by querying incoming <code>references</code> edges where <code>to_node_id = FAR_1_105</code>.</p>
+    </section>
+
+    <!-- 02 NODE TYPES -->
+    <section id="nodes">
+      <div class="sec-num"><span>02</span><span class="ln"></span></div>
+      <h2>Node types</h2>
+      <p class="lede">Structural level and regulatory function stay separate</p>
+      <p>For example, a Part 52 clause may be stored as:</p>
+      <pre><b>node_type</b>: <span class="g">subsection</span>
+<b>instrument</b>: <span class="g">clause</span>
+<b>citation</b>: 52.204-24</pre>
+      <p>rather than using <code>clause</code> as the node type. This preserves the distinction between:</p>
+      <ul>
+        <li>where the source item appears in the FAR hierarchy; and</li>
+        <li>what regulatory function it performs.</li>
+      </ul>
+      <table class="t">
+        <thead><tr><th>Node type</th><th>Meaning</th><th>Initial status</th></tr></thead>
+        <tbody>
+          <tr><td><code>regulation</code></td><td>Root node for the FAR corpus</td><td><span class="pill e">Initial</span></td></tr>
+          <tr><td><code>subchapter</code></td><td>FAR subchapter grouping</td><td><span class="pill e">Initial</span></td></tr>
+          <tr><td><code>part</code></td><td>FAR Part, such as Part 9</td><td><span class="pill e">Initial</span></td></tr>
+          <tr><td><code>subpart</code></td><td>FAR Subpart, such as Subpart 9.4</td><td><span class="pill e">Initial</span></td></tr>
+          <tr><td><code>section</code></td><td>FAR Section, such as 9.403 or 1.102</td><td><span class="pill e">Initial</span></td></tr>
+          <tr><td><code>subsection</code></td><td>Numbered unit below a section, such as 1.102-2 or 52.204-24</td><td><span class="pill e">Initial</span></td></tr>
+          <tr><td><code>paragraph</code></td><td>Addressable paragraph or nested FAR subdivision, such as 1.102-2(a) or 1.102-2(a)(4)</td><td><span class="pill e">Initial</span></td></tr>
+          <tr><td><code>definition</code></td><td>Individually addressable defined term and definition</td><td><span class="pill m">Add with scoped-definition retrieval</span></td></tr>
+          <tr><td><code>table</code></td><td>Table retained as its own source and retrieval item</td><td><span class="pill m">Add with table-aware ingestion</span></td></tr>
+          <tr><td><code>image</code></td><td>Image, diagram, or formula retained as its own source item</td><td><span class="pill m">Add with image-aware ingestion</span></td></tr>
+          <tr><td><code>external_resource</code></td><td>Outside authority or source represented as a graph node</td><td><span class="pill m">Optional future use</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><b>Nested subdivisions.</b> For nested FAR subdivisions, use one generic <code>paragraph</code> node type rather than creating a new node type for every nesting level.</div>
+      <p>Example:</p>
+      <pre><b>citation</b>: 1.102-2(a)(4)
+<b>node_type</b>: <span class="g">paragraph</span>
+<b>paragraph_path</b>: (a)(4)
+<b>paragraph_depth</b>: 2
+<b>parent_id</b>: FAR_1_102_2_A</pre>
+      <p>This supports deeper FAR subdivision patterns without requiring separate types such as <code>subparagraph</code>, <code>sub-subparagraph</code>, and additional nested variants.</p>
+      <p>Clause and provision should remain values in the existing <code>instrument</code> field:</p>
+      <pre><b>instrument</b>: <span class="g">clause</span>
+<b>instrument</b>: <span class="g">provision</span></pre>
+      <p>Other regulatory functions may be added to the <code>instrument</code> vocabulary as the corpus requires.</p>
+    </section>
+
+    <!-- 03 EDGE TYPES -->
+    <section id="edges">
+      <div class="sec-num"><span>03</span><span class="ln"></span></div>
+      <h2>Edge types</h2>
+      <p class="lede">A small, reliable vocabulary</p>
+      <p>The initial edge vocabulary should remain small and should include relationships that can be identified reliably and used by retrieval.</p>
+      <table class="t">
+        <thead><tr><th>Edge type</th><th>Canonical stored direction</th><th>Meaning</th><th>Initial status</th></tr></thead>
+        <tbody>
+          <tr><td><code>references</code></td><td>Referencing FAR node → referenced FAR node</td><td>General internal FAR cross-reference</td><td><span class="pill e">Initial</span></td></tr>
+          <tr><td><code>prescribed_by</code></td><td>Clause or provision → prescribing FAR section</td><td>Identifies the FAR section that prescribes use of a clause or provision</td><td><span class="pill e">Initial</span></td></tr>
+          <tr><td><code>defines</code></td><td>Defining FAR section → definition node</td><td>Identifies the section that establishes a definition</td><td><span class="pill m">Add with scoped-definition retrieval</span></td></tr>
+          <tr><td><code>applies_within</code></td><td>Definition node → applicable structural scope</td><td>Identifies the Part, Subpart, Section, clause, or other scope in which a definition applies</td><td><span class="pill m">Add with scoped-definition retrieval</span></td></tr>
+          <tr><td><code>more_specific_than</code></td><td>Narrower definition → broader definition</td><td>Supports choosing the most specific applicable definition when the same term has multiple definitions</td><td><span class="pill m">Add with scoped-definition retrieval</span></td></tr>
+          <tr><td><code>deviates_from</code></td><td>Deviation or supplement node → affected FAR node</td><td>Connects supplemental or deviation content to the underlying FAR requirement</td><td><span class="pill m">Future multi-regulation support</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><b>Not yet included.</b> <code>incorporates_by_reference</code> is not included in the current vocabulary. It is a more specific legal relationship than an ordinary cross-reference, but the current FAR DITA graph does not yet have a reliable rule or retrieval requirement for distinguishing it from <code>references</code>.</div>
+      <p>External legal references should remain in the separate <code>external_references</code> structure for the initial implementation rather than being stored as internal FAR graph edges.</p>
+    </section>
+
+    <!-- 04 HIERARCHY -->
+    <section id="hierarchy">
+      <div class="sec-num"><span>04</span><span class="ln"></span></div>
+      <h2>Hierarchy relationships</h2>
+      <p class="lede">Parent–child stays in the tree</p>
+      <p>Parent-child hierarchy should remain authoritative in <code>nodes.parent_id</code>.</p>
+      <p>The edge table should not duplicate hierarchy with stored edge types such as <code>parent_of</code>, <code>child_of</code>, <code>contains</code>, or <code>part_of</code>.</p>
+      <p>For example:</p>
+      <pre>FAR
+→ Part 9
+→ Subpart 9.4
+→ Section 9.403</pre>
+      <p>is represented through each node’s <code>parent_id</code>.</p>
+      <p>Reverse hierarchy traversal is derived by querying nodes whose <code>parent_id</code> equals the current node.</p>
+      <div class="rule">This avoids maintaining the same structural relationship in both <b>nodes.parent_id</b> and <b>edges</b>.</div>
+    </section>
+
+    <!-- 05 INVERSE -->
+    <section id="inverse">
+      <div class="sec-num"><span>05</span><span class="ln"></span></div>
+      <h2>Inverse relationships</h2>
+      <p class="lede">Derived, never duplicated</p>
+      <p>Inverse relationship names may be useful in APIs, graph-query results, or user-facing explanations, but they should not require duplicate edge records.</p>
+      <table class="t">
+        <thead><tr><th>Stored edge type</th><th>Stored direction</th><th>Derived inverse label</th></tr></thead>
+        <tbody>
+          <tr><td><code>references</code></td><td>Referencing node → referenced node</td><td><code>referenced_by</code></td></tr>
+          <tr><td><code>prescribed_by</code></td><td>Clause/provision → prescribing section</td><td><code>prescribes</code></td></tr>
+          <tr><td><code>defines</code></td><td>Defining section → definition</td><td><code>defined_by</code></td></tr>
+          <tr><td><code>applies_within</code></td><td>Definition → applicable scope</td><td><code>has_applicable_definition</code></td></tr>
+          <tr><td><code>more_specific_than</code></td><td>Narrower definition → broader definition</td><td><code>has_more_specific_definition</code></td></tr>
+          <tr><td><code>deviates_from</code></td><td>Deviation/supplement → affected FAR node</td><td><code>has_deviation</code></td></tr>
+        </tbody>
+      </table>
+      <p>For example, only this edge is stored:</p>
+      <pre>FAR 1.301(a)(2)
+→ <span class="g">references</span>
+→ FAR 1.105</pre>
+      <p>The graph API may expose the reverse result as:</p>
+      <pre>FAR 1.105
+← <span class="g">referenced_by</span>
+← FAR 1.301(a)(2)</pre>
+      <p>but no second database edge is required.</p>
+    </section>
+
+    <!-- 06 IMPLEMENTATION RULES -->
+    <section id="rules">
+      <div class="sec-num"><span>06</span><span class="ln"></span></div>
+      <h2>Implementation rules</h2>
+      <p class="lede">Eight rules for a stable vocabulary</p>
+      <ol>
+        <li><code>node_type</code> and <code>edge_type</code> should use controlled vocabularies rather than unrestricted free-text values.</li>
+        <li>The canonical direction of every edge type should be documented and used consistently by all parsers and ingestion processes.</li>
+        <li>Edge direction should be determined by:
+          <pre><b>from_node_id</b>
+→ <b>edge_type</b>
+→ <b>to_node_id</b></pre>
+          No separate <code>direction</code> column is required.</li>
+        <li>Each relationship should be stored once. Reverse traversal should use indexes on both endpoints:
+          <pre><b>edges</b>(from_node_id, edge_type)
+<b>edges</b>(to_node_id, edge_type)</pre></li>
+        <li>FAR hierarchy should be stored once through <code>nodes.parent_id</code>, not duplicated as edge rows.</li>
+        <li><code>node_type</code> should represent structural or source type. Regulatory functions such as <code>clause</code> and <code>provision</code> should remain in the separate <code>instrument</code> field.</li>
+        <li>New node or edge vocabulary values should be added only when there is:
+          <ul>
+            <li>a reliable extraction or creation rule;</li>
+            <li>a defined graph or retrieval use case; and</li>
+            <li>documented direction and semantics.</li>
+          </ul>
+        </li>
+        <li>The vocabulary may be extended without changing the core node/edge table structure.</li>
+      </ol>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
