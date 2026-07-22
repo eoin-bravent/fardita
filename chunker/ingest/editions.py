@@ -158,6 +158,9 @@ def _parse_edition(subject):
 def marker_edition_plan(repo, rel, commit_date_ok):
     """Port of canon.py.edition_plan WITH the resolved-rule fix: fall back to the settled
     commit date ONLY when commit_date_ok (FAR/DFARS/GSAM); else leave effective_date=None."""
+    if not rel:                       # no dita/ in the checkout -> no marker editions to read;
+        return []                     # avoids the fatal `git log -- ''` pathspec error and lets
+                                      # the pass fall back cleanly (ingest_head still gets HEAD).
     log = _git(repo, "log", "--first-parent", "--reverse", "--format=%H%x1f%cs%x1f%s",
                "--", rel) or ""
     commits = []

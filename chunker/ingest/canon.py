@@ -66,24 +66,44 @@ def head_info(repo):
 
 
 # ---------------------------------------------------------------- download / pull
+def _rmtree_force(path):
+    """Remove a dir tree even when it holds read-only files -- Windows marks .git objects
+    read-only, so a plain shutil.rmtree fails and leaves a half-deleted (broken) repo behind."""
+    import stat
+
+    def _onerr(func, p, exc):
+        try:
+            os.chmod(p, stat.S_IWRITE)
+            func(p)
+        except OSError:
+            pass
+    shutil.rmtree(path, onerror=_onerr)
+
+
 def download(ag, shallow=False):
-    """Clone (full history, for replay) or pull the agency's canon repo. Idempotent:
-    clears a stale non-repo path first so a re-run always yields a real clone."""
+    """Clone (full history, for replay) or pull the agency's canon repo. Idempotent: a HEALTHY
+    existing clone is fetched+pulled; a broken/empty remnant (a prior checkout that failed, or an
+    interrupted delete that left a read-only .git) is discarded and re-cloned; a stale non-repo
+    path is cleared first."""
     from chunker.ingest.editions import _git
     if ag in NO_REPO:
         return None
     d = repo_dir(ag)
     if os.path.isdir(os.path.join(d, ".git")):
-        _git(d, "fetch", "--all", "--quiet", ok_fail=True)
-        _git(d, "pull", "--ff-only", "--quiet", ok_fail=True)
-        return d
+        head_ok = bool((_git(d, "rev-parse", "--verify", "HEAD", ok_fail=True) or "").strip())
+        wt_ok = any(f != ".git" for f in os.listdir(d))          # working tree actually checked out
+        if head_ok and wt_ok:
+            _git(d, "fetch", "--all", "--quiet", ok_fail=True)
+            _git(d, "pull", "--ff-only", "--quiet", ok_fail=True)
+            return d
+        _rmtree_force(d)                                         # broken remnant -> re-clone below
     if os.path.islink(d) or os.path.isfile(d):
         try:
             os.unlink(d)
         except OSError:
             pass
     elif os.path.isdir(d):
-        shutil.rmtree(d, ignore_errors=True)
+        _rmtree_force(d)
     if os.path.lexists(d):
         raise RuntimeError(f"{d} exists and is not a git repo (stale symlink/dir?); "
                            f"remove it manually and re-run")
