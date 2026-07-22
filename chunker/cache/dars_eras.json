@@ -1,0 +1,182 @@
+{
+ "03-25": {
+  "era": "transit-farsite",
+  "effective_date": "2018-04-04"
+ },
+ "03-26": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "03-29": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2009": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2009-01-12": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2009-14": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-01": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-04": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-06": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-08": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-08-20110413": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-08-20110504": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-08-20110627": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-10": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-11": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2011-12": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2012": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2012-01": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2012-02": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-08"
+ },
+ "2012-11": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2012-12": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2012-13": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2012-14": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2012-14-20130701": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2012-16": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2014-01": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2014-02": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2014-02-20140811": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2014-02-20141118": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2014-02-20141205": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2014-02-20141219": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2014-02-20150227": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2016-20160122": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2016-20160519": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-25"
+ },
+ "2017": {
+  "era": "transit-farsite",
+  "effective_date": "2017-04-17"
+ },
+ "2017-20170808": {
+  "era": "transit-farsite",
+  "effective_date": "2018-04-04"
+ },
+ "2018-01": {
+  "era": "transit-farsite",
+  "effective_date": "2018-04-04"
+ },
+ "2018-06": {
+  "era": "transit-farsite",
+  "effective_date": "2018-07-06"
+ },
+ "2018-07": {
+  "era": "transit-farsite",
+  "effective_date": "2018-07-30"
+ },
+ "2018-08": {
+  "era": "transit-farsite",
+  "effective_date": "2018-08-02"
+ },
+ "2019-04": {
+  "era": "transit-farsite",
+  "effective_date": "2019-04-12"
+ },
+ "2020-05": {
+  "era": "transit-farsite",
+  "effective_date": "2020-05-11"
+ },
+ "2022-0517_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-05-17"
+ },
+ "2024-0626_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-06-26"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ }
+}

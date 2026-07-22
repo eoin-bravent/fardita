@@ -1,0 +1,34 @@
+{
+ "06-01": {
+  "era": "transit-farsite",
+  "effective_date": "2006-10-02"
+ },
+ "2014Sep12": {
+  "era": "transit-farsite",
+  "effective_date": "2016-02-23"
+ },
+ "2018-04": {
+  "era": "transit-farsite",
+  "effective_date": "2018-04-17"
+ },
+ "2018-07": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-11"
+ },
+ "2021-03_0": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-03-11"
+ },
+ "2022-11_HTML": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-11-07"
+ },
+ "Nov_7_2022_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-11-07"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ }
+}

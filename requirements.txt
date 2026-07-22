@@ -1,0 +1,15 @@
+# fardita — runtime dependencies.  Install into a .venv:
+#     python -m venv .venv
+#     .venv\Scripts\activate            (Windows)   |   source .venv/bin/activate   (Linux/macOS)
+#     pip install -r requirements.txt
+#
+# lxml is the ONLY hard dependency: the DITA/HTML parsers (the `build` + chunking path) need it.
+# Everything else in fardita is Python standard library — the reference pass, `verify`, and `dates`
+# read JSON stores and import no third-party packages, and the default USAi.gov LLM backend is
+# stdlib-only (urllib). So `lxml` alone makes every verb work.
+lxml>=4.9
+
+# Vertex AI LLM backend ONLY (optional). The default USAi.gov backend needs nothing extra.
+# If you run `references --provider vertex`, also install google-genai:
+#     pip install google-genai
+# google-genai>=0.3

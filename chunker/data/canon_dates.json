@@ -1,0 +1,157 @@
+{
+  "AFARS": {
+    "effective_date": "2025-07-11",
+    "source_url": "https://www.acquisition.gov/afars",
+    "scraped_at": "2026-07-20"
+  },
+  "AGAR": {
+    "effective_date": "2024-11-06",
+    "source_url": "https://www.acquisition.gov/agar",
+    "scraped_at": "2026-07-20"
+  },
+  "AIDAR": {
+    "effective_date": "2025-01-08",
+    "source_url": "https://www.acquisition.gov/aidar",
+    "scraped_at": "2026-07-20"
+  },
+  "CAR": {
+    "effective_date": "2026-04-02",
+    "source_url": "https://www.acquisition.gov/car",
+    "scraped_at": "2026-07-20"
+  },
+  "DAFFARS": {
+    "effective_date": "2024-10-16",
+    "source_url": "https://www.acquisition.gov/daffars",
+    "scraped_at": "2026-07-20"
+  },
+  "DARS": {
+    "effective_date": "2025-05-21",
+    "source_url": "https://www.acquisition.gov/dars",
+    "scraped_at": "2026-07-20"
+  },
+  "DEAR": {
+    "effective_date": "2024-12-13",
+    "source_url": "https://www.acquisition.gov/dears",
+    "scraped_at": "2026-07-20"
+  },
+  "DFARS": {
+    "effective_date": "2025-11-10",
+    "source_url": "https://www.acquisition.gov/dfars",
+    "scraped_at": "2026-07-20"
+  },
+  "DFARSPGI": {
+    "effective_date": "2026-05-07",
+    "source_url": "https://www.acquisition.gov/dfarspgi",
+    "scraped_at": "2026-07-20"
+  },
+  "DIAR": {
+    "effective_date": "2022-05-09",
+    "source_url": "https://www.acquisition.gov/diar",
+    "scraped_at": "2026-07-20"
+  },
+  "DLAD": {
+    "effective_date": "2024-09-06",
+    "source_url": "https://www.acquisition.gov/dlad",
+    "scraped_at": "2026-07-20"
+  },
+  "DOLAR": {
+    "effective_date": "2024-09-16",
+    "source_url": "https://www.acquisition.gov/dolar",
+    "scraped_at": "2026-07-20"
+  },
+  "DOSAR": {
+    "effective_date": "2022-04-04",
+    "source_url": "https://www.acquisition.gov/dosar",
+    "scraped_at": "2026-07-20"
+  },
+  "DTAR": {
+    "effective_date": "2022-01-26",
+    "source_url": "https://www.acquisition.gov/dtar",
+    "scraped_at": "2026-07-20"
+  },
+  "EDAR": {
+    "effective_date": "2023-10-01",
+    "source_url": "https://www.acquisition.gov/edar",
+    "scraped_at": "2026-07-20"
+  },
+  "EPAAR": {
+    "effective_date": "2025-09-22",
+    "source_url": "https://www.acquisition.gov/epaar",
+    "scraped_at": "2026-07-20"
+  },
+  "FEHBAR": {
+    "effective_date": "2024-01-24",
+    "source_url": "https://www.acquisition.gov/fehbar",
+    "scraped_at": "2026-07-20"
+  },
+  "GSAM": {
+    "effective_date": "2026-06-13",
+    "source_url": "https://www.acquisition.gov/gsam",
+    "scraped_at": "2026-07-20"
+  },
+  "HHSAR": {
+    "effective_date": "2022-03-21",
+    "source_url": "https://www.acquisition.gov/hhsar",
+    "scraped_at": "2026-07-20"
+  },
+  "HSAR": {
+    "effective_date": "2024-12-26",
+    "source_url": "https://www.acquisition.gov/hsar",
+    "scraped_at": "2026-07-20"
+  },
+  "HUDAR": {
+    "effective_date": "2021-02-17",
+    "source_url": "https://www.acquisition.gov/hudar",
+    "scraped_at": "2026-07-20"
+  },
+  "IAAR": {
+    "effective_date": "2021-03-11",
+    "source_url": "https://www.acquisition.gov/iaar",
+    "scraped_at": "2026-07-20"
+  },
+  "JAR": {
+    "effective_date": "2023-04-06",
+    "source_url": "https://www.acquisition.gov/jar",
+    "scraped_at": "2026-07-20"
+  },
+  "LIFAR": {
+    "effective_date": "2021-03-11",
+    "source_url": "https://www.acquisition.gov/lifar",
+    "scraped_at": "2026-07-20"
+  },
+  "NFS": {
+    "effective_date": "2024-10-18",
+    "source_url": "https://www.acquisition.gov/nfs",
+    "scraped_at": "2026-07-20"
+  },
+  "NMCARS": {
+    "effective_date": "2022-07-11",
+    "source_url": "https://www.acquisition.gov/nmcars",
+    "scraped_at": "2026-07-20"
+  },
+  "NRCAR": {
+    "effective_date": "2020-03-30",
+    "source_url": "https://www.acquisition.gov/nrcar",
+    "scraped_at": "2026-07-20"
+  },
+  "SOFARS": {
+    "effective_date": "2023-07-17",
+    "source_url": "https://www.acquisition.gov/sofars",
+    "scraped_at": "2026-07-20"
+  },
+  "TAR": {
+    "effective_date": "2023-12-21",
+    "source_url": "https://www.acquisition.gov/tar",
+    "scraped_at": "2026-07-20"
+  },
+  "TRANSFARS": {
+    "effective_date": "2020-09-23",
+    "source_url": "https://www.acquisition.gov/transfars",
+    "scraped_at": "2026-07-20"
+  },
+  "VAAR": {
+    "effective_date": "2024-03-20",
+    "source_url": "https://www.acquisition.gov/vaar",
+    "scraped_at": "2026-07-20"
+  }
+}

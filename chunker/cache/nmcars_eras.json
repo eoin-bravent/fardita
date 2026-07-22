@@ -1,0 +1,306 @@
+{
+ "2022-05_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-05-02"
+ },
+ "97-11": {
+  "era": "transit",
+  "effective_date": "2000-07-25"
+ },
+ "97-13": {
+  "era": "transit-farsite",
+  "effective_date": "2001-02-28"
+ },
+ "97-15": {
+  "era": "transit-farsite",
+  "effective_date": "2001-06-14"
+ },
+ "97-18": {
+  "era": "transit-farsite",
+  "effective_date": "2002-08-05"
+ },
+ "NMCARS_03-01": {
+  "era": "transit-farsite",
+  "effective_date": "2004-08-17"
+ },
+ "NMCARS_03-02_AG_03-02": {
+  "era": "transit-farsite",
+  "effective_date": "2004-08-18"
+ },
+ "NMCARS_03-03_AG_03-02": {
+  "era": "transit-farsite",
+  "effective_date": "2004-10-21"
+ },
+ "NMCARS_03-04_AG_03-02": {
+  "era": "transit-farsite",
+  "effective_date": "2004-10-14"
+ },
+ "NMCARS_03-05_AG_03-03": {
+  "era": "transit-farsite",
+  "effective_date": "2004-10-21"
+ },
+ "NMCARS_03-06_AG_03-04": {
+  "era": "transit-farsite",
+  "effective_date": "2004-10-21"
+ },
+ "NMCARS_03-07_AG_03-05": {
+  "era": "transit-farsite",
+  "effective_date": "2004-10-21"
+ },
+ "NMCARS_03-08_AG_03-05": {
+  "era": "transit-farsite",
+  "effective_date": "2004-12-08"
+ },
+ "NMCARS_03-09_AG_03-06": {
+  "era": "transit-farsite",
+  "effective_date": "2006-01-31"
+ },
+ "NMCARS_03-10_AG_03-07": {
+  "era": "transit-farsite",
+  "effective_date": "2006-01-31"
+ },
+ "NMCARS_03-11_AG_03-08": {
+  "era": "transit-farsite",
+  "effective_date": "2004-12-08"
+ },
+ "NMCARS_03-12_AG_03-09": {
+  "era": "transit-farsite",
+  "effective_date": "2004-12-08"
+ },
+ "NMCARS_03-13_AG_03-10": {
+  "era": "transit-farsite",
+  "effective_date": "2007-12-19"
+ },
+ "NMCARS_03-14_AG_03-11": {
+  "era": "transit-farsite",
+  "effective_date": "2007-12-19"
+ },
+ "NMCARS_03-Nov": {
+  "era": "transit-farsite",
+  "effective_date": "2004-08-16"
+ },
+ "NMCARS_08-02": {
+  "era": "transit-farsite",
+  "effective_date": "2008-05-01"
+ },
+ "NMCARS_08-03": {
+  "era": "transit-farsite",
+  "effective_date": "2008-05-01"
+ },
+ "NMCARS_08-04": {
+  "era": "transit-farsite",
+  "effective_date": "2009-03-04"
+ },
+ "NMCARS_08-05": {
+  "era": "transit-farsite",
+  "effective_date": "2010-01-06"
+ },
+ "NMCARS_08-06": {
+  "era": "transit",
+  "effective_date": "2010-02-08"
+ },
+ "NMCARS_08-07": {
+  "era": "transit-farsite",
+  "effective_date": "2010-08-12"
+ },
+ "NMCARS_08-08": {
+  "era": "transit-farsite",
+  "effective_date": "2011-01-04"
+ },
+ "NMCARS_08-09": {
+  "era": "transit-farsite",
+  "effective_date": "2011-11-14"
+ },
+ "NMCARS_08-10": {
+  "era": "transit-farsite",
+  "effective_date": "2012-01-17"
+ },
+ "NMCARS_08-14": {
+  "era": "transit-farsite",
+  "effective_date": "2012-10-18"
+ },
+ "NMCARS_08-15": {
+  "era": "transit-farsite",
+  "effective_date": "2012-11-21"
+ },
+ "NMCARS_08-16": {
+  "era": "transit-farsite",
+  "effective_date": "2013-03-12"
+ },
+ "NMCARS_08-17": {
+  "era": "transit-farsite",
+  "effective_date": "2013-04-30"
+ },
+ "NMCARS_08-18": {
+  "era": "transit-farsite",
+  "effective_date": "2013-04-30"
+ },
+ "NMCARS_08-19": {
+  "era": "transit-farsite",
+  "effective_date": "2013-08-30"
+ },
+ "NMCARS_08-Apr": {
+  "era": "transit-farsite",
+  "effective_date": "2008-05-01"
+ },
+ "NMCARS_13-01": {
+  "era": "transit-farsite",
+  "effective_date": "2013-12-19"
+ },
+ "NMCARS_13-02": {
+  "era": "transit-farsite",
+  "effective_date": "2014-02-11"
+ },
+ "NMCARS_13-03": {
+  "era": "transit-farsite",
+  "effective_date": "2014-05-20"
+ },
+ "NMCARS_13-04": {
+  "era": "transit-farsite",
+  "effective_date": "2014-11-24"
+ },
+ "NMCARS_13-05": {
+  "era": "transit-farsite",
+  "effective_date": "2015-03-23"
+ },
+ "NMCARS_13-06": {
+  "era": "transit-farsite",
+  "effective_date": "2015-06-17"
+ },
+ "NMCARS_13-07": {
+  "era": "transit-farsite",
+  "effective_date": "2015-10-26"
+ },
+ "NMCARS_13-08": {
+  "era": "transit-farsite",
+  "effective_date": "2016-02-03"
+ },
+ "NMCARS_13-09": {
+  "era": "transit-farsite",
+  "effective_date": "2016-02-08"
+ },
+ "NMCARS_13-10": {
+  "era": "transit-farsite",
+  "effective_date": "2016-08-18"
+ },
+ "NMCARS_13-11": {
+  "era": "transit-farsite",
+  "effective_date": "2016-11-07"
+ },
+ "NMCARS_13-12": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-09"
+ },
+ "NMCARS_13-13": {
+  "era": "transit-farsite",
+  "effective_date": "2017-01-23"
+ },
+ "NMCARS_13-14": {
+  "era": "transit-farsite",
+  "effective_date": "2017-02-06"
+ },
+ "NMCARS_13-15": {
+  "era": "transit-farsite",
+  "effective_date": "2017-09-27"
+ },
+ "NMCARS_13-16": {
+  "era": "transit-farsite",
+  "effective_date": "2017-10-30"
+ },
+ "NMCARS_13-17": {
+  "era": "transit-farsite",
+  "effective_date": "2017-04-09"
+ },
+ "NMCARS_13-Sep": {
+  "era": "transit-farsite",
+  "effective_date": "2013-09-11"
+ },
+ "NMCARS_18-00": {
+  "era": "transit-farsite",
+  "effective_date": "2018-04-10"
+ },
+ "NMCARS_18-01": {
+  "era": "transit-farsite",
+  "effective_date": "2018-05-22"
+ },
+ "NMCARS_18-02": {
+  "era": "transit-farsite",
+  "effective_date": "2018-09-27"
+ },
+ "NMCARS_18-03": {
+  "era": "transit-farsite",
+  "effective_date": "2018-10-19"
+ },
+ "NMCARS_18-04": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-12"
+ },
+ "NMCARS_18-07": {
+  "era": "agov-export",
+  "effective_date": "2019-07-24"
+ },
+ "NMCARS_18-08_0": {
+  "era": "agov-export",
+  "effective_date": "2019-09-06"
+ },
+ "NMCARS_18-09_HTML": {
+  "era": "ditaot-topics",
+  "effective_date": "2019-11-18"
+ },
+ "NMCARS_18-10": {
+  "era": "agov-export",
+  "effective_date": "2020-01-29"
+ },
+ "NMCARS_18-11": {
+  "era": "agov-export",
+  "effective_date": "2020-05-11"
+ },
+ "NMCARS_18-12": {
+  "era": "agov-export",
+  "effective_date": "2020-07-02"
+ },
+ "NMCARS_18-13": {
+  "era": "agov-export",
+  "effective_date": "2020-10-29"
+ },
+ "NMCARS_18-14": {
+  "era": "agov-export",
+  "effective_date": "2020-12-18"
+ },
+ "NMCARS_18-15": {
+  "era": "agov-export",
+  "effective_date": "2020-12-23"
+ },
+ "NMCARS_18-16": {
+  "era": "agov-export",
+  "effective_date": "2021-02-17"
+ },
+ "NMCARS_18-17": {
+  "era": "agov-export",
+  "effective_date": "2021-03-17"
+ },
+ "NMCARS_18-18": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-06-18"
+ },
+ "NMCARS_18-19": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-07-13"
+ },
+ "NMCARS_18-20": {
+  "era": "agov-export",
+  "effective_date": "2021-07-30"
+ },
+ "NMCARS_18-21": {
+  "era": "agov-export",
+  "effective_date": "2021-11-03"
+ },
+ "NMCARS_Change_5-02-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-05-02"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ }
+}

@@ -1,0 +1,2073 @@
+{
+ "_meta": {
+  "purpose": "Frozen Phase-1 regression oracle for the FARDITA refactor.",
+  "derived_from": "on-disk per-agency state (verification.json + date_coverage.json + pipeline_state.json), aggregated with the dashboard's roll-up logic.",
+  "rollup": {
+   "covered": "min(covered_pct) over certs with source_chars>0",
+   "accounted": "min(accounted_pct) over certs with source_chars>0",
+   "missing_sections": "sum(missing_count) over all certs"
+  },
+  "note": "Numbers here must not regress after any refactor phase. Diff a fresh re-audit against this file (both roll-up and per-cert)."
+ },
+ "totals": {
+  "n_agencies": 33,
+  "total_rows": 172291,
+  "total_editions": 1169,
+  "total_missing_sections": 0,
+  "all_invariants_ok": true,
+  "invariants_not_ok": [],
+  "agencies_with_missing": [],
+  "all_effective_ok": true,
+  "effective_not_ok": [],
+  "all_commit_ok": true,
+  "commit_not_ok": [],
+  "agencies_without_covered": [
+   "CASBAR"
+  ],
+  "dates_editions": 1169,
+  "dates_editions_with_effective": 1169,
+  "dates_editions_git": 33,
+  "dates_editions_git_with_commit": 33,
+  "dates_rows_git": 22352,
+  "dates_rows_git_with_commit": 22352
+ },
+ "agencies": {
+  "AFARS": {
+   "github": "https://github.com/GSA/GSA-Acquisition-AFARS",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 91,
+   "rows": 4061,
+   "covered": 86.27,
+   "accounted": 98.198,
+   "missing_sections": 0,
+   "certs_total": 4,
+   "certs_pass": 2,
+   "review_queue_len": 36,
+   "audit_at": "2026-07-20 15:15:25",
+   "history_floor": "2000-11-27",
+   "history_ceiling": "2025-03-17",
+   "step_status": {
+    "survey": "ok",
+    "noop": "ok",
+    "download": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 91,
+    "editions_with_effective": 91,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 4061,
+    "rows_git": 18,
+    "rows_git_with_commit": 18,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2019-Feb-22",
+     "source_chars": 36498,
+     "covered_pct": 86.7,
+     "accounted_pct": 100.0,
+     "missing_count": 0,
+     "publisher_sections": 40,
+     "pass": true
+    },
+    {
+     "era": "transit",
+     "folder": "2019-May-31_0",
+     "source_chars": 36498,
+     "covered_pct": 86.27,
+     "accounted_pct": 100.0,
+     "missing_count": 0,
+     "publisher_sections": 40,
+     "pass": true
+    },
+    {
+     "era": "agov",
+     "folder": "2022-0531",
+     "source_chars": 526144,
+     "covered_pct": 88.79,
+     "accounted_pct": 99.384,
+     "missing_count": 0,
+     "publisher_sections": 497,
+     "pass": false
+    },
+    {
+     "era": "dita",
+     "folder": "2025-0317_HTML_Files",
+     "source_chars": 452959,
+     "covered_pct": 89.3,
+     "accounted_pct": 98.198,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "AGAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-AGAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 3,
+   "rows": 559,
+   "covered": 86.41,
+   "accounted": 99.844,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 2,
+   "review_queue_len": 1,
+   "audit_at": "2026-07-20 15:13:22",
+   "history_floor": "2016-03-23",
+   "history_ceiling": "2021-03-11",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ok",
+    "canon": "FAIL"
+   },
+   "dates": {
+    "editions": 3,
+    "editions_with_effective": 3,
+    "editions_git": 0,
+    "editions_git_with_commit": 0,
+    "rows": 559,
+    "rows_git": 0,
+    "rows_git_with_commit": 0,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018Jul25",
+     "source_chars": 211331,
+     "covered_pct": 89.39,
+     "accounted_pct": 99.972,
+     "missing_count": 0,
+     "publisher_sections": 311,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2021-0311_HTML_Files",
+     "source_chars": 220154,
+     "covered_pct": 86.41,
+     "accounted_pct": 99.844,
+     "missing_count": 0,
+     "publisher_sections": 310,
+     "pass": true
+    }
+   ],
+   "missing_files": []
+  },
+  "AIDAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-AIDAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 9,
+   "rows": 1010,
+   "covered": 91.1,
+   "accounted": 97.651,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 40,
+   "audit_at": "2026-07-20 15:13:44",
+   "history_floor": "2007-04-30",
+   "history_ceiling": "2025-01-08",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 9,
+    "editions_with_effective": 9,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 1010,
+    "rows_git": 7,
+    "rows_git_with_commit": 7,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "11Dec18",
+     "source_chars": 362969,
+     "covered_pct": 92.94,
+     "accounted_pct": 99.55,
+     "missing_count": 0,
+     "publisher_sections": 236,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2025-0108_HTML_Files",
+     "source_chars": 390777,
+     "covered_pct": 91.1,
+     "accounted_pct": 97.651,
+     "missing_count": 0,
+     "publisher_sections": 242,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "CAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-CAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 6,
+   "rows": 1248,
+   "covered": 84.66,
+   "accounted": 99.203,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 0,
+   "review_queue_len": 9,
+   "audit_at": "2026-07-20 15:15:25",
+   "history_floor": "2007-04-16",
+   "history_ceiling": "2021-03-11",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 6,
+    "editions_with_effective": 6,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 1248,
+    "rows_git": 372,
+    "rows_git_with_commit": 372,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018_Jul_25",
+     "source_chars": 370825,
+     "covered_pct": 84.66,
+     "accounted_pct": 99.245,
+     "missing_count": 0,
+     "publisher_sections": 372,
+     "pass": false
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2021-0311_HTML_Files",
+     "source_chars": 334576,
+     "covered_pct": 89.54,
+     "accounted_pct": 99.203,
+     "missing_count": 0,
+     "publisher_sections": 371,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "CASBAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-CASBAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 1,
+   "rows": 213,
+   "covered": null,
+   "accounted": null,
+   "missing_sections": 0,
+   "certs_total": 0,
+   "certs_pass": 0,
+   "review_queue_len": 0,
+   "audit_at": "2026-07-20 15:13:34",
+   "history_floor": null,
+   "history_ceiling": null,
+   "step_status": {
+    "noop": "ok",
+    "download": "FAIL",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "skip",
+    "audit": "ok",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 1,
+    "editions_with_effective": 1,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 213,
+    "rows_git": 213,
+    "rows_git_with_commit": 213,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [],
+   "missing_files": []
+  },
+  "DAFFARS": {
+   "github": "https://github.com/GSA/GSA-Acquisition-DAFFARS",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 74,
+   "rows": 5474,
+   "covered": 21.73,
+   "accounted": 99.272,
+   "missing_sections": 0,
+   "certs_total": 3,
+   "certs_pass": 1,
+   "review_queue_len": 58,
+   "audit_at": "2026-07-20 15:23:06",
+   "history_floor": "1998-08-12",
+   "history_ceiling": "2023-05-08",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 74,
+    "editions_with_effective": 74,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 5474,
+    "rows_git": 366,
+    "rows_git_with_commit": 366,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018-0313",
+     "source_chars": 472324,
+     "covered_pct": 32.31,
+     "accounted_pct": 99.353,
+     "missing_count": 0,
+     "publisher_sections": 229,
+     "pass": false
+    },
+    {
+     "era": "transit",
+     "folder": "2019-1001_1",
+     "source_chars": 739851,
+     "covered_pct": 21.73,
+     "accounted_pct": 99.272,
+     "missing_count": 0,
+     "publisher_sections": 237,
+     "pass": false
+    },
+    {
+     "era": "dita",
+     "folder": "DAFFARS_Change_5-8-2023_HTML_Files",
+     "source_chars": 0,
+     "covered_pct": 0.0,
+     "accounted_pct": 100.0,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    }
+   ],
+   "missing_files": []
+  },
+  "DARS": {
+   "github": "https://github.com/GSA/GSA-Acquisition-DARS",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 12,
+   "rows": 1446,
+   "covered": 84.58,
+   "accounted": 97.677,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 40,
+   "audit_at": "2026-07-20 15:13:46",
+   "history_floor": "2014-09-08",
+   "history_ceiling": "2024-06-26",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 12,
+    "editions_with_effective": 12,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 1446,
+    "rows_git": 186,
+    "rows_git_with_commit": 186,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2020-05",
+     "source_chars": 499386,
+     "covered_pct": 84.58,
+     "accounted_pct": 97.677,
+     "missing_count": 0,
+     "publisher_sections": 171,
+     "pass": false
+    },
+    {
+     "era": "dita",
+     "folder": "2024-0626_HTML_Files",
+     "source_chars": 0,
+     "covered_pct": 0.0,
+     "accounted_pct": 100.0,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    }
+   ],
+   "missing_files": []
+  },
+  "DEAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-DEAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 26,
+   "rows": 5045,
+   "covered": 92.4,
+   "accounted": 98.816,
+   "missing_sections": 0,
+   "certs_total": 3,
+   "certs_pass": 1,
+   "review_queue_len": 79,
+   "audit_at": "2026-07-20 15:14:12",
+   "history_floor": "1997-01-01",
+   "history_ceiling": "2024-12-13",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 26,
+    "editions_with_effective": 26,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 5045,
+    "rows_git": 22,
+    "rows_git_with_commit": 22,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2016Jul15",
+     "source_chars": 1169206,
+     "covered_pct": 95.59,
+     "accounted_pct": 99.653,
+     "missing_count": 0,
+     "publisher_sections": 570,
+     "pass": true
+    },
+    {
+     "era": "transit",
+     "folder": "2002Jul28_1",
+     "source_chars": 1100919,
+     "covered_pct": 92.4,
+     "accounted_pct": 98.816,
+     "missing_count": 0,
+     "publisher_sections": 557,
+     "pass": false
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2024Dec13_HTML_Files",
+     "source_chars": 1109391,
+     "covered_pct": 95.13,
+     "accounted_pct": 99.212,
+     "missing_count": 0,
+     "publisher_sections": 573,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "DFARS": {
+   "github": "https://github.com/GSA/GSA-Acquisition-DFARS",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 81,
+   "rows": 14067,
+   "covered": 89.29,
+   "accounted": 96.571,
+   "missing_sections": 0,
+   "certs_total": 4,
+   "certs_pass": 2,
+   "review_queue_len": 120,
+   "audit_at": "2026-07-20 15:17:32",
+   "history_floor": "1996-11-15",
+   "history_ceiling": "2025-11-10",
+   "step_status": {
+    "noop": "ok",
+    "download": "warn",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 81,
+    "editions_with_effective": 81,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 14067,
+    "rows_git": 3,
+    "rows_git_with_commit": 3,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "DPN20190430",
+     "source_chars": 766841,
+     "covered_pct": 89.29,
+     "accounted_pct": 96.571,
+     "missing_count": 0,
+     "publisher_sections": 406,
+     "pass": false
+    },
+    {
+     "era": "dita",
+     "folder": "DFARS_Change_11-10-2025_HTML_Files",
+     "source_chars": 0,
+     "covered_pct": 0.0,
+     "accounted_pct": 100.0,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "DFARS_Change_04-25-2024_HTML_Files",
+     "source_chars": 2938853,
+     "covered_pct": 94.71,
+     "accounted_pct": 99.586,
+     "missing_count": 0,
+     "publisher_sections": 1669,
+     "pass": true
+    },
+    {
+     "era": "transit",
+     "folder": "DPN20181204a",
+     "source_chars": 828870,
+     "covered_pct": 91.64,
+     "accounted_pct": 97.582,
+     "missing_count": 0,
+     "publisher_sections": 377,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "DFARSPGI": {
+   "github": null,
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 36,
+   "rows": 5802,
+   "covered": 84.97,
+   "accounted": 98.393,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 40,
+   "audit_at": "2026-07-20 15:17:25",
+   "history_floor": "2021-11-30",
+   "history_ceiling": "2025-11-10",
+   "step_status": {
+    "noop": "ok",
+    "download": "warn",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 36,
+    "editions_with_effective": 36,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 5802,
+    "rows_git": 3,
+    "rows_git_with_commit": 3,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "dita",
+     "folder": "DFARS_PGI_Change_11-10-2025_HTML_Files",
+     "source_chars": 0,
+     "covered_pct": 0.0,
+     "accounted_pct": 100.0,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "DFARS_PGI_Change_03-26-2024_HTML_Files",
+     "source_chars": 974864,
+     "covered_pct": 84.97,
+     "accounted_pct": 98.393,
+     "missing_count": 0,
+     "publisher_sections": 387,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "DIAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-DIAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 6,
+   "rows": 924,
+   "covered": 84.22,
+   "accounted": 99.065,
+   "missing_sections": 0,
+   "certs_total": 1,
+   "certs_pass": 0,
+   "review_queue_len": 11,
+   "audit_at": "2026-07-20 15:14:07",
+   "history_floor": "2006-10-02",
+   "history_ceiling": "2018-12-11",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 6,
+    "editions_with_effective": 6,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 924,
+    "rows_git": 275,
+    "rows_git_with_commit": 275,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018_Jul_25",
+     "source_chars": 287145,
+     "covered_pct": 84.22,
+     "accounted_pct": 99.065,
+     "missing_count": 0,
+     "publisher_sections": 294,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "DLAD": {
+   "github": "https://github.com/GSA/GSA-Acquisition-DLAD",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 109,
+   "rows": 9503,
+   "covered": 82.48,
+   "accounted": 97.738,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 22,
+   "audit_at": "2026-07-20 15:14:28",
+   "history_floor": "2004-09-22",
+   "history_ceiling": "2024-06-25",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 109,
+    "editions_with_effective": 109,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 9503,
+    "rows_git": 314,
+    "rows_git_with_commit": 314,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "dita",
+     "folder": "2024-0625_HTML_Files",
+     "source_chars": 0,
+     "covered_pct": 0.0,
+     "accounted_pct": 100.0,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    },
+    {
+     "era": "transit-farsite",
+     "folder": "Rev5_PROCLTR19-01-07",
+     "source_chars": 155260,
+     "covered_pct": 82.48,
+     "accounted_pct": 97.738,
+     "missing_count": 0,
+     "publisher_sections": 79,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "DOLAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-DOLAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 4,
+   "rows": 407,
+   "covered": 88.69,
+   "accounted": 98.488,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 2,
+   "audit_at": "2026-07-20 15:15:27",
+   "history_floor": "2006-11-27",
+   "history_ceiling": "2021-03-11",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 4,
+    "editions_with_effective": 4,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 407,
+    "rows_git": 64,
+    "rows_git_with_commit": 64,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018_Jul-25",
+     "source_chars": 142916,
+     "covered_pct": 94.84,
+     "accounted_pct": 99.746,
+     "missing_count": 0,
+     "publisher_sections": 153,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2021-0311_HTML_Files",
+     "source_chars": 143407,
+     "covered_pct": 88.69,
+     "accounted_pct": 98.488,
+     "missing_count": 0,
+     "publisher_sections": 154,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "DOSAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-DOSAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 15,
+   "rows": 1375,
+   "covered": 88.46,
+   "accounted": 97.73,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 17,
+   "audit_at": "2026-07-20 15:15:33",
+   "history_floor": "2007-01-08",
+   "history_ceiling": "2024-01-23",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 15,
+    "editions_with_effective": 15,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 1375,
+    "rows_git": 8,
+    "rows_git_with_commit": 8,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018_Jul_25",
+     "source_chars": 356495,
+     "covered_pct": 91.86,
+     "accounted_pct": 99.839,
+     "missing_count": 0,
+     "publisher_sections": 332,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2024-0123_HTML_Files",
+     "source_chars": 330532,
+     "covered_pct": 88.46,
+     "accounted_pct": 97.73,
+     "missing_count": 0,
+     "publisher_sections": 320,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "DTAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-DTAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 12,
+   "rows": 262,
+   "covered": 86.17,
+   "accounted": 98.328,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 0,
+   "review_queue_len": 5,
+   "audit_at": "2026-07-20 15:14:36",
+   "history_floor": "2010-01-14",
+   "history_ceiling": "2021-03-11",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 12,
+    "editions_with_effective": 12,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 262,
+    "rows_git": 55,
+    "rows_git_with_commit": 55,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018_Jul_25",
+     "source_chars": 59445,
+     "covered_pct": 86.17,
+     "accounted_pct": 99.132,
+     "missing_count": 0,
+     "publisher_sections": 47,
+     "pass": false
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2021-0311_HTML_Files",
+     "source_chars": 63862,
+     "covered_pct": 88.48,
+     "accounted_pct": 98.328,
+     "missing_count": 0,
+     "publisher_sections": 54,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "EDAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-EDAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 6,
+   "rows": 506,
+   "covered": 83.55,
+   "accounted": 98.831,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 0,
+   "review_queue_len": 3,
+   "audit_at": "2026-07-20 15:14:57",
+   "history_floor": "2006-10-31",
+   "history_ceiling": "2023-09-01",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 6,
+    "editions_with_effective": 6,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 506,
+    "rows_git": 3,
+    "rows_git_with_commit": 3,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018_Jul_25",
+     "source_chars": 139195,
+     "covered_pct": 83.55,
+     "accounted_pct": 98.833,
+     "missing_count": 0,
+     "publisher_sections": 120,
+     "pass": false
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2023-0901_HTML_Files",
+     "source_chars": 161514,
+     "covered_pct": 89.33,
+     "accounted_pct": 98.831,
+     "missing_count": 0,
+     "publisher_sections": 140,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "EPAAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-EPAAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 17,
+   "rows": 959,
+   "covered": 90.57,
+   "accounted": 98.221,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 12,
+   "audit_at": "2026-07-20 15:15:30",
+   "history_floor": "2006-11-01",
+   "history_ceiling": "2025-09-22",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 17,
+    "editions_with_effective": 17,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 959,
+    "rows_git": 14,
+    "rows_git_with_commit": 14,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018_Jul_25",
+     "source_chars": 431060,
+     "covered_pct": 90.57,
+     "accounted_pct": 98.221,
+     "missing_count": 0,
+     "publisher_sections": 236,
+     "pass": false
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2025-0922_HTML_Files",
+     "source_chars": 460179,
+     "covered_pct": 94.24,
+     "accounted_pct": 99.602,
+     "missing_count": 0,
+     "publisher_sections": 236,
+     "pass": true
+    }
+   ],
+   "missing_files": []
+  },
+  "FAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-FAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 257,
+   "rows": 96720,
+   "covered": 94.95,
+   "accounted": 99.58,
+   "missing_sections": 0,
+   "certs_total": 4,
+   "certs_pass": 4,
+   "review_queue_len": 82,
+   "audit_at": "2026-07-20 07:26:12",
+   "history_floor": "1995-10-30",
+   "history_ceiling": "2026-03-13",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "backfill": "ok",
+    "audit": "ok"
+   },
+   "dates": {
+    "editions": 257,
+    "editions_with_effective": 257,
+    "editions_git": 3,
+    "editions_git_with_commit": 3,
+    "rows": 96720,
+    "rows_git": 18463,
+    "rows_git_with_commit": 18463,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "legacy",
+     "folder": "FAC 1997-27bu HTML Files",
+     "source_chars": 4453184,
+     "covered_pct": 94.95,
+     "accounted_pct": 99.865,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    },
+    {
+     "era": "ditaot",
+     "folder": "2025-06_HTML_Files",
+     "source_chars": 6396394,
+     "covered_pct": 96.59,
+     "accounted_pct": 99.993,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    },
+    {
+     "era": "webworks-2001",
+     "folder": "FAC 2001-14b HTML Files",
+     "source_chars": 2824308,
+     "covered_pct": 95.47,
+     "accounted_pct": 99.58,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    },
+    {
+     "era": "webworks-2005",
+     "folder": "FAC 2005-100 HTML Files",
+     "source_chars": 6000262,
+     "covered_pct": 96.95,
+     "accounted_pct": 99.994,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    }
+   ],
+   "missing_files": []
+  },
+  "FEHBAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-FEHBAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 7,
+   "rows": 478,
+   "covered": 88.32,
+   "accounted": 98.48,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 0,
+   "review_queue_len": 30,
+   "audit_at": "2026-07-20 15:15:46",
+   "history_floor": "2007-04-16",
+   "history_ceiling": "2023-06-04",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 7,
+    "editions_with_effective": 7,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 478,
+    "rows_git": 13,
+    "rows_git_with_commit": 13,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018_Jul_25",
+     "source_chars": 220461,
+     "covered_pct": 88.32,
+     "accounted_pct": 99.362,
+     "missing_count": 0,
+     "publisher_sections": 136,
+     "pass": false
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2023-01_HTML_Files",
+     "source_chars": 200364,
+     "covered_pct": 91.02,
+     "accounted_pct": 98.48,
+     "missing_count": 0,
+     "publisher_sections": 138,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "GSAM": {
+   "github": "https://github.com/GSA/GSA-Acquisition-GSAM",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 172,
+   "rows": 3053,
+   "covered": 88.73,
+   "accounted": 95.399,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 0,
+   "review_queue_len": 66,
+   "audit_at": "2026-07-20 15:17:10",
+   "history_floor": "2004-09-16",
+   "history_ceiling": "2026-06-13",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 172,
+    "editions_with_effective": 172,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 3053,
+    "rows_git": 19,
+    "rows_git_with_commit": 19,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "ditaot-topics",
+     "folder": "Change_200,_Wave_2_GSA_Acquisition_Handbook_HTML_Files",
+     "source_chars": 924054,
+     "covered_pct": 91.58,
+     "accounted_pct": 98.23,
+     "missing_count": 0,
+     "publisher_sections": 643,
+     "pass": false
+    },
+    {
+     "era": "webworks-parts",
+     "folder": "GSAM GSAR Change 99 HTML Files_0",
+     "source_chars": 856198,
+     "covered_pct": 88.73,
+     "accounted_pct": 95.399,
+     "missing_count": 0,
+     "publisher_sections": 626,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "HHSAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-HHSAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 9,
+   "rows": 1618,
+   "covered": 90.53,
+   "accounted": 97.25,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 19,
+   "audit_at": "2026-07-20 15:15:55",
+   "history_floor": "2006-11-27",
+   "history_ceiling": "2022-02-02",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 9,
+    "editions_with_effective": 9,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 1618,
+    "rows_git": 218,
+    "rows_git_with_commit": 218,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018Jul25",
+     "source_chars": 263192,
+     "covered_pct": 92.72,
+     "accounted_pct": 99.593,
+     "missing_count": 0,
+     "publisher_sections": 191,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2022-0202_HTML_Files",
+     "source_chars": 299854,
+     "covered_pct": 90.53,
+     "accounted_pct": 97.25,
+     "missing_count": 0,
+     "publisher_sections": 218,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "HSAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-HSAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 13,
+   "rows": 874,
+   "covered": 89.85,
+   "accounted": 99.365,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 1,
+   "audit_at": "2026-07-20 15:16:13",
+   "history_floor": "2006-08-25",
+   "history_ceiling": "2023-07-21",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 13,
+    "editions_with_effective": 13,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 874,
+    "rows_git": 7,
+    "rows_git_with_commit": 7,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018-Jul-25",
+     "source_chars": 255540,
+     "covered_pct": 91.89,
+     "accounted_pct": 100.0,
+     "missing_count": 0,
+     "publisher_sections": 223,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2023-0721_HTML_Files",
+     "source_chars": 301958,
+     "covered_pct": 89.85,
+     "accounted_pct": 99.365,
+     "missing_count": 0,
+     "publisher_sections": 228,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "HUDAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-HUDAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 9,
+   "rows": 674,
+   "covered": 90.02,
+   "accounted": 99.309,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 2,
+   "audit_at": "2026-07-20 15:15:59",
+   "history_floor": "2007-04-19",
+   "history_ceiling": "2021-03-11",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 9,
+    "editions_with_effective": 9,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 674,
+    "rows_git": 187,
+    "rows_git_with_commit": 187,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018Jul25",
+     "source_chars": 204273,
+     "covered_pct": 91.22,
+     "accounted_pct": 100.0,
+     "missing_count": 0,
+     "publisher_sections": 183,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2021-0311_HTML_Files",
+     "source_chars": 220483,
+     "covered_pct": 90.02,
+     "accounted_pct": 99.309,
+     "missing_count": 0,
+     "publisher_sections": 186,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "IAAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-IAAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 3,
+   "rows": 87,
+   "covered": 79.12,
+   "accounted": 96.952,
+   "missing_sections": 0,
+   "certs_total": 1,
+   "certs_pass": 0,
+   "review_queue_len": 2,
+   "audit_at": "2026-07-20 15:16:02",
+   "history_floor": "2006-12-05",
+   "history_ceiling": "2018-12-11",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 3,
+    "editions_with_effective": 3,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 87,
+    "rows_git": 37,
+    "rows_git_with_commit": 37,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018Jul25",
+     "source_chars": 32679,
+     "covered_pct": 79.12,
+     "accounted_pct": 96.952,
+     "missing_count": 0,
+     "publisher_sections": 37,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "JAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-JAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 4,
+   "rows": 473,
+   "covered": 81.52,
+   "accounted": 98.191,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 4,
+   "audit_at": "2026-07-20 15:16:23",
+   "history_floor": "2018-12-11",
+   "history_ceiling": "2022-09-02",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 4,
+    "editions_with_effective": 4,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 473,
+    "rows_git": 171,
+    "rows_git_with_commit": 171,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018-04",
+     "source_chars": 123788,
+     "covered_pct": 83.77,
+     "accounted_pct": 99.788,
+     "missing_count": 0,
+     "publisher_sections": 130,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2022-0902_HTML_Files",
+     "source_chars": 125025,
+     "covered_pct": 81.52,
+     "accounted_pct": 98.191,
+     "missing_count": 0,
+     "publisher_sections": 171,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "LIFAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-LIFAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 4,
+   "rows": 221,
+   "covered": 83.06,
+   "accounted": 99.166,
+   "missing_sections": 0,
+   "certs_total": 1,
+   "certs_pass": 0,
+   "review_queue_len": 2,
+   "audit_at": "2026-07-20 15:16:14",
+   "history_floor": "2006-12-05",
+   "history_ceiling": "2018-12-11",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 4,
+    "editions_with_effective": 4,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 221,
+    "rows_git": 97,
+    "rows_git_with_commit": 97,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018Jul25",
+     "source_chars": 120266,
+     "covered_pct": 83.06,
+     "accounted_pct": 99.166,
+     "missing_count": 0,
+     "publisher_sections": 97,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "NFS": {
+   "github": "https://github.com/GSA/GSA-Acquisition-NFS",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 19,
+   "rows": 5357,
+   "covered": 90.38,
+   "accounted": 99.362,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 46,
+   "audit_at": "2026-07-20 15:16:47",
+   "history_floor": "2014-09-08",
+   "history_ceiling": "2024-02-22",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 19,
+    "editions_with_effective": 19,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 5357,
+    "rows_git": 10,
+    "rows_git_with_commit": 10,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2017-20",
+     "source_chars": 1320186,
+     "covered_pct": 90.38,
+     "accounted_pct": 99.683,
+     "missing_count": 0,
+     "publisher_sections": 843,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2024-0307_HTML_Files",
+     "source_chars": 642143,
+     "covered_pct": 94.16,
+     "accounted_pct": 99.362,
+     "missing_count": 0,
+     "publisher_sections": 358,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "NMCARS": {
+   "github": "https://github.com/GSA/GSA-Acquisition-NMCARS",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 53,
+   "rows": 2630,
+   "covered": 59.58,
+   "accounted": 99.113,
+   "missing_sections": 0,
+   "certs_total": 4,
+   "certs_pass": 3,
+   "review_queue_len": 30,
+   "audit_at": "2026-07-20 15:17:06",
+   "history_floor": "2000-07-25",
+   "history_ceiling": "2022-05-02",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 53,
+    "editions_with_effective": 53,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 2630,
+    "rows_git": 265,
+    "rows_git_with_commit": 265,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "dita",
+     "folder": "NMCARS_Change_5-02-2022_HTML_Files",
+     "source_chars": 0,
+     "covered_pct": 0.0,
+     "accounted_pct": 100.0,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    },
+    {
+     "era": "transit",
+     "folder": "NMCARS_08-06",
+     "source_chars": 284898,
+     "covered_pct": 59.58,
+     "accounted_pct": 100.0,
+     "missing_count": 0,
+     "publisher_sections": 238,
+     "pass": true
+    },
+    {
+     "era": "transit-farsite",
+     "folder": "NMCARS_18-04",
+     "source_chars": 97492,
+     "covered_pct": 83.68,
+     "accounted_pct": 99.69,
+     "missing_count": 0,
+     "publisher_sections": 79,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "NMCARS_18-19",
+     "source_chars": 225667,
+     "covered_pct": 88.77,
+     "accounted_pct": 99.113,
+     "missing_count": 0,
+     "publisher_sections": 247,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "NRCAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-NRCAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 5,
+   "rows": 409,
+   "covered": 92.26,
+   "accounted": 99.225,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 25,
+   "audit_at": "2026-07-20 15:16:32",
+   "history_floor": "2006-11-28",
+   "history_ceiling": "2021-03-11",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 5,
+    "editions_with_effective": 5,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 409,
+    "rows_git": 112,
+    "rows_git_with_commit": 112,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018-07",
+     "source_chars": 183210,
+     "covered_pct": 93.41,
+     "accounted_pct": 99.893,
+     "missing_count": 0,
+     "publisher_sections": 112,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "2021-0311_HTML_Files",
+     "source_chars": 177953,
+     "covered_pct": 92.26,
+     "accounted_pct": 99.225,
+     "missing_count": 0,
+     "publisher_sections": 112,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "SOFARS": {
+   "github": "https://github.com/GSA/GSA-Acquisition-SOFARS",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 65,
+   "rows": 2465,
+   "covered": 62.86,
+   "accounted": 95.597,
+   "missing_sections": 0,
+   "certs_total": 3,
+   "certs_pass": 1,
+   "review_queue_len": 90,
+   "audit_at": "2026-07-20 15:17:01",
+   "history_floor": "2000-01-01",
+   "history_ceiling": "2021-06-30",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 65,
+    "editions_with_effective": 65,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 2465,
+    "rows_git": 206,
+    "rows_git_with_commit": 206,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "202105",
+     "source_chars": 212704,
+     "covered_pct": 71.03,
+     "accounted_pct": 95.597,
+     "missing_count": 0,
+     "publisher_sections": 206,
+     "pass": false
+    },
+    {
+     "era": "transit",
+     "folder": "201812",
+     "source_chars": 251487,
+     "covered_pct": 62.86,
+     "accounted_pct": 96.081,
+     "missing_count": 0,
+     "publisher_sections": 206,
+     "pass": false
+    },
+    {
+     "era": "dita",
+     "folder": "2021-0630_HTML_Files",
+     "source_chars": 0,
+     "covered_pct": 0.0,
+     "accounted_pct": 100.0,
+     "missing_count": null,
+     "publisher_sections": null,
+     "pass": true
+    }
+   ],
+   "missing_files": []
+  },
+  "TAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-TAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 7,
+   "rows": 847,
+   "covered": 91.71,
+   "accounted": 99.498,
+   "missing_sections": 0,
+   "certs_total": 2,
+   "certs_pass": 1,
+   "review_queue_len": 0,
+   "audit_at": "2026-07-20 15:16:59",
+   "history_floor": "2006-10-02",
+   "history_ceiling": "2022-11-07",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 7,
+    "editions_with_effective": 7,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 847,
+    "rows_git": 253,
+    "rows_git_with_commit": 253,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018-07",
+     "source_chars": 181496,
+     "covered_pct": 91.71,
+     "accounted_pct": 100.0,
+     "missing_count": 0,
+     "publisher_sections": 150,
+     "pass": true
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "Nov_7_2022_HTML_Files",
+     "source_chars": 369355,
+     "covered_pct": 92.42,
+     "accounted_pct": 99.498,
+     "missing_count": 0,
+     "publisher_sections": 253,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "TRANSFARS": {
+   "github": "https://github.com/GSA/GSA-Acquisition-TRANSFARS",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 15,
+   "rows": 145,
+   "covered": 93.38,
+   "accounted": 98.9,
+   "missing_sections": 0,
+   "certs_total": 1,
+   "certs_pass": 0,
+   "review_queue_len": 2,
+   "audit_at": "2026-07-20 15:16:48",
+   "history_floor": "2007-04-30",
+   "history_ceiling": "2018-10-23",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "skip"
+   },
+   "dates": {
+    "editions": 15,
+    "editions_with_effective": 15,
+    "editions_git": 0,
+    "editions_git_with_commit": 0,
+    "rows": 145,
+    "rows_git": 0,
+    "rows_git_with_commit": 0,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2018-10",
+     "source_chars": 68112,
+     "covered_pct": 93.38,
+     "accounted_pct": 98.9,
+     "missing_count": 0,
+     "publisher_sections": 25,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  },
+  "VAAR": {
+   "github": "https://github.com/GSA/GSA-Acquisition-VAAR",
+   "invariants_ok": true,
+   "invariant_problems": 0,
+   "editions": 19,
+   "rows": 3379,
+   "covered": 93.03,
+   "accounted": 98.541,
+   "missing_sections": 0,
+   "certs_total": 3,
+   "certs_pass": 0,
+   "review_queue_len": 55,
+   "audit_at": "2026-07-20 15:17:22",
+   "history_floor": "2007-01-25",
+   "history_ceiling": "2023-02-24",
+   "step_status": {
+    "noop": "ok",
+    "download": "ok",
+    "survey": "ok",
+    "rebuild": "ok",
+    "backfill": "ok",
+    "audit": "ATTENTION",
+    "canon": "ok"
+   },
+   "dates": {
+    "editions": 19,
+    "editions_with_effective": 19,
+    "editions_git": 1,
+    "editions_git_with_commit": 1,
+    "rows": 3379,
+    "rows_git": 371,
+    "rows_git_with_commit": 371,
+    "effective_ok": true,
+    "commit_ok": true,
+    "ok": true
+   },
+   "certs": [
+    {
+     "era": "transit-farsite",
+     "folder": "2019-01-03",
+     "source_chars": 583103,
+     "covered_pct": 93.05,
+     "accounted_pct": 98.541,
+     "missing_count": 0,
+     "publisher_sections": 438,
+     "pass": false
+    },
+    {
+     "era": "transit",
+     "folder": "2019-04-11",
+     "source_chars": 583103,
+     "covered_pct": 93.05,
+     "accounted_pct": 98.541,
+     "missing_count": 0,
+     "publisher_sections": 438,
+     "pass": false
+    },
+    {
+     "era": "ditaot-topics",
+     "folder": "VAAR_2-24-2023_HTML_Files",
+     "source_chars": 558410,
+     "covered_pct": 93.03,
+     "accounted_pct": 99.052,
+     "missing_count": 0,
+     "publisher_sections": 371,
+     "pass": false
+    }
+   ],
+   "missing_files": []
+  }
+ }
+}

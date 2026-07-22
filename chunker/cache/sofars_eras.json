@@ -1,0 +1,282 @@
+{
+ "200001": {
+  "era": "transit-farsite",
+  "effective_date": "2000-01-01"
+ },
+ "200201": {
+  "era": "transit-farsite",
+  "effective_date": "2002-01-01"
+ },
+ "200202": {
+  "era": "transit-farsite",
+  "effective_date": "2002-02-01"
+ },
+ "200301": {
+  "era": "transit-farsite",
+  "effective_date": "2003-01-01"
+ },
+ "200401": {
+  "era": "transit-farsite",
+  "effective_date": "2004-01-01"
+ },
+ "200402": {
+  "era": "transit-farsite",
+  "effective_date": "2004-02-01"
+ },
+ "200501": {
+  "era": "transit-farsite",
+  "effective_date": "2005-01-01"
+ },
+ "200601": {
+  "era": "transit-farsite",
+  "effective_date": "2006-01-01"
+ },
+ "200701": {
+  "era": "transit-farsite",
+  "effective_date": "2007-01-01"
+ },
+ "200702": {
+  "era": "transit-farsite",
+  "effective_date": "2007-02-01"
+ },
+ "200804": {
+  "era": "transit-farsite",
+  "effective_date": "2008-04-01"
+ },
+ "200806": {
+  "era": "transit-farsite",
+  "effective_date": "2008-06-01"
+ },
+ "200807": {
+  "era": "transit-farsite",
+  "effective_date": "2008-07-01"
+ },
+ "200808": {
+  "era": "transit-farsite",
+  "effective_date": "2008-08-01"
+ },
+ "200901": {
+  "era": "transit-farsite",
+  "effective_date": "2009-01-01"
+ },
+ "200903": {
+  "era": "transit-farsite",
+  "effective_date": "2009-03-01"
+ },
+ "200907": {
+  "era": "transit-farsite",
+  "effective_date": "2009-07-01"
+ },
+ "200909": {
+  "era": "transit-farsite",
+  "effective_date": "2009-09-01"
+ },
+ "200911": {
+  "era": "transit-farsite",
+  "effective_date": "2009-11-01"
+ },
+ "201001": {
+  "era": "transit-farsite",
+  "effective_date": "2010-01-01"
+ },
+ "201002": {
+  "era": "transit-farsite",
+  "effective_date": "2010-02-01"
+ },
+ "201002-1": {
+  "era": "transit-farsite",
+  "effective_date": "2010-02-01"
+ },
+ "201003": {
+  "era": "transit-farsite",
+  "effective_date": "2010-03-01"
+ },
+ "201005": {
+  "era": "transit-farsite",
+  "effective_date": "2010-05-01"
+ },
+ "201006": {
+  "era": "transit-farsite",
+  "effective_date": "2010-06-01"
+ },
+ "201007": {
+  "era": "transit-farsite",
+  "effective_date": "2010-07-01"
+ },
+ "201008": {
+  "era": "transit-farsite",
+  "effective_date": "2010-08-01"
+ },
+ "201010": {
+  "era": "transit-farsite",
+  "effective_date": "2010-10-01"
+ },
+ "201011": {
+  "era": "transit-farsite",
+  "effective_date": "2010-11-01"
+ },
+ "201101": {
+  "era": "transit-farsite",
+  "effective_date": "2011-01-01"
+ },
+ "201106": {
+  "era": "transit-farsite",
+  "effective_date": "2011-06-01"
+ },
+ "201107": {
+  "era": "transit-farsite",
+  "effective_date": "2011-07-01"
+ },
+ "201109": {
+  "era": "transit-farsite",
+  "effective_date": "2011-09-01"
+ },
+ "201111": {
+  "era": "transit-farsite",
+  "effective_date": "2011-11-01"
+ },
+ "201201": {
+  "era": "transit-farsite",
+  "effective_date": "2012-01-01"
+ },
+ "201202": {
+  "era": "transit-farsite",
+  "effective_date": "2012-02-01"
+ },
+ "201203": {
+  "era": "transit-farsite",
+  "effective_date": "2012-03-01"
+ },
+ "201205": {
+  "era": "transit-farsite",
+  "effective_date": "2012-05-01"
+ },
+ "201207": {
+  "era": "transit-farsite",
+  "effective_date": "2012-07-01"
+ },
+ "201210": {
+  "era": "transit-farsite",
+  "effective_date": "2012-10-01"
+ },
+ "201212": {
+  "era": "transit-farsite",
+  "effective_date": "2012-12-01"
+ },
+ "201301": {
+  "era": "transit-farsite",
+  "effective_date": "2013-01-01"
+ },
+ "201303": {
+  "era": "transit-farsite",
+  "effective_date": "2013-03-01"
+ },
+ "201304": {
+  "era": "transit-farsite",
+  "effective_date": "2013-04-01"
+ },
+ "201309": {
+  "era": "transit-farsite",
+  "effective_date": "2013-09-01"
+ },
+ "201402": {
+  "era": "transit-farsite",
+  "effective_date": "2014-02-01"
+ },
+ "201405": {
+  "era": "transit-farsite",
+  "effective_date": "2014-05-01"
+ },
+ "201410A": {
+  "era": "transit-farsite",
+  "effective_date": "2014-10-01"
+ },
+ "201412": {
+  "era": "transit-farsite",
+  "effective_date": "2014-12-01"
+ },
+ "201502": {
+  "era": "transit-farsite",
+  "effective_date": "2015-02-01"
+ },
+ "201504": {
+  "era": "transit-farsite",
+  "effective_date": "2015-04-01"
+ },
+ "201507": {
+  "era": "transit-farsite",
+  "effective_date": "2015-07-01"
+ },
+ "201510": {
+  "era": "transit-farsite",
+  "effective_date": "2015-10-01"
+ },
+ "201512": {
+  "era": "transit-farsite",
+  "effective_date": "2015-12-01"
+ },
+ "201608": {
+  "era": "transit-farsite",
+  "effective_date": "2016-08-01"
+ },
+ "201708": {
+  "era": "transit",
+  "effective_date": "2017-08-01"
+ },
+ "201803": {
+  "era": "transit",
+  "effective_date": "2018-03-01"
+ },
+ "201804": {
+  "era": "transit",
+  "effective_date": "2018-04-01"
+ },
+ "201807": {
+  "era": "transit",
+  "effective_date": "2018-07-01"
+ },
+ "201808": {
+  "era": "transit",
+  "effective_date": "2018-08-01"
+ },
+ "201811": {
+  "era": "transit",
+  "effective_date": "2018-11-01"
+ },
+ "201812": {
+  "era": "transit",
+  "effective_date": "2018-12-01"
+ },
+ "202002": {
+  "era": "agov-export",
+  "effective_date": "2020-02-01"
+ },
+ "202006": {
+  "era": "pandoc",
+  "effective_date": "2020-06-01"
+ },
+ "202009": {
+  "era": "transit-farsite",
+  "effective_date": "2020-09-01"
+ },
+ "2021-0630_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2021-06-30"
+ },
+ "202105": {
+  "era": "transit-farsite",
+  "effective_date": "2021-05-01"
+ },
+ "202106": {
+  "era": "agov-export",
+  "effective_date": "2021-06-01"
+ },
+ "202107": {
+  "era": "agov-export",
+  "effective_date": "2021-07-01"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ }
+}

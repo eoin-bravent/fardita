@@ -1,0 +1,746 @@
+{
+ "Change_112_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-08-03"
+ },
+ "Change_114_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-10-19"
+ },
+ "Change_115_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-10-23"
+ },
+ "Change_116_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-11-02"
+ },
+ "Change_117_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-11-04"
+ },
+ "Change_118_GSAR_Case_2020-G536_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-11-04"
+ },
+ "Change_119_GSAM_Case_2020-G523_HTML_Files_0": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-12-07"
+ },
+ "Change_120_GSAM_Case_2021-G504_HTML_Files_0": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-12-29"
+ },
+ "Change_121_GSAM_Case_2020-G518_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-12-30"
+ },
+ "Change_122_GSAM_Case_2020-G516_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-02-19"
+ },
+ "Change_123_GSAR_Case_2021-G509_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-03-15"
+ },
+ "Change_124_GSAM_Case_2021-G507_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-04-08"
+ },
+ "Change_125_GSAM_Case_2020-G527_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-04-22"
+ },
+ "Change_126_GSAM_Case_2021-G521_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-06-14"
+ },
+ "Change_127_GSAR_Case_2021-G516_HTML_Files_0": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-06-22"
+ },
+ "Change_128_GSAR_Case_2020-G538_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-06-22"
+ },
+ "Change_129_GSAM_Case_2021-G513_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-06-24"
+ },
+ "Change_130_GSAR_Case_2021-G527_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-06-30"
+ },
+ "Change_131_GSAM_Case_2020-G520_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-07-06"
+ },
+ "Change_132_GSAR_Case_2020-G525_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-07-26"
+ },
+ "Change_133_GSAM_Case_2020-G517_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-09-03"
+ },
+ "Change_134_GSAM_Case_2021-G508_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-09-08"
+ },
+ "Change_135_GSAM_Case_2021-G511_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-09-28"
+ },
+ "Change_136_GSAM_Case_2021-G512_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-09-29"
+ },
+ "Change_137_GSAM_Case_2021-G524_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-10-01"
+ },
+ "Change_138_GSAM_Case_2021-G528_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-10-22"
+ },
+ "Change_139_GSAM_Case_2021-G514_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-10-29"
+ },
+ "Change_140_GSAR_Case_2017-G506_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-11-05"
+ },
+ "Change_141_GSAR_Case_2020-G521_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-12-02"
+ },
+ "Change_142_GSAM_Case_2021-G526_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-12-17"
+ },
+ "Change_143_GSAM_Case_2022-G502_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-12-23"
+ },
+ "Change_144_GSAR_Case_2021-G510_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-01-03"
+ },
+ "Change_145_GSAR_Case_2015-G505_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-01-20"
+ },
+ "Change_146_GSAM_Case_2021-G501_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-02-01"
+ },
+ "Change_147_GSAM_Case_2021-G518_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-02-02"
+ },
+ "Change_148_GSAM_Case_2022-G504_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-02-16"
+ },
+ "Change_149_GSAM_Case_2022-G501_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-02-24"
+ },
+ "Change_150_GSAR_Case_2021-G529_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-03-07"
+ },
+ "Change_151_GSAR_Case_2016-G511_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-03-11"
+ },
+ "Change_152_GSAR_Case_2020-G509_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-03-28"
+ },
+ "Change_153_GSAR_Case_2020-G537_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-04-01"
+ },
+ "Change_154_GSAM_Case_2022-G509_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-07-26"
+ },
+ "Change_155_GSAM_Case_2021-G525_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-08-30"
+ },
+ "Change_156_GSAM_Case_2022-G510_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-12-02"
+ },
+ "Change_157_GSAM_Case_2022-G511_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-12-07"
+ },
+ "Change_158_GSAR_Case_2021-G502_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-12-15"
+ },
+ "Change_159_GSAM_Case_2021-G519_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2022-12-16"
+ },
+ "Change_160_GSAR_Case_2020-G505_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-01-12"
+ },
+ "Change_161_GSAM_Case_2022-G512_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-02-01"
+ },
+ "Change_162_GSAR_Case_2022-G511_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-02-10"
+ },
+ "Change_163_GSAM_Case_2022-G508_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-02-13"
+ },
+ "Change_164_GSAM_Case_2023-G503_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-03-08"
+ },
+ "Change_165_GSAR_Case_2022-G521_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-04-26"
+ },
+ "Change_166_GSAR_2023-G504_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-05-05"
+ },
+ "Change_167_GSAR_Case_2023-G506_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-08-07"
+ },
+ "Change_168_GSAM_Case_2023-G509_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-08-17"
+ },
+ "Change_169_GSAR_Case_2022-G518_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-09-08"
+ },
+ "Change_170_GSAM_Case_2023-G510_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-10-06"
+ },
+ "Change_171_GSAR_Case_2019-G503_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2023-10-12"
+ },
+ "Change_172_GSAM_Case_2023-G505_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-01-01"
+ },
+ "Change_173_GSAM_Case_2024-G501_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-01-18"
+ },
+ "Change_174_GSAR_Case_2022-G514_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-02-12"
+ },
+ "Change_175_GSAR_Case_2022-G519_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-02-15"
+ },
+ "Change_176_GSAM_Case_2023-G508_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-03-13"
+ },
+ "Change_177_GSAM_Case_2023-G511_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-03-20"
+ },
+ "Change_178_GSAR_Case_2020-G511_HTML_Files_0": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-03-25"
+ },
+ "Change_179_GSAM_Case_2022-G515_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-04-29"
+ },
+ "Change_180_GSAR_Case_2022-G505_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-05-02"
+ },
+ "Change_181_GSAM_Case_2024-G505_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-05-20"
+ },
+ "Change_182_GSAM_Case_2020-G514_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-07-02"
+ },
+ "Change_183_GSAR_Case_2022-G517_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-07-08"
+ },
+ "Change_184_GSAR_Case_2022-G513_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-08-02"
+ },
+ "Change_185_GSAR_Case_2022-G506_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-08-02"
+ },
+ "Change_186_GSAR_Case_2024-G503_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-09-03"
+ },
+ "Change_187_GSAR_Case_2020-G510_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-09-04"
+ },
+ "Change_188_GSAM_Case_2024-G509_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-09-20"
+ },
+ "Change_189_GSAM_Case_2024-G510_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-10-01"
+ },
+ "Change_190_GSAM_Case_2024-G507_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-10-08"
+ },
+ "Change_191_GSAM_Case_2024-G508_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-10-24"
+ },
+ "Change_192_GSAM_Case_2024-G506_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-10-28"
+ },
+ "Change_193_GSAM_Case_2023-G501_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-12-06"
+ },
+ "Change_194_GSAR_Case_2020-G512_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-12-16"
+ },
+ "Change_195_GSAM_Case_2025-G505_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2025-01-17"
+ },
+ "Change_196_GSAM_Case_2020-G515_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2025-02-14"
+ },
+ "Change_198_GSAM_Case_2025-G507_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2025-04-29"
+ },
+ "Change_199_GSAR_Case_2024-G502_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2025-05-26"
+ },
+ "Change_200,_Wave_2_GSA_Acquisition_Handbook_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2026-06-13"
+ },
+ "Change_200_GSA_Acquisition_Handbook_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2026-01-15"
+ },
+ "GSAM 2004-09-16 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2004-09-16"
+ },
+ "GSAM 2004-12-28 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2004-12-28"
+ },
+ "GSAM 2005-01-04 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2005-01-04"
+ },
+ "GSAM 2005-06-03 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2005-06-03"
+ },
+ "GSAM 2005-06-08 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2005-06-08"
+ },
+ "GSAM 2006-10-01 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2006-10-01"
+ },
+ "GSAM 2007-02-01 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2007-02-01"
+ },
+ "GSAM 2008-02-06 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2008-02-06"
+ },
+ "GSAM 2008-08-08 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2008-08-08"
+ },
+ "GSAM 2008-09-19 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2008-09-19"
+ },
+ "GSAM 2008-12-17 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2008-12-17"
+ },
+ "GSAM 2009-01-08 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-01-08"
+ },
+ "GSAM 2009-01-09 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-01-09"
+ },
+ "GSAM 2009-02-09 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-02-09"
+ },
+ "GSAM 2009-04-24 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-04-24"
+ },
+ "GSAM 2009-05-14 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-05-14"
+ },
+ "GSAM 2009-05-18 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-05-18"
+ },
+ "GSAM 2009-05-28 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-05-28"
+ },
+ "GSAM 2009-06-01 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-06-01"
+ },
+ "GSAM 2009-06-04 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-06-04"
+ },
+ "GSAM 2009-06-08 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-06-08"
+ },
+ "GSAM 2009-06-15 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-06-15"
+ },
+ "GSAM 2009-06-29 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-06-29"
+ },
+ "GSAM 2009-07-06 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-07-06"
+ },
+ "GSAM 2009-08-07 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-08-07"
+ },
+ "GSAM 2009-09-14 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-09-14"
+ },
+ "GSAM 2009-10-07 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-10-07"
+ },
+ "GSAM 2009-10-19 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-10-19"
+ },
+ "GSAM 2009-11-25 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2009-11-25"
+ },
+ "GSAM 2010-01-14 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2010-01-14"
+ },
+ "GSAM 2010-03-04 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2010-03-04"
+ },
+ "GSAM 2010-05-03 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2010-05-03"
+ },
+ "GSAM 2010-06-10 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2010-06-10"
+ },
+ "GSAM 2010-08-16 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2010-08-16"
+ },
+ "GSAM 2010-09-13 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2010-09-13"
+ },
+ "GSAM 2011-06-15 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2011-06-15"
+ },
+ "GSAM 2011-06-27 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2011-06-27"
+ },
+ "GSAM 2011-06-28 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2011-06-28"
+ },
+ "GSAM 2012-01-06 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2012-01-06"
+ },
+ "GSAM 2012-03-12 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2012-03-12"
+ },
+ "GSAM 2012-03-26 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2012-10-01"
+ },
+ "GSAM 2012-10-01 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2012-10-01"
+ },
+ "GSAM 2014-04-14 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2014-03-14"
+ },
+ "GSAM 2014-05-16 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2014-05-16"
+ },
+ "GSAM 2014-07-23 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2014-07-23"
+ },
+ "GSAM 2014-10-21 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2014-10-21"
+ },
+ "GSAM 2014-10-22 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2014-10-22"
+ },
+ "GSAM 2015-01-13 Change 62 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2015-01-13"
+ },
+ "GSAM Change 66 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2015-09-25"
+ },
+ "GSAM GSAM Change 63 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2015-05-20"
+ },
+ "GSAM GSAM Change 67 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-01-22"
+ },
+ "GSAM GSAM Change 68 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-01-27"
+ },
+ "GSAM GSAM Change 69 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-02-21"
+ },
+ "GSAM GSAM Change 70 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-03-31"
+ },
+ "GSAM GSAR Change 100 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2019-05-23"
+ },
+ "GSAM GSAR Change 101 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2019-07-17"
+ },
+ "GSAM GSAR Change 102 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2019-08-21"
+ },
+ "GSAM GSAR Change 103 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2019-09-16"
+ },
+ "GSAM GSAR Change 104 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2019-12-02"
+ },
+ "GSAM GSAR Change 105 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-01-21"
+ },
+ "GSAM GSAR Change 106 HTML Files_0": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-02-19"
+ },
+ "GSAM GSAR Change 107 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-03-09"
+ },
+ "GSAM GSAR Change 108 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-04-30"
+ },
+ "GSAM GSAR Change 109 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-06-05"
+ },
+ "GSAM GSAR Change 111 HTML Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-07-27"
+ },
+ "GSAM GSAR Change 74 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-06-23"
+ },
+ "GSAM GSAR Change 75 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-06-24"
+ },
+ "GSAM GSAR Change 76 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-10-04"
+ },
+ "GSAM GSAR Change 77 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-09-30"
+ },
+ "GSAM GSAR Change 78 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-10-11"
+ },
+ "GSAM GSAR Change 79 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-10-18"
+ },
+ "GSAM GSAR Change 80 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2017-01-03"
+ },
+ "GSAM GSAR Change 81 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2017-01-09"
+ },
+ "GSAM GSAR Change 82 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-01-24"
+ },
+ "GSAM GSAR Change 83 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-02-22"
+ },
+ "GSAM GSAR Change 84 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-05-11"
+ },
+ "GSAM GSAR Change 85 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-05-29"
+ },
+ "GSAM GSAR Change 86 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-06-01"
+ },
+ "GSAM GSAR Change 87 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-07-19"
+ },
+ "GSAM GSAR Change 88 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-07-31"
+ },
+ "GSAM GSAR Change 89 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-08-16"
+ },
+ "GSAM GSAR Change 90 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-08-16"
+ },
+ "GSAM GSAR Change 91 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-09-04"
+ },
+ "GSAM GSAR Change 92 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-10-02"
+ },
+ "GSAM GSAR Change 93 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-10-02"
+ },
+ "GSAM GSAR Change 94 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-10-09"
+ },
+ "GSAM GSAR Change 95 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2018-10-09"
+ },
+ "GSAM GSAR Change 96 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2019-01-14"
+ },
+ "GSAM GSAR Change 97 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2019-04-04"
+ },
+ "GSAM GSAR Change 98 HTML Files_0": {
+  "era": "webworks-parts",
+  "effective_date": "2019-03-15"
+ },
+ "GSAM GSAR Change 99 HTML Files_0": {
+  "era": "webworks-parts",
+  "effective_date": "2019-04-16"
+ },
+ "GSAM GSAR Change Numbers 71, 72 and 73 HTML Files": {
+  "era": "webworks-parts",
+  "effective_date": "2016-07-06"
+ },
+ "GSAM65Fix": {
+  "era": "webworks-parts",
+  "effective_date": "2015-06-24"
+ },
+ "GSAMHTML_1": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-10-19"
+ },
+ "GSAR Change 64": {
+  "era": "webworks-parts",
+  "effective_date": "2015-07-13"
+ },
+ "GSAR-TA-2024-01_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-09-27"
+ },
+ "GSAR_Change_110_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-06-24"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ }
+}

@@ -1,0 +1,66 @@
+{
+ "2007": {
+  "era": "transit-farsite",
+  "effective_date": "2007-04-30"
+ },
+ "2007-03": {
+  "era": "transit-farsite",
+  "effective_date": "2008-05-22"
+ },
+ "2007-04": {
+  "era": "transit-farsite",
+  "effective_date": "2009-02-20"
+ },
+ "2007-05": {
+  "era": "transit-farsite",
+  "effective_date": "2009-06-24"
+ },
+ "2007-06": {
+  "era": "transit-farsite",
+  "effective_date": "2010-06-03"
+ },
+ "2007-07": {
+  "era": "transit-farsite",
+  "effective_date": "2011-12-12"
+ },
+ "2007-08": {
+  "era": "transit-farsite",
+  "effective_date": "2013-01-30"
+ },
+ "2007-09": {
+  "era": "transit-farsite",
+  "effective_date": "2013-05-10"
+ },
+ "2007-10": {
+  "era": "transit-farsite",
+  "effective_date": "2013-09-16"
+ },
+ "2007-11": {
+  "era": "transit-farsite",
+  "effective_date": "2014-07-01"
+ },
+ "2007-12": {
+  "era": "transit-farsite",
+  "effective_date": "2015-10-21"
+ },
+ "2007-13": {
+  "era": "transit-farsite",
+  "effective_date": "2016-08-30"
+ },
+ "2007-14": {
+  "era": "transit-farsite",
+  "effective_date": "2017-06-12"
+ },
+ "2018-04": {
+  "era": "transit-farsite",
+  "effective_date": "2018-04-17"
+ },
+ "2018-10": {
+  "era": "transit-farsite",
+  "effective_date": "2018-10-23"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ }
+}

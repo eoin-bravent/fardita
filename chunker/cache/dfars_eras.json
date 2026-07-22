@@ -1,0 +1,398 @@
+{
+ "1998": {
+  "era": "transit-farsite",
+  "effective_date": "1998-09-16"
+ },
+ "1Oct1998": {
+  "era": "transit-farsite",
+  "effective_date": "1998-10-30"
+ },
+ "91_11_dl96-20": {
+  "era": "transit-farsite",
+  "effective_date": "1996-11-15"
+ },
+ "91_11_dl97-12": {
+  "era": "transit-farsite",
+  "effective_date": "1997-04-04"
+ },
+ "91_11_dl97-8": {
+  "era": "transit-farsite",
+  "effective_date": "1997-01-17"
+ },
+ "91_11_dl97-9": {
+  "era": "transit-farsite",
+  "effective_date": "1997-02-07"
+ },
+ "91_12_dl97-12": {
+  "era": "transit-farsite",
+  "effective_date": "1997-06-24"
+ },
+ "91_12_dl97-20": {
+  "era": "transit-farsite",
+  "effective_date": "1997-09-15"
+ },
+ "91_12_dl97-21": {
+  "era": "transit-farsite",
+  "effective_date": "1997-11-26"
+ },
+ "91_12_dl98-02": {
+  "era": "transit-farsite",
+  "effective_date": "1998-02-06"
+ },
+ "91_12_dl98-03": {
+  "era": "transit-farsite",
+  "effective_date": "1998-02-13"
+ },
+ "91_13_dl98-08": {
+  "era": "transit-farsite",
+  "effective_date": "1998-03-31"
+ },
+ "91_13_dl98-16": {
+  "era": "transit-farsite",
+  "effective_date": "1998-06-25"
+ },
+ "91_13_dl98-18": {
+  "era": "transit-farsite",
+  "effective_date": "1998-08-06"
+ },
+ "91_13_dl98-21": {
+  "era": "transit-farsite",
+  "effective_date": "1998-08-17"
+ },
+ "DFARS_Change_01-22-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-01-22"
+ },
+ "DFARS_Change_02-15-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-02-15"
+ },
+ "DFARS_Change_02-28-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-02-28"
+ },
+ "DFARS_Change_03-1-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-03-01"
+ },
+ "DFARS_Change_03-18-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-03-18"
+ },
+ "DFARS_Change_03-22-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-03-22"
+ },
+ "DFARS_Change_03-26-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-03-26"
+ },
+ "DFARS_Change_04-25-2024_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-04-25"
+ },
+ "DFARS_Change_04-27-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-04-27"
+ },
+ "DFARS_Change_04-28-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-04-28"
+ },
+ "DFARS_Change_05-25-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-05-25"
+ },
+ "DFARS_Change_05-26-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-05-26"
+ },
+ "DFARS_Change_05-30-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-05-30"
+ },
+ "DFARS_Change_06-09-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-06-09"
+ },
+ "DFARS_Change_07-20-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-07-20"
+ },
+ "DFARS_Change_07-29-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-07-29"
+ },
+ "DFARS_Change_08-15-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-08-15"
+ },
+ "DFARS_Change_08-17-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-08-17"
+ },
+ "DFARS_Change_08-25-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-08-25"
+ },
+ "DFARS_Change_08-26-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-08-26"
+ },
+ "DFARS_Change_09-16-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-09-16"
+ },
+ "DFARS_Change_09-29-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-09-29"
+ },
+ "DFARS_Change_09-29-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-09-29"
+ },
+ "DFARS_Change_1-15-2021_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-01-15"
+ },
+ "DFARS_Change_1-31-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-01-31"
+ },
+ "DFARS_Change_10-01-2020_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-10-01"
+ },
+ "DFARS_Change_10-01-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-10-01"
+ },
+ "DFARS_Change_10-1-2025_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2025-10-01"
+ },
+ "DFARS_Change_10-10-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-10-10"
+ },
+ "DFARS_Change_10-24-2025_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2025-10-24"
+ },
+ "DFARS_Change_10-28-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-10-28"
+ },
+ "DFARS_Change_10-29-2021_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-10-29"
+ },
+ "DFARS_Change_10-30-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-10-30"
+ },
+ "DFARS_Change_11-10-2025_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2025-11-10"
+ },
+ "DFARS_Change_11-15-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-11-15"
+ },
+ "DFARS_Change_11-17-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-11-17"
+ },
+ "DFARS_Change_11-25-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-11-25"
+ },
+ "DFARS_Change_11-30-2020_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-11-30"
+ },
+ "DFARS_Change_11-30-2021_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2021-11-30"
+ },
+ "DFARS_Change_12-18-2024_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2024-12-18"
+ },
+ "DFARS_Change_12-22-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-12-22"
+ },
+ "DFARS_Change_12-22-2023_HTML_Files_0": {
+  "era": "dita",
+  "effective_date": "2023-12-22"
+ },
+ "DFARS_Change_12-30-2021_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-01-01"
+ },
+ "DFARS_Change_12-30-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-12-30"
+ },
+ "DFARS_Change_2-24-2021_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-02-24"
+ },
+ "DFARS_Change_5-20-2021_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-05-20"
+ },
+ "DFARS_Change_6-23-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-06-23"
+ },
+ "DFARS_Change_6-5-2020_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-06-05"
+ },
+ "DFARS_Change_7-9-2021_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-07-09"
+ },
+ "DFARS_Change_8-30-2021_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-08-30"
+ },
+ "DFARS_Change_8-31-2020_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2020-08-31"
+ },
+ "DFARS_Change_9-29-2021_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-09-29"
+ },
+ "DPN20161222": {
+  "era": "transit",
+  "effective_date": "2017-01-03"
+ },
+ "DPN20171201": {
+  "era": "transit",
+  "effective_date": "2017-12-07"
+ },
+ "DPN20171228": {
+  "era": "transit",
+  "effective_date": "2018-01-02"
+ },
+ "DPN20180131": {
+  "era": "transit-farsite",
+  "effective_date": "2018-01-31"
+ },
+ "DPN20180323": {
+  "era": "transit-farsite",
+  "effective_date": "2018-03-23"
+ },
+ "DPN20180418": {
+  "era": "transit-farsite",
+  "effective_date": "2018-04-20"
+ },
+ "DPN20180514": {
+  "era": "transit-farsite",
+  "effective_date": "2018-05-14"
+ },
+ "DPN20180601": {
+  "era": "transit-farsite",
+  "effective_date": "2018-06-04"
+ },
+ "DPN20180614": {
+  "era": "transit-farsite",
+  "effective_date": "2018-06-14"
+ },
+ "DPN20180629": {
+  "era": "transit-farsite",
+  "effective_date": "2018-07-10"
+ },
+ "DPN20180824": {
+  "era": "empty",
+  "effective_date": "2018-08-28"
+ },
+ "DPN20180907": {
+  "era": "transit-farsite",
+  "effective_date": "2018-09-07"
+ },
+ "DPN20180928": {
+  "era": "empty",
+  "effective_date": "2018-10-02"
+ },
+ "DPN20181001": {
+  "era": "transit-farsite",
+  "effective_date": "2018-10-04"
+ },
+ "DPN20181010": {
+  "era": "transit-farsite",
+  "effective_date": "2018-10-10"
+ },
+ "DPN20181031": {
+  "era": "empty",
+  "effective_date": "2018-10-31"
+ },
+ "DPN20181130": {
+  "era": "transit-farsite",
+  "effective_date": "2018-11-30"
+ },
+ "DPN20181204": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-04"
+ },
+ "DPN20181204a": {
+  "era": "transit",
+  "effective_date": "2018-12-06"
+ },
+ "DPN20181212": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-12"
+ },
+ "DPN20181213": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-13"
+ },
+ "DPN20181217": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-17"
+ },
+ "DPN20181221": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-21"
+ },
+ "DPN20190205": {
+  "era": "transit-farsite",
+  "effective_date": "2019-02-05"
+ },
+ "DPN20190215": {
+  "era": "transit-farsite",
+  "effective_date": "2019-02-27"
+ },
+ "DPN20190404": {
+  "era": "transit-farsite",
+  "effective_date": "2019-04-08"
+ },
+ "DPN20190430": {
+  "era": "transit-farsite",
+  "effective_date": "2019-05-02"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ },
+ "dcn19981215": {
+  "era": "transit-farsite",
+  "effective_date": "1998-12-15"
+ },
+ "dcn19981224": {
+  "era": "transit-farsite",
+  "effective_date": "1999-01-04"
+ },
+ "dcn19990101": {
+  "era": "transit-farsite",
+  "effective_date": "1999-01-04"
+ },
+ "dpn20150129": {
+  "era": "transit-farsite",
+  "effective_date": "2015-01-30"
+ }
+}

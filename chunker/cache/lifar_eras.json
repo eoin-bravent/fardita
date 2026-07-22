@@ -1,0 +1,22 @@
+{
+ "2005Jul18": {
+  "era": "transit-farsite",
+  "effective_date": "2006-12-05"
+ },
+ "2008Oct 08": {
+  "era": "transit-farsite",
+  "effective_date": "2010-01-12"
+ },
+ "2018Dec11": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-11"
+ },
+ "2018Jul25": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-11"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ }
+}

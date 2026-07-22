@@ -33,7 +33,7 @@ Everything gitignored is re-downloadable or regenerable; the published repo is j
 
 ```bash
 cd pipeline
-pip install lxml tqdm
+pip install -r requirements.txt
 
 python dashboard.py                      # browser GUI: download → parse → verify, per agency
 # or headless:

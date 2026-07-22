@@ -1,0 +1,114 @@
+{
+ "1997": {
+  "era": "transit-farsite",
+  "effective_date": "1997-01-01"
+ },
+ "1999Jun15": {
+  "era": "transit-farsite",
+  "effective_date": "1999-06-15"
+ },
+ "2000Dec22": {
+  "era": "transit-farsite",
+  "effective_date": "2000-12-22"
+ },
+ "2002Jul28": {
+  "era": "transit-farsite",
+  "effective_date": "2002-07-28"
+ },
+ "2002Jul28_0": {
+  "era": "transit",
+  "effective_date": "2002-07-28"
+ },
+ "2002Jul28_1": {
+  "era": "transit",
+  "effective_date": "2002-07-28"
+ },
+ "2003Dec10": {
+  "era": "transit-farsite",
+  "effective_date": "2003-12-10"
+ },
+ "2003Feb07": {
+  "era": "transit-farsite",
+  "effective_date": "2003-02-07"
+ },
+ "2005Jan15": {
+  "era": "transit-farsite",
+  "effective_date": "2005-01-15"
+ },
+ "2005Jul28": {
+  "era": "transit-farsite",
+  "effective_date": "2005-07-28"
+ },
+ "2006Mar31": {
+  "era": "transit-farsite",
+  "effective_date": "2006-03-31"
+ },
+ "2007May24": {
+  "era": "transit-farsite",
+  "effective_date": "2007-05-24"
+ },
+ "2007May29": {
+  "era": "transit-farsite",
+  "effective_date": "2007-05-29"
+ },
+ "2008Apr29": {
+  "era": "transit-farsite",
+  "effective_date": "2008-04-29"
+ },
+ "2009Jul22": {
+  "era": "transit-farsite",
+  "effective_date": "2009-07-22"
+ },
+ "2010Jun25": {
+  "era": "transit-farsite",
+  "effective_date": "2010-06-25"
+ },
+ "2010Nov10": {
+  "era": "transit-farsite",
+  "effective_date": "2010-11-10"
+ },
+ "2010Oct22": {
+  "era": "transit-farsite",
+  "effective_date": "2010-10-22"
+ },
+ "2011Mar14": {
+  "era": "transit-farsite",
+  "effective_date": "2011-03-14"
+ },
+ "2013Jan14": {
+  "era": "transit-farsite",
+  "effective_date": "2013-01-14"
+ },
+ "2013Jul02": {
+  "era": "transit-farsite",
+  "effective_date": "2013-07-02"
+ },
+ "2014Sep19": {
+  "era": "transit-farsite",
+  "effective_date": "2014-09-19"
+ },
+ "2015Oct23": {
+  "era": "transit-farsite",
+  "effective_date": "2015-10-23"
+ },
+ "2016Jul15": {
+  "era": "transit-farsite",
+  "effective_date": "2016-07-15"
+ },
+ "2021-0311_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2021-03-11"
+ },
+ "2024Dec13_HTML_Files": {
+  "era": "ditaot-topics",
+  "effective_date": "2024-12-13"
+ },
+ "97-01": {
+  "era": "transit-farsite",
+  "effective_date": "1997-01-15"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ }
+}

@@ -1,0 +1,390 @@
+{
+ "1996": {
+  "era": "transit-farsite",
+  "effective_date": "1998-08-12"
+ },
+ "1996-1": {
+  "era": "transit-farsite",
+  "effective_date": "1998-08-12"
+ },
+ "1996-1-cpm98c02": {
+  "era": "transit-farsite",
+  "effective_date": "1998-08-12"
+ },
+ "1996-1-cpm98c09": {
+  "era": "transit-farsite",
+  "effective_date": "1998-08-12"
+ },
+ "1996-1-cpm98c16": {
+  "era": "transit-farsite",
+  "effective_date": "1998-10-19"
+ },
+ "1996-1-cpm98c18": {
+  "era": "transit-farsite",
+  "effective_date": "1999-06-15"
+ },
+ "1996-2-cpm00c01": {
+  "era": "transit-farsite",
+  "effective_date": "2000-03-22"
+ },
+ "1996-2-cpm99c04": {
+  "era": "transit-farsite",
+  "effective_date": "1999-09-22"
+ },
+ "1996-2-cpm99c05": {
+  "era": "transit-farsite",
+  "effective_date": "1999-10-13"
+ },
+ "1996-3-cmp00c01": {
+  "era": "transit-farsite",
+  "effective_date": "2000-04-25"
+ },
+ "1996-4-cmp00c01": {
+  "era": "transit-farsite",
+  "effective_date": "2001-02-28"
+ },
+ "1996-4-cmp01c07": {
+  "era": "transit-farsite",
+  "effective_date": "2001-10-15"
+ },
+ "1996-5-cpm01c07": {
+  "era": "transit-farsite",
+  "effective_date": "2002-03-14"
+ },
+ "1996-5-cpm01c07__1996-5-Cmp01O07_2002-03-14": {
+  "era": "transit-farsite",
+  "effective_date": "2002-03-14"
+ },
+ "2002": {
+  "era": "transit-farsite",
+  "effective_date": "2002-06-13"
+ },
+ "2002-1122": {
+  "era": "transit-farsite",
+  "effective_date": "2002-11-21"
+ },
+ "2003-0402": {
+  "era": "transit-farsite",
+  "effective_date": "2002-11-21"
+ },
+ "2003-0501": {
+  "era": "transit-farsite",
+  "effective_date": "2002-11-21"
+ },
+ "2003-0501-cpm03c10": {
+  "era": "transit-farsite",
+  "effective_date": "2002-11-21"
+ },
+ "2003-1105": {
+  "era": "transit-farsite",
+  "effective_date": "2003-12-01"
+ },
+ "2003-11051-cpm03c14": {
+  "era": "transit-farsite",
+  "effective_date": "2003-12-01"
+ },
+ "2003-1105__2003-1105_2002-11-21": {
+  "era": "transit-farsite",
+  "effective_date": "2002-11-21"
+ },
+ "2004-0205": {
+  "era": "transit-farsite",
+  "effective_date": "2004-02-23"
+ },
+ "2004-0302": {
+  "era": "transit-farsite",
+  "effective_date": "2004-02-23"
+ },
+ "2004-0419": {
+  "era": "transit-farsite",
+  "effective_date": "2004-02-23"
+ },
+ "2004-0804": {
+  "era": "transit-farsite",
+  "effective_date": "2004-06-22"
+ },
+ "2004-1001": {
+  "era": "transit-farsite",
+  "effective_date": "2004-06-22"
+ },
+ "2004-1103": {
+  "era": "transit-farsite",
+  "effective_date": "2004-11-03"
+ },
+ "2004-1122": {
+  "era": "transit-farsite",
+  "effective_date": "2004-11-29"
+ },
+ "2004-1209": {
+  "era": "transit-farsite",
+  "effective_date": "2004-11-29"
+ },
+ "2005-0209": {
+  "era": "transit-farsite",
+  "effective_date": "2005-03-02"
+ },
+ "2005-0517": {
+  "era": "transit-farsite",
+  "effective_date": "2005-03-02"
+ },
+ "2005-0810": {
+  "era": "transit-farsite",
+  "effective_date": "2005-08-16"
+ },
+ "2005-0818": {
+  "era": "transit-farsite",
+  "effective_date": "2005-09-06"
+ },
+ "2006-0329": {
+  "era": "transit-farsite",
+  "effective_date": "2006-03-28"
+ },
+ "2006-0515": {
+  "era": "transit-farsite",
+  "effective_date": "2006-07-19"
+ },
+ "2006-1003": {
+  "era": "transit-farsite",
+  "effective_date": "2006-10-05"
+ },
+ "2007-0314": {
+  "era": "transit-farsite",
+  "effective_date": "2007-02-06"
+ },
+ "2007-0531": {
+  "era": "transit-farsite",
+  "effective_date": "2006-10-05"
+ },
+ "2007-0823": {
+  "era": "transit-farsite",
+  "effective_date": "2008-02-12"
+ },
+ "2008-0128": {
+  "era": "transit-farsite",
+  "effective_date": "2008-01-30"
+ },
+ "2008-0128-cpm08c03": {
+  "era": "transit-farsite",
+  "effective_date": "2008-05-16"
+ },
+ "2008-0605": {
+  "era": "transit-farsite",
+  "effective_date": "2008-05-22"
+ },
+ "2008-1217": {
+  "era": "transit-farsite",
+  "effective_date": "2008-12-11"
+ },
+ "2009-0318": {
+  "era": "transit-farsite",
+  "effective_date": "2009-05-20"
+ },
+ "2009-0803": {
+  "era": "transit-farsite",
+  "effective_date": "2009-08-03"
+ },
+ "2009-1030": {
+  "era": "transit-farsite",
+  "effective_date": "2009-10-30"
+ },
+ "2010-0402": {
+  "era": "transit-farsite",
+  "effective_date": "2010-04-02"
+ },
+ "2010-0402-cpm10c-08-09-11-12": {
+  "era": "transit-farsite",
+  "effective_date": "2010-07-20"
+ },
+ "2010-0903": {
+  "era": "transit-farsite",
+  "effective_date": "2010-09-03"
+ },
+ "2010-1001": {
+  "era": "transit-farsite",
+  "effective_date": "2010-10-01"
+ },
+ "2010-1027": {
+  "era": "transit-farsite",
+  "effective_date": "2011-02-03"
+ },
+ "2011-0214": {
+  "era": "transit-farsite",
+  "effective_date": "2011-02-14"
+ },
+ "2011-0421-cpm11c04": {
+  "era": "transit-farsite",
+  "effective_date": "2011-05-11"
+ },
+ "2011-0714": {
+  "era": "transit-farsite",
+  "effective_date": "2011-09-26"
+ },
+ "2012-0104": {
+  "era": "transit-farsite",
+  "effective_date": "2012-01-04"
+ },
+ "2012-0330": {
+  "era": "transit-farsite",
+  "effective_date": "2012-03-30"
+ },
+ "2012-1107": {
+  "era": "transit-farsite",
+  "effective_date": "2013-03-11"
+ },
+ "2013-0327": {
+  "era": "transit-farsite",
+  "effective_date": "2013-03-27"
+ },
+ "2013-Baseline-cpm13-C-03": {
+  "era": "transit-farsite",
+  "effective_date": "2013-10-21"
+ },
+ "2013_Baseline": {
+  "era": "transit-farsite",
+  "effective_date": "2013-09-09"
+ },
+ "2014-0421": {
+  "era": "transit-farsite",
+  "effective_date": "2014-04-22"
+ },
+ "2014-0421__2011-0421_2011-04-21": {
+  "era": "transit-farsite",
+  "effective_date": "2011-04-21"
+ },
+ "2014-1001": {
+  "era": "transit-farsite",
+  "effective_date": "2014-10-01"
+ },
+ "2015-0406": {
+  "era": "transit-farsite",
+  "effective_date": "2015-04-06"
+ },
+ "2015-1001": {
+  "era": "transit-farsite",
+  "effective_date": "2016-05-20"
+ },
+ "2016-0603": {
+  "era": "transit-farsite",
+  "effective_date": "2016-06-03"
+ },
+ "2017-0127": {
+  "era": "transit-farsite",
+  "effective_date": "2017-02-02"
+ },
+ "2017-1003": {
+  "era": "transit-farsite",
+  "effective_date": "2017-10-03"
+ },
+ "2018-0221": {
+  "era": "transit-farsite",
+  "effective_date": "2019-04-18"
+ },
+ "2018-0313": {
+  "era": "transit-farsite",
+  "effective_date": "2019-04-18"
+ },
+ "2018-0322": {
+  "era": "transit-farsite",
+  "effective_date": "2018-03-22"
+ },
+ "2018-0525": {
+  "era": "transit-farsite",
+  "effective_date": "2018-05-25"
+ },
+ "2018-0711": {
+  "era": "transit-farsite",
+  "effective_date": "2018-07-11"
+ },
+ "2018-0828": {
+  "era": "transit-farsite",
+  "effective_date": "2018-08-28"
+ },
+ "2018-0919": {
+  "era": "transit-farsite",
+  "effective_date": "2018-09-19"
+ },
+ "2018-0924": {
+  "era": "transit-farsite",
+  "effective_date": "2018-09-24"
+ },
+ "2018-1022": {
+  "era": "transit-farsite",
+  "effective_date": "2018-10-22"
+ },
+ "2018-1106": {
+  "era": "transit-farsite",
+  "effective_date": "2018-11-06"
+ },
+ "2018-111": {
+  "era": "transit-farsite",
+  "effective_date": "2018-11-01"
+ },
+ "2018-1129": {
+  "era": "transit-farsite",
+  "effective_date": "2018-11-29"
+ },
+ "2018-1211": {
+  "era": "transit-farsite",
+  "effective_date": "2018-12-11"
+ },
+ "2019-0124": {
+  "era": "transit-farsite",
+  "effective_date": "2019-01-24"
+ },
+ "2019-0213": {
+  "era": "transit-farsite",
+  "effective_date": "2019-02-19"
+ },
+ "2019-0221": {
+  "era": "transit",
+  "effective_date": "2019-02-21"
+ },
+ "2019-0313": {
+  "era": "transit-farsite",
+  "effective_date": "2019-03-13"
+ },
+ "2019-1001_1": {
+  "era": "transit",
+  "effective_date": "2019-10-01"
+ },
+ "2021-0726": {
+  "era": "agov-export",
+  "effective_date": "2021-07-26"
+ },
+ "2021-0913": {
+  "era": "agov-export",
+  "effective_date": "2021-09-13"
+ },
+ "2021-0929": {
+  "era": "agov-export",
+  "effective_date": "2021-09-29"
+ },
+ "2021-1022": {
+  "era": "agov-export",
+  "effective_date": "2021-10-22"
+ },
+ "2022-0502_0": {
+  "era": "agov-export",
+  "effective_date": "2022-05-02"
+ },
+ "DAFFARS_Change_12-20-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-12-20"
+ },
+ "DAFFARS_Change_3-1-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-03-01"
+ },
+ "DAFFARS_Change_5-8-2023_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2023-05-08"
+ },
+ "DAFFARS_Change_7-1-2022_HTML_Files": {
+  "era": "dita",
+  "effective_date": "2022-07-01"
+ },
+ "_zips": {
+  "era": "empty",
+  "effective_date": ""
+ }
+}
