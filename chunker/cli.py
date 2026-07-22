@@ -41,8 +41,27 @@ def _build_subprocess(ag, args):
         cmd.append("--fresh")
     if args.force:
         cmd.append("--force")
+    if getattr(args, "fetch", False):
+        cmd.append("--fetch")
     env = dict(os.environ, PYTHONUNBUFFERED="1", PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
     return subprocess.run(cmd, cwd=paths.ROOT, env=env).returncode
+
+
+def _fetch_sources(ag):
+    """Acquire BOTH ingest sources for a from-scratch rebuild: clone/pull the GitHub repo AND
+    scrape the acquisition.gov archives into archive/<AG>. Either is a no-op if that source does
+    not exist for the agency. Used by `build --fetch` so a fresh rebuild has full history even when
+    canon_git/ or archive/ were cleared."""
+    from chunker.ingest import canon as fc
+    from chunker.ingest import archive_download as ad
+    try:
+        fc.download(ag)
+    except Exception as e:
+        print(f"[{ag}] clone/pull failed: {e!r}")
+    try:
+        ad.download_archives(ag)
+    except Exception as e:
+        print(f"[{ag}] archive scrape failed: {e!r}")
 
 
 def cmd_build(args):
@@ -60,6 +79,8 @@ def cmd_build(args):
         return
     for ag in ags:
         try:
+            if getattr(args, "fetch", False):
+                _fetch_sources(ag)
             build_mod.build_agency(ag, base=base, do_canon=not args.no_canon,
                                    companions=not args.no_companions,
                                    save_every=args.save_every, fresh=args.fresh, force=args.force)
@@ -270,6 +291,10 @@ def main():
                    help="clean in-place rebuild: archive the prior store to prerebuild/ first")
     b.add_argument("--force", action="store_true",
                    help="with --fresh, rebuild even if store.json already exists (else skip)")
+    b.add_argument("--fetch", action="store_true",
+                   help="acquire sources first: clone/pull the GitHub repo + scrape acquisition.gov "
+                        "archives, so a from-scratch rebuild has BOTH even if canon_git/ or archive/ "
+                        "were cleared")
     b.set_defaults(fn=cmd_build)
 
     for name, fn, hlp in (("certify", cmd_certify, "honest reg coverage + companion summary"),

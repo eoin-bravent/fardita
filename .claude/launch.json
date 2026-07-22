@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "scaletest",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8799", "--directory", "pipeline/_scaletest"],
-      "port": 8799
+      "name": "dashboard",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": ["-m", "chunker.cli", "dashboard", "--port", "8643"],
+      "port": 8643
     }
   ]
 }

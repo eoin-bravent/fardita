@@ -36,6 +36,31 @@ def _state(agency):
     return {}
 
 
+_rows_cache = {}                 # agency -> (store.json mtime, total row count)
+
+
+def _total_rows(agency):
+    """TOTAL rows across ALL tracked versions of the store -- every SCD-2 version-row of every unit,
+    GitHub + archive alike (FAR = 93,834). Computed live from the store so it can never go stale
+    like a recorded count, and cached by store.json mtime so the 3s poll never re-parses a large
+    store twice."""
+    sp = os.path.join(paths.store_dir(agency, _BASE), "store.json")
+    try:
+        mt = os.path.getmtime(sp)
+    except OSError:
+        return None
+    hit = _rows_cache.get(agency)
+    if hit and hit[0] == mt:
+        return hit[1]
+    try:
+        from chunker.store import Store
+        n = len(Store(paths.store_dir(agency, _BASE), agency).rows)
+    except Exception:
+        return None
+    _rows_cache[agency] = (mt, n)
+    return n
+
+
 def _running(agency):
     if agency in _procs and _procs[agency].poll() is None:
         return True
@@ -53,7 +78,7 @@ def fleet():
         out.append({
             "agency": a, "built": bool(st), "running": _running(a),
             "steps": {k: x.get("status") for k, x in (st.get("steps") or {}).items()},
-            "editions": v.get("editions"), "rows": v.get("rows"),
+            "editions": v.get("editions"), "rows": _total_rows(a),
             "floor": dc.get("floor"), "ceiling": dc.get("ceiling"),
             "current": dc.get("current"),
             "covered": v.get("covered_pct"), "accounted": v.get("accounted_pct"),
@@ -119,7 +144,7 @@ def _logf(agency):
     return open(os.path.join(d or ".", "run.log"), "a", encoding="utf-8")
 
 
-def launch(agency, verb, except_="", parallel=1, fresh=False, force=False):
+def launch(agency, verb, except_="", parallel=1, fresh=False, force=False, fetch=False):
     """Spawn `chunker <verb> --agency ...` as a child. agency 'ALL' expands to every agency
     minus `except_`; parallel>1 builds N agencies concurrently; fresh archives the prior store
     to prerebuild/ first (clean in-place rebuild)."""
@@ -143,6 +168,10 @@ def launch(agency, verb, except_="", parallel=1, fresh=False, force=False):
             cmd.append("--fresh")
         if force:
             cmd.append("--force")
+        if fetch:
+            cmd.append("--fetch")
+    # verb == "update" runs with its defaults: parallel git clone/pull + acquisition.gov scrape for
+    # archive agencies -> idempotent incremental ingest -> verify (no LLM / references pass).
     env = dict(os.environ, PYTHONUNBUFFERED="1", PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
     kw = {}
     if os.name != "nt":
@@ -208,7 +237,8 @@ td{padding:8px 9px;border-bottom:1px solid #21262d;vertical-align:middle}tr:hove
 </style></head><body>
 <header><div><h1>FARDITA <b>fleet</b></h1>
 <div class="sub">honest regulation coverage (companions excluded from the denominator) &middot; companion docs captured as a separate class &middot; viewing <code id="baselbl"></code></div></div>
-<div><button class=primary onclick="runAll()">&#9654; Build&hellip;</button>
+<div><button class=primary onclick="updateAll()">&#8635; Update all</button>
+<button onclick="runAll()">&#9654; Rebuild&hellip;</button>
 <button onclick="verifyAll()">&#10003; Verify all</button>
 <button class=bad onclick="stopRun('ALL')">&#9632; Stop all</button></div></header>
 <div class="hero" id="hero"></div>
@@ -220,7 +250,7 @@ td{padding:8px 9px;border-bottom:1px solid #21262d;vertical-align:middle}tr:hove
  <button onclick="helpHealth()">&#10067; History, Dates &amp; Invariants</button></div>
 <table id="tbl"><thead><tr>
  <th>Regulation</th><th>Pipeline</th><th>Editions</th>
- <th class="help-h" onclick="helpHealth()">History (from &rarr; to)</th><th>Rows</th>
+ <th class="help-h" onclick="helpHealth()">History (from &rarr; to)</th><th title="total rows across all tracked versions (every SCD-2 version of every unit; GitHub + archive)">Rows</th>
  <th class="help-h" onclick="helpCoverage()">Coverage (covered &middot; accounted &middot; missing)</th>
  <th>Companion documents</th>
  <th class="help-h" onclick="helpHealth()">Dates</th><th class="help-h" onclick="helpHealth()">Inv.</th><th></th>
@@ -246,7 +276,7 @@ function render(){
  for(const a of DATA){
   const tr=document.createElement('tr');
   const act=a.running?`<button class="sm bad" onclick="stopRun('${a.agency}')">Stop</button>`
-                     :`<button class=sm onclick="run('${a.agency}')">Build</button>`;
+                     :`<button class=sm onclick="run('${a.agency}')">Rebuild</button>`;
   if(!a.built){tr.innerHTML=`<td><b>${a.agency}</b>${a.running?'<span class=spin></span>':''}</td>
     <td colspan=8 class=none>${a.running?'building&hellip;':'not built'}</td><td>${act}</td>`;tb.appendChild(tr);continue;}
   const steps=['survey','backfill','canon','audit'].map(s=>{const v=a.steps[s]||'';
@@ -265,15 +295,19 @@ function render(){
    <td>${cover}</td><td>${cdoc}</td>
    <td>${a.dates_ok==null?'&mdash;':a.dates_ok?'<span class="chip ok" title="every edition has an effective_date; every GitHub edition/row a commit_date">tracked</span>':'<span class="chip bad">gap</span>'}</td>
    <td>${a.invariants_ok==null?'&mdash;':a.invariants_ok?'<span class="chip ok" title="valid citations; no overlapping/duplicate version intervals; current-flag consistent">clean</span>':'<span class="chip bad">FAIL</span>'}</td>
-   <td>${act} <button class=sm onclick="detail('${a.agency}')">Detail</button></td>`;
+   <td>${a.running?'':`<button class="sm primary" onclick="updateOne('${a.agency}')">Update</button> `}${act} <button class=sm onclick="detail('${a.agency}')">Detail</button></td>`;
   tb.appendChild(tr);}
 }
-async function run(a){if(!confirm('Rebuild '+a+' in place? (prior store archived to prerebuild/, then rebuilt fresh + audited)'))return;
-  await fetch('/api/run',{method:'POST',body:JSON.stringify({agency:a,verb:'build',fresh:true,force:true})});setTimeout(load,600);}
-async function runAll(){const ex=prompt('Rebuild ALL agencies in place (prior stores archived to prerebuild/). Skip which? (comma-separated, blank = none)','');if(ex===null)return;
+async function run(a){if(!confirm('WARNING - REBUILD '+a+' FROM SCRATCH?\n\nThis WIPES the current store and rebuilds it from source (GitHub editions + acquisition.gov archive history), re-downloading both. The prior store is backed up to stores/'+a+'/prerebuild/, but the live data is replaced and this can take a while.\n\nFor a routine refresh use Update instead (safe + incremental). Proceed with full rebuild?'))return;
+  await fetch('/api/run',{method:'POST',body:JSON.stringify({agency:a,verb:'build',fresh:true,force:true,fetch:true})});setTimeout(load,600);}
+async function runAll(){const ex=prompt('FULL REBUILD of ALL agencies from source (GitHub + acquisition.gov, re-downloaded). Prior stores backed up to prerebuild/. Skip which? (comma-separated, blank = none)','');if(ex===null)return;
   const p=prompt('How many agencies at once? (parallel; 1 = sequential)','4');if(p===null)return;
-  if(!confirm('Rebuild all agencies (except: '+(ex||'none')+'), '+(parseInt(p)||1)+' at a time — fresh + audited — into '+document.getElementById('baselbl').textContent+'?'))return;
-  await fetch('/api/run',{method:'POST',body:JSON.stringify({agency:'ALL',verb:'build',except:ex,parallel:parseInt(p)||1,fresh:true})});setTimeout(load,600);}
+  if(!confirm('WARNING - FULL REBUILD of all agencies (except: '+(ex||'none')+'), '+(parseInt(p)||1)+' at a time, into '+document.getElementById('baselbl').textContent+'.\n\nRe-downloads sources and REPLACES the live stores (prior backed up to prerebuild/). Resumable: already-rebuilt agencies are skipped.\n\nProceed?'))return;
+  await fetch('/api/run',{method:'POST',body:JSON.stringify({agency:'ALL',verb:'build',except:ex,parallel:parseInt(p)||1,fresh:true,fetch:true})});setTimeout(load,600);}
+async function updateOne(a){if(!confirm('Update '+a+' from GitHub + acquisition.gov?\n\nIdempotent and safe: keeps all history, ingests only new or changed editions, re-audits just the delta. The first run may clone the repo.'))return;
+  await fetch('/api/run',{method:'POST',body:JSON.stringify({agency:a,verb:'update'})});setTimeout(load,600);}
+async function updateAll(){if(!confirm('Update ALL agencies from GitHub + acquisition.gov into '+document.getElementById('baselbl').textContent+'?\n\nIdempotent: parallel clone/pull + archive scrape, then ingest only what changed. Safe to re-run. First run re-clones everything and can take a while.'))return;
+  await fetch('/api/run',{method:'POST',body:JSON.stringify({agency:'ALL',verb:'update'})});setTimeout(load,600);}
 async function verifyAll(){const r=await (await fetch('/api/verify',{cache:'no-store'})).json();const v=r.verify;
  const pass=v.filter(x=>x.ok===true).length, pend=v.filter(x=>x.ok===null).length;
  let h=`<h2>Verify — gate vs BASELINE (${pass}/${v.length} pass${pend?', '+pend+' building':''})</h2>
@@ -301,9 +335,10 @@ function helpHealth(){modal(`<h2>History, Dates &amp; Invariants</h2>
  <h3>Dates</h3><div class=kv><b>tracked</b> = every edition carries an effective_date and every GitHub-sourced edition/row carries a commit_date (so each version is both legally dated and traceable to its source commit). <b>gap</b> = something is missing a date.</div>
  <h3>Inv. (invariants)</h3><div class=kv><b>clean</b> = the versioned store is internally consistent: valid citations, no overlapping or duplicate version intervals for a section, and the "current" flag matches the open interval. <b>FAIL</b> = a structural problem to fix.</div>`);}
 function helpActions(){modal(`<h2>What the action buttons do</h2>
- <h3>Build (one agency) &amp; Build&hellip; (all)</h3><div class=kv>A clean <b>in-place rebuild</b>, fully automatic &mdash; no staging, no manual swap. For each agency it (1) archives the prior store aside to <b>stores/&lt;AG&gt;/prerebuild/</b> (a non-destructive backup), (2) re-surveys and re-ingests every archived edition oldest&rarr;newest, then adds the GitHub editions (grouped into published editions by branch marker) and captures companion documents, and (3) audits the result &mdash; all in one shot. <b>Build&hellip;</b> runs the whole fleet, N agencies at a time (you choose N), and is <b>resumable</b>: it skips agencies already rebuilt, so an interruption doesn't restart everything. Per-agency <b>Build</b> forces a rebuild of just that one.</div>
- <h3>Verify all</h3><div class=kv>A <b>read-only gate</b> &mdash; it rebuilds nothing. It checks every built store against the frozen <b>docs/BASELINE.json</b> oracle and reports PASS/FAIL per agency: invariants clean, 0 missing sections, dates fully tracked, and covered% not regressed below baseline. Edition COUNT is deliberately not gated (the marker-based GitHub replay legitimately adds editions, and honest reg-only covered% can rise as companions leave the denominator). Run it after a rebuild to confirm nothing regressed.</div>
- <h3>Stop</h3><div class=kv>Terminates a running build (one agency, or all). Because a build is resumable, stopping and re-running is safe.</div>`);}
+ <h3>Update (one agency) &amp; Update all &mdash; the routine refresh</h3><div class=kv><b>Idempotent</b> and safe. Pulls each agency from its live source &mdash; GitHub (clone/pull, in parallel) and, where GitHub doesn't carry the content (e.g. DFARS&nbsp;PGI), the <b>acquisition.gov archive</b> &mdash; then ingests <b>only what changed</b> (unchanged text keeps its version + verified refs; a real change opens a new version) and re-audits just that delta. Re-running with nothing new upstream is a no-op. This is the day-to-day button. (The LLM reference pass stays off here; run it from the CLI with credentials.)</div>
+ <h3>Rebuild (one agency) &amp; Rebuild&hellip; (all) &mdash; destructive</h3><div class=kv>A full <b>from-scratch</b> rebuild: it re-downloads BOTH sources (GitHub editions + acquisition.gov archive history), archives the prior store to <b>stores/&lt;AG&gt;/prerebuild/</b>, then rebuilds + re-audits from zero. <b>The live store is replaced</b> &mdash; the backup is your safety net. Use it only when a store is corrupt or the ingest logic changed; for normal currency use <b>Update</b>. <b>Rebuild&hellip;</b> runs the fleet N at a time and is resumable (skips agencies already rebuilt).</div>
+ <h3>Verify all</h3><div class=kv>A <b>read-only gate</b> &mdash; it rebuilds nothing. It checks every built store against the frozen <b>docs/BASELINE.json</b> oracle and reports PASS/FAIL per agency: invariants clean, 0 missing sections, dates fully tracked, and covered% not regressed below baseline. Edition COUNT is deliberately not gated. Run it after a rebuild/update to confirm nothing regressed.</div>
+ <h3>Stop</h3><div class=kv>Terminates a running build/update (one agency, or all). Both are resumable, so stopping and re-running is safe.</div>`);}
 function helpCompanions(){modal(`<h2>Companion documents</h2>
  <div class=kv>Alongside the numbered regulation, each agency ships a different <b>document class</b> &mdash; supporting material that is not the regulation text itself. The pipeline used to drop these; now it <b>captures</b> them into a separate <b>companion.json</b> store (kept out of the regulation store so a search can include or exclude them), versioned and dated exactly like the regulation. Keeping them out is also why the regulation's <b>covered%</b> is now honest &mdash; companion text no longer drags it down.</div>
  <h3>The classes (doc_class)</h3>
@@ -357,7 +392,8 @@ class H(BaseHTTPRequestHandler):
             ok = launch((body.get("agency") or "").upper(), body.get("verb") or "build",
                         except_=str(body.get("except") or ""),
                         parallel=int(body.get("parallel") or 1),
-                        fresh=bool(body.get("fresh")), force=bool(body.get("force")))
+                        fresh=bool(body.get("fresh")), force=bool(body.get("force")),
+                        fetch=bool(body.get("fetch")))
             self._send(json.dumps({"launched": ok}), "application/json")
         elif self.path == "/api/stop":
             self._send(json.dumps({"stopped": stop((body.get("agency") or "ALL").upper())}),
