@@ -163,16 +163,19 @@ def cmd_references(args):
             except Exception as e:
                 print(f"[{ag}] NORMALIZE FAILED: {e!r}")
         return
+    # ONE global temporal index across all agencies -> lets the pass resolve cross-regulation refs
+    # (any agency -> any agency) as-of each unit's edition. Built once, shared across agencies.
+    index = references_run.build_temporal_index(base)
     for ag in agencies:
         try:
             if args.all_history:                           # audit EVERY distinct version, not just current
                 references_run.run_references_history(
-                    ag, base=base, files=args.files, judge=args.judge,
+                    ag, base=base, index=index, files=args.files, judge=args.judge,
                     auto_accept=args.auto_accept, mock_llm=args.mock_llm, limit=args.limit,
                     provider=args.provider, concurrency=args.concurrency)
                 continue
             s = references_run.run_references(
-                ag, base=base, as_of=args.as_of, files=args.files, judge=args.judge,
+                ag, base=base, index=index, as_of=args.as_of, files=args.files, judge=args.judge,
                 auto_accept=args.auto_accept, mock_llm=args.mock_llm, limit=args.limit,
                 provider=args.provider, concurrency=args.concurrency)
             if s.get("status") in ("queue-empty", "empty-store", "no-rows-in-force"):

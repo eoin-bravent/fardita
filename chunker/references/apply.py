@@ -23,7 +23,7 @@ def _unit_of(citation):
     return citation.split("(")[0]
 
 
-def apply_ledger(st, ledger, decisions, *, as_of=None, stamp_version="", audited_units=None):
+def apply_ledger(st, ledger, decisions, *, as_of=None, stamp_version="", audited_units=None, cross_refs=None):
     """Mutate `st` in place and persist. Returns a small stats dict.
 
       st          — a chunker.store.Store (its rows are mutated + saved)
@@ -157,6 +157,31 @@ def apply_ledger(st, ledger, decisions, *, as_of=None, stamp_version="", audited
                 "mentions": [{"kind": "inferred", "evidence": evidence}],
                 "status": acc_status})
             added += 1
+
+    # 3) LLM-surfaced cross-regulation / companion references (from run._split_cross_reg): the LLM
+    # found the prose ref but does NOT attribute the agency -- append carrying the resolver's
+    # target_agency / target_kind. reconcile (same-regulation) never sees these.
+    for cr in (cross_refs or []):
+        u = by_cit.get((cr["unit"], ""))
+        if not u:
+            continue
+        t, a = reconcile.norm_cit(cr["target"]), cr.get("alternate", "")
+        ta, tk = cr.get("target_agency", ""), cr.get("target_kind", "")
+        if any(reconcile.norm_cit(c["target"]) == t and c.get("alternate", "") == a
+               and c.get("target_agency", "") == ta and c.get("target_kind", "") == tk
+               for c in u["cross_references"]):
+            continue
+        entry = {"target": cr["target"], "alternate": a, "confidence": "inferred",
+                 "mentions": [{"kind": "inferred", "evidence": cr.get("evidence") or "(llm cross-reg)"}],
+                 "status": "auto_accepted"}
+        if ta:
+            entry["target_agency"] = ta
+        if tk:
+            entry["target_kind"] = tk
+        if cr.get("validation"):
+            entry["validation"] = cr["validation"]
+        u["cross_references"].append(entry)
+        added += 1
 
     stamped = 0
     for r in rows:                                        # verified as of this edition (successful audits + decisions only)

@@ -25,7 +25,7 @@ def _unit_of(citation):
     return citation.split("(")[0]
 
 
-def run_references_history(agency, *, base=None, files=None, judge=None, auto_accept=True,
+def run_references_history(agency, *, base=None, index=None, files=None, judge=None, auto_accept=True,
                            mock_llm=None, limit=None, provider=None, concurrency=None,
                            out_dir=None, progress=True):
     """Audit EVERY distinct historical version of each unit — not just the current text.
@@ -49,7 +49,7 @@ def run_references_history(agency, *, base=None, files=None, judge=None, auto_ac
               f"{n_versions} base row-versions to cover")
     summaries = []
     for d in passes:
-        s = run_references(agency, base=base, as_of=d, files=files, judge=judge,
+        s = run_references(agency, base=base, index=index, as_of=d, files=files, judge=judge,
                            auto_accept=auto_accept, mock_llm=mock_llm, limit=limit,
                            provider=provider, concurrency=concurrency, out_dir=out_dir,
                            progress=progress)
@@ -141,7 +141,37 @@ def _cost(tokens, pricing):
             "audit": c(tokens["audit"]), "judge": c(tokens["judge"]), "total": c(tot)}
 
 
-def run_references(agency, *, base=None, as_of=None, files=None, judge=None,
+def _split_cross_reg(llm, agency, index, unit_asof):
+    """Split raw LLM findings into (same_regulation {cit: [refs]}, cross_reg [refs]). An internal ref
+    that resolves (as-of the unit's edition, via the global temporal index) to a DIFFERENT agency or a
+    companion doc is pulled out — reconcile then handles only same-regulation refs, and the cross-reg
+    ones are applied directly carrying target_agency/target_kind. External refs stay in the same-reg
+    bucket (reconcile handles USC/CFR/etc.). No index -> nothing is cross-reg (all same-regulation)."""
+    same, cross = {}, []
+    for cit, refs in (llm or {}).items():
+        kept = []
+        for ref in (refs if isinstance(refs, list) else []):
+            if not isinstance(ref, dict):
+                continue
+            if ref.get("scope") == "external":
+                kept.append(ref)
+                continue
+            base, roman = reconcile.split_alternate(ref.get("target", "") or "")
+            clean, tag_ag, tag_kind, valid = reconcile.resolve_reference(base, agency, index,
+                                                                         unit_asof.get(cit))
+            if tag_ag != agency or tag_kind:
+                cross.append({"unit": cit, "target": clean,
+                              "target_agency": tag_ag if tag_ag != agency else "",
+                              "target_kind": tag_kind,
+                              "alternate": reconcile.alt_arabic(ref.get("alternate", "") or roman),
+                              "evidence": ref.get("evidence", ""), "validation": valid})
+            else:
+                kept.append(ref)
+        same[cit] = kept
+    return same, cross
+
+
+def run_references(agency, *, base=None, index=None, as_of=None, files=None, judge=None,
                    auto_accept=True, mock_llm=None, limit=None, provider=None,
                    concurrency=None, out_dir=None, progress=True):
     """Run the pass for one agency. Returns a summary dict. Writes <out>/references/{ledger,
@@ -188,14 +218,18 @@ def run_references(agency, *, base=None, as_of=None, files=None, judge=None,
         llm = extract.audit(units, cfg, cache_dir, progress=progress)
         audited_ok = {c for c, r in llm.items() if r is not None}   # exclude units whose LLM call FAILED (retry them)
 
-    addr = reconcile.build_address_map(rows)              # whole agency: cross-file targets validate
+    addr = reconcile.build_address_map(rows)              # whole agency: same-agency targets validate
     queue_units = {u for u, _ in units}
     rows_q = [r for r in rows if _unit_of(r["citation"]) in queue_units]
-    # R4: clean raw ditaot href targets ('Subpart_1901_4_T48_...' -> 'subpart 1901.4') on the audited
-    # rows BEFORE reconcile, so parser refs corroborate the LLM's clean citations (rows are live store
-    # refs, so apply persists). Cross-agency + validation classification is the standalone
-    # `--normalize-only` pass (it needs the global temporal index), not this per-agency LLM step.
-    n_norm = reconcile.clean_targets(rows_q)
+    # Deterministic pass over the audited rows FIRST: clean raw ditaot targets + resolve
+    # target_agency/target_kind/validation as-of each row's edition (via the global temporal index),
+    # tagging parser cross-reg refs so reconcile (same-regulation) skips them.
+    n_norm = reconcile.normalize_rows(rows_q, agency, index)
+    # Split the LLM findings: same-regulation refs -> reconcile; cross-regulation / companion refs
+    # (resolved via the same index, as-of the unit's edition) -> applied directly with target_agency.
+    unit_asof = {r["citation"]: r.get("effective_from") for r in rows_q
+                 if r["type"] in ("section", "subsection") and not r.get("alternate")}
+    llm, cross_llm = _split_cross_reg(llm, agency, index, unit_asof)
     ledger, stats = reconcile.reconcile(rows_q, llm, addr)
 
     # optional judge over internal disagreements
@@ -227,7 +261,7 @@ def run_references(agency, *, base=None, as_of=None, files=None, judge=None,
     tokens = client.TRACKER.summary()
     summary = {"agency": agency, "provider": cfg["provider"], "model": cfg["gemini"]["model"],
                "as_of": as_of, "units": len(units), "status_counts": stats,
-               "normalized_targets": n_norm,
+               "normalized_targets": n_norm, "cross_reg": len(cross_llm),
                "needs_review": sum(1 for it in ledger if it["needs_review"]),
                "tokens": tokens, "cost": _cost(tokens, cfg["pricing"])}
     json.dump(ledger, open(os.path.join(out, "ledger.json"), "w", encoding="utf-8"),
@@ -238,7 +272,8 @@ def run_references(agency, *, base=None, as_of=None, files=None, judge=None,
     if auto_accept:
         judge_on = bool(cfg["gemini"].get("judge"))
         decisions = reconcile.auto_decisions(ledger, judge_on)
-        applied = apply_mod.apply_ledger(st, ledger, decisions, as_of=as_of, audited_units=audited_ok)
+        applied = apply_mod.apply_ledger(st, ledger, decisions, as_of=as_of,
+                                         audited_units=audited_ok, cross_refs=cross_llm)
         summary["applied"] = applied
         if progress:
             print(f"[{agency}] applied: {applied['rows']} rows / {applied['units']} units "
