@@ -2,24 +2,26 @@
 """Prompts + JSON schemas for the reference-verification LLM stages — the TASK LOGIC the
 transport (chunker.llm.client) is deliberately kept free of.
 
-These are ported verbatim from pipeline/gemini_audit.py. They are parameterized by
-{regulation} + {citation}, so pointing the pass at a supplement is just passing
-regulation="DFARS" etc. The citation-format *examples* remain FAR-shaped; supplements mirror
-FAR numbering (Part 52 <-> DFARS 252, etc.), and the per-agency grammar generalization (R4)
-happens in reconcile/extract, not here.
+Parameterized by {regulation} + {citation}. The audit surfaces references to ANY acquisition
+regulation the unit cites -- {regulation} itself OR another (FAR, DFARS, GSAM, ...) -- reporting a
+BARE citation `target` plus, when the text names one, a `regulation`; it does NOT resolve which
+agency/era a number belongs to (the deterministic temporal resolver in references.reconcile does
+that). The citation-format *examples* are FAR-shaped but illustrative -- supplements mirror FAR
+numbering (Part 52 <-> DFARS 252, etc.).
 
 PROMPT_VERSION folds into the cache key: bump it whenever a prompt below changes so stale
 cached model responses are invalidated.
 """
 
-PROMPT_VERSION = "v10"
+PROMPT_VERSION = "v11"   # v11: audit surfaces cross-regulation refs (+ `regulation` field); judge scope widened
 
 # ---------- blind audit (per unit: list every cross-reference, one atomic target each) ----------
 AUDIT_SYSTEM = (
-    "You audit cross-references in a government regulation. You are given the COMPLETE raw text "
-    "of ONE unit of {regulation} (its citation is {citation}). Find EVERY reference it makes "
-    "to another part / subpart / section / subsection / paragraph of {regulation} (this same "
-    "regulation), in any of these forms:\n"
+    "You audit cross-references in a government acquisition regulation. You are given the COMPLETE "
+    "raw text of ONE unit of {regulation} (its citation is {citation}). Find EVERY reference it "
+    "makes to a part / subpart / section / subsection / paragraph of an acquisition regulation -- "
+    "{regulation} ITSELF, or another one it cites (the FAR, or an agency supplement such as DFARS, "
+    "DFARS PGI, GSAM, AFARS, ...) -- in any of these forms:\n"
     "1. Explicit link: <xref href=\"...\">...</xref> -- the href names the target.\n"
     "2. Link + a parenthetical, e.g. <xref ...>5.202</xref>(a)(2). USUALLY the parenthetical "
     "narrows the link (-> 5.202(a)(2)) -- but DO NOT assume it; read the sentence. Sometimes it "
@@ -56,8 +58,13 @@ AUDIT_SYSTEM = (
     "the bare citation {citation}, is the document referring to itself and is not a cross-reference "
     "(but a DIFFERENT paragraph of this section, e.g. {citation}(a)(2), IS a valid reference).\n"
     "For each reference set `scope`:\n"
-    " - scope='internal' for references to ANOTHER part of {regulation} (the cases above). `target` is "
-    "the {regulation} citation in standard form (e.g. 5.202, 5.202(a)(2), 6.302-2, subpart 9.4).\n"
+    " - scope='internal' for a reference to an ACQUISITION REGULATION (the cases above) -- {regulation} "
+    "itself OR another. Set `target` to the citation in standard BARE form -- the NUMBER ONLY, with NO "
+    "regulation prefix (write '15.404', NEVER 'FAR 15.404'; e.g. 5.202, 5.202(a)(2), 6.302-2, "
+    "subpart 9.4). If the text explicitly NAMES the regulation (e.g. 'FAR 15.404', 'see DFARS 215.4', "
+    "'DFARS PGI 201.106'), put that name in `regulation` (e.g. 'FAR', 'DFARS', 'DFARS PGI'); otherwise "
+    "omit `regulation`. Do NOT try to decide which agency an unqualified number belongs to -- report "
+    "the number (and any named regulation); a downstream step resolves the agency and era.\n"
     " - scope='external' ONLY for a reference written in one of these five strict citation formats: "
     "U.S.C. (e.g. '41 U.S.C. 1303(a)'), CFR ('13 CFR 128.300'), Executive Order ('E.O. 11246'), Public "
     "Law ('Pub. L. 118-31'), or OMB Circular ('OMB Circular A-76'). Set `target` to the citation as "
@@ -76,6 +83,7 @@ AUDIT_SCHEMA = {
               "properties": {"target": {"type": "string"}, "evidence": {"type": "string"},
                              "scope": {"type": "string", "enum": ["internal", "external"]},
                              "ref_type": {"type": "string"},
+                             "regulation": {"type": "string"},   # named acquisition reg for a CROSS-reg ref (FAR/DFARS/DFARS PGI/...); omit for same-reg
                              "alternate": {"type": "string"}},   # clause Alternate variant (roman); '' for base
               "required": ["target", "evidence"]},
 }
@@ -86,9 +94,9 @@ JUDGE_SYSTEM = (
     "raw text and a numbered list of DISAGREEMENTS — each is a SINGLE atomic citation that EITHER "
     "the deterministic parser found (from prose/an expanded range, not a tagged link) OR an "
     "independent LLM found, but not both. For EACH, read the source and decide whether it is a real, "
-    "correct cross-reference FROM this unit TO that target within {regulation}: choose 'accept' (the "
+    "correct cross-reference FROM this unit TO that target -- within {regulation} OR another acquisition regulation the text names (FAR, DFARS, ...): choose 'accept' (the "
     "citation is correct as written), 'manual' (a real reference but the citation is wrong — put the "
-    "correct citation(s) in `value`), or 'reject' (not a real reference to this regulation — external, "
+    "correct citation(s) in `value`), or 'reject' (NOT a real regulation reference — external, "
     "mis-parsed, or hallucinated). Give a one-sentence `rationale`. Return one object per disagreement "
     "with its `n`. A target may be a clause Alternate, shown as e.g. '52.204-30 Alternate I' -- a "
     "legitimate variant reference, DISTINCT from the base clause; accept it if the unit really "
