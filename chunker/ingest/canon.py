@@ -14,6 +14,7 @@ import shutil
 import tarfile
 import tempfile
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from chunker import paths
 from chunker import parsers
@@ -25,8 +26,10 @@ CANON_SOURCE = "gsa-github"
 REPO_URL = "https://github.com/GSA/GSA-Acquisition-{src}"
 # agencies whose canon lives in ANOTHER agency's repo (+ which ditamap to read there)
 ALIAS = {"DFARSPGI": ("DFARS", "PGI.ditamap")}
-# no public GitHub repo -> canon comes from the acquisition.gov zip instead (host-side)
-NO_REPO = {"TRANSFARS"}
+# agencies with NO git ingest -> canon step skipped, and verify treats canon as n/a. Empty now:
+# TRANSFARS's GSA repo (GSA-Acquisition-TRANSFARS) has real content, so it joins the git flow like
+# every other agency. (Kept as a set so a future genuinely-repo-less agency can be re-added.)
+NO_REPO = set()
 
 
 def _effective_date(ag, commit_date):
@@ -91,6 +94,48 @@ def download(ag, shallow=False):
     if subprocess.run(cmd, env=env).returncode != 0:
         raise RuntimeError(f"clone failed for {ag} ({url})")
     return d
+
+
+def repos_for(agencies):
+    """Map agencies -> the DISTINCT physical git repos behind them, keyed by _src. Agencies whose
+    canon lives in ANOTHER agency's repo (ALIAS, e.g. DFARSPGI -> DFARS) collapse onto that one
+    repo, so each clone dir is fetched EXACTLY once -- the fix for the DFARS/DFARSPGI race (two git
+    processes must never touch canon_git/DFARS at the same time). NO_REPO agencies are dropped.
+    Returns {src: [agencies sharing that repo]}."""
+    out = {}
+    for ag in agencies:
+        if ag in NO_REPO:
+            continue
+        out.setdefault(_src(ag), []).append(ag)
+    return out
+
+
+def download_all(agencies=None, concurrency=8, progress=True):
+    """Clone-or-pull every distinct repo behind `agencies`, in parallel (git is network/IO bound,
+    so a thread pool is the right tool). Deduped by _src via repos_for(), so a shared repo is
+    fetched once and no two workers race the same directory. One repo's failure is isolated (its
+    entry is None + recorded in errors) rather than aborting the batch. Returns
+    {"repos": {src: dir|None}, "errors": {src: msg}}."""
+    ags = list(agencies) if agencies else paths.agencies()
+    repos = repos_for(ags)
+    results, errors = {}, {}
+    n = len(repos)
+    if progress:
+        print(f"[fetch] {n} distinct repo(s) for {sum(len(v) for v in repos.values())} "
+              f"agency(ies), concurrency={concurrency}")
+    with ThreadPoolExecutor(max_workers=max(1, concurrency)) as ex:
+        futs = {ex.submit(download, src): src for src in repos}
+        for done, f in enumerate(as_completed(futs), 1):
+            src = futs[f]
+            try:
+                results[src] = f.result()
+                tag = "ok"
+            except Exception as e:                          # isolate: one repo must not abort the batch
+                results[src], errors[src] = None, repr(e)
+                tag = f"FAILED {e!r}"[:80]
+            if progress:
+                print(f"  [{done}/{n}] {src:10} {tag}  ({','.join(repos[src])})")
+    return {"repos": results, "errors": errors}
 
 
 # ---------------------------------------------------------------- chunk one tree

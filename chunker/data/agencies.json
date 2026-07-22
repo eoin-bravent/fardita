@@ -14,7 +14,8 @@
  },
  "DFARSPGI": {
   "bottom_depth": 0,
-  "github": null
+  "github": null,
+  "update_via": "archive"
  },
  "GSAM": {
   "bottom_depth": 0,

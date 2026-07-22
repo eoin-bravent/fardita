@@ -186,6 +186,73 @@ def cmd_references(args):
             print(f"[{ag}] REFERENCES FAILED: {e!r}")
 
 
+def cmd_update(args):
+    """Idempotent GitHub update of already-built stores: clone-or-pull every repo (parallel,
+    deduped by physical repo so DFARS/DFARSPGI never race) -> canon-only incremental ingest
+    (skips the static archive backfill) -> optional references on the unstamped delta -> verify.
+    Every step is idempotent, so an update with no upstream change is a no-op."""
+    from chunker.ingest import canon as fc          # lazy: pulls lxml (via parsers) only on ingest
+    from chunker.ingest import archive_download as ad
+    from chunker import update as upd
+    from chunker import build as build_mod
+    base = args.base or None
+    ags = _agencies(args.agency)
+    conc = args.concurrency or 8
+    git_ags = [a for a in ags if upd.update_via(a) != "archive"]     # GitHub clone/pull + replay
+    arch_ags = [a for a in ags if upd.update_via(a) == "archive"]    # acquisition.gov scrape + backfill
+
+    if not args.no_fetch:                            # 1. fetch: git repos in parallel; archives scraped
+        if git_ags:
+            res = fc.download_all(git_ags, concurrency=conc)
+            if res["errors"]:
+                print(f"[update] {len(res['errors'])} repo(s) failed to fetch: "
+                      f"{', '.join(sorted(res['errors']))} -- their agencies report no-clone below")
+        for ag in arch_ags:
+            try:
+                ad.download_archives(ag)
+            except Exception as e:
+                print(f"[{ag}] ARCHIVE FETCH FAILED: {e!r}")
+
+    for ag in ags:                                   # 2. ingest: git -> canon-only; archive -> backfill(+canon)
+        try:
+            if ag in arch_ags:
+                build_mod.build_agency(ag, base=base, do_canon=True)
+            else:
+                s = upd.update_agency(ag, base=base)
+                if s.get("status"):
+                    print(f"{ag:10} {s['status']}")
+        except Exception as e:
+            print(f"[{ag}] UPDATE FAILED: {e!r}")
+
+    if args.references:                              # 3. LLM reference pass on the delta (needs creds)
+        from chunker.references import run as references_run
+        index = references_run.build_temporal_index(base)
+        for ag in ags:
+            try:
+                references_run.run_references_history(
+                    ag, base=base, index=index, judge=args.judge,
+                    provider=args.provider, concurrency=conc)
+            except Exception as e:
+                print(f"[{ag}] REFERENCES FAILED: {e!r}")
+
+    if not args.no_verify:                           # 4. gate vs BASELINE (exits PASS/FAIL)
+        cmd_verify(args)
+
+
+def cmd_download_archives(args):
+    """Scrape + download acquisition.gov archive editions into archive/<AG> (the acquisition.gov
+    content source that feeds the archive backfill). Dependency-free (lxml + stdlib). Idempotent:
+    ZIPs/folders already present are skipped, so a re-run fetches only NEW editions."""
+    from chunker.ingest import archive_download as ad     # lazy: lxml + network
+    for ag in _agencies(args.agency):
+        try:
+            s = ad.download_archives(ag, overwrite=args.overwrite, delete_zips=args.delete_zips)
+            print(f"{ag:10} {s['extracted']} edition(s) ({s['new']} new), "
+                  f"{len(s['failed'])} failed -> {s['dir']}")
+        except Exception as e:
+            print(f"[{ag}] DOWNLOAD-ARCHIVES FAILED: {e!r}")
+
+
 def main():
     ap = argparse.ArgumentParser(prog="chunker", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -246,6 +313,33 @@ def main():
                     help="credential-free: clean raw href targets + set target_agency/target_kind on the "
                          "store, no LLM (the deterministic half of the pass; run after a re-ingest)")
     rf.set_defaults(fn=cmd_references)
+
+    up = sub.add_parser("update",
+                        help="idempotent GitHub update: clone/pull -> incremental ingest -> "
+                             "references(delta) -> verify")
+    up.add_argument("--agency", default="ALL")
+    up.add_argument("--base", default="", help="store root (default stores/)")
+    up.add_argument("--concurrency", type=int, help="parallel git fetches + LLM calls (default 8)")
+    up.add_argument("--no-fetch", dest="no_fetch", action="store_true",
+                    help="skip clone/pull; ingest from the existing clones")
+    up.add_argument("--references", dest="references", action="store_true", default=False,
+                    help="also run the LLM reference pass on the delta (needs credentials)")
+    up.add_argument("--judge", dest="judge", action="store_true", default=None)
+    up.add_argument("--no-judge", dest="judge", action="store_false")
+    up.add_argument("--provider", choices=["usai", "vertex"])
+    up.add_argument("--no-verify", dest="no_verify", action="store_true",
+                    help="skip the closing BASELINE verify gate")
+    up.set_defaults(fn=cmd_update)
+
+    da = sub.add_parser("download-archives",
+                        help="scrape+download acquisition.gov archive editions into archive/<AG> "
+                             "(the website content source; feeds backfill). dependency-free")
+    da.add_argument("--agency", default="ALL")
+    da.add_argument("--overwrite", action="store_true",
+                    help="re-download + re-extract editions that already exist")
+    da.add_argument("--delete-zips", dest="delete_zips", action="store_true",
+                    help="delete each ZIP after successful extraction")
+    da.set_defaults(fn=cmd_download_archives)
 
     args = ap.parse_args()
     args.fn(args)
